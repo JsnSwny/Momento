@@ -1,0 +1,41 @@
+.canvas {
+  width: 100%;
+  height: 80vh;
+  border-radius: 10px;
+  border: 1px solid $gray;
+  margin: 0 auto;
+  background-color: white;
+}
+
+.canvas-container {
+  flex: 1;
+  align-self: center;
+  justify-self: center;
+  margin: 0 1rem;
+}
+
+.canvas-actions {
+  display: flex;
+  margin-bottom: 1rem;
+  &__icon {
+    font-size: 48px;
+    margin-right: 1rem;
+    background-color: white;
+    border-radius: 5px;
+    padding: 8px;
+    border: 1px solid $gray;
+    cursor: pointer;
+    transition: 0.2s ease background-color, 0.2s ease color, 0.2s ease border;
+
+    &.active {
+      background-color: $teal;
+      color: white;
+      border: 1px solid $teal;
+    }
+    &:hover {
+      background-color: $teal;
+      color: white;
+      border: 1px solid $teal;
+    }
+  }
+}

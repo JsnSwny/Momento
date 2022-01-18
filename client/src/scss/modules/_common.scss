@@ -1,0 +1,25 @@
+.currently-viewing {
+  display: flex;
+  list-style-type: none;
+  margin-right: 4rem;
+  li {
+    width: 50px;
+    height: 50px;
+    background-color: red;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    margin-right: -1rem;
+    &:nth-child(1) {
+      background-color: rgb(51, 184, 51);
+    }
+    &:nth-child(2) {
+      background-color: rgb(58, 100, 216);
+    }
+    &:nth-child(3) {
+      background-color: rgb(218, 73, 198);
+    }
+  }
+}
