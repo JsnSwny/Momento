@@ -5,6 +5,7 @@ import store from "./store/store";
 import "./dist/css/main.css";
 import "react-toastify/dist/ReactToastify.css";
 import ProjectPage from "./views/ProjectPage";
+import LoginPage from "./views/LoginPage";
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/project" element={<ProjectPage />}></Route>
+          <Route path="/login" element={<LoginPage />}></Route>
         </Routes>
       </Router>
     </Provider>
