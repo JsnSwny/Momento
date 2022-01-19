@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const LoginPage = () => {
   return (
     <div>
-        Logn
+        Login
     </div>
   );
 };
