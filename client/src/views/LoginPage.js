@@ -1,33 +1,9 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../store/actions/auth";
-import propTypes from 'prop-types';
+import { userActions } from "../store/actions/user.actions";
 
-async function loginUser(credentials) {
-  return fetch('http://localhost:3001/api/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(credentials)
-  })
-  .then(data => data.json())
-}
-
-export default function LoginPage ({setToken}) {
-  const [username, setUsername] = useState();
-  const [passwordHash, setPassword] = useState();
-
-  const onSubmit = async e => {
-    e.preventDefault();
-    const token = await loginUser({
-      username,
-      passwordHash
-    });
-    setToken(token);
-  }
-
-  /*
+const LoginPage = () => {
   const dispatch = useDispatch();
 
   const [username, setUsername] = useState("");
@@ -35,9 +11,9 @@ export default function LoginPage ({setToken}) {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(login(username, password));
+    dispatch(userActions.login(username, password));
   }
-  */
+  
 
   return (
     <div className="main">
@@ -62,7 +38,7 @@ export default function LoginPage ({setToken}) {
 
             <div className="second-input">
               {/* <img src={pass} alt = "pass" className="email"/> */}
-              <input type="password" placeholder="password" className="name" value={passwordHash} onChange={(e) => setPassword(e.target.value)}/>
+              <input type="password" placeholder="password" className="name" value={password} onChange={(e) => setPassword(e.target.value)}/>
             </div>
 
             <div className="login-button">
@@ -80,6 +56,4 @@ export default function LoginPage ({setToken}) {
   );
 };
 
-LoginPage.propTypes = {
-  setToken: propTypes.func.isRequired
-}
+export default LoginPage;
