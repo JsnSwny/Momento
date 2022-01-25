@@ -6,8 +6,16 @@ import "./dist/css/main.css";
 import "react-toastify/dist/ReactToastify.css";
 import ProjectPage from "./views/ProjectPage";
 import LoginPage from "./views/LoginPage";
+import useToken from "./store/actions/useToken";
 
 const App = () => {
+  const { token, setToken } = useToken();
+
+  if(!token) {
+    return <LoginPage setToken={setToken} />
+  }
+
+  
   return (
     <Provider store={store}>
       <Router>
