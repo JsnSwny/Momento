@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../store/actions/auth";
-import { userActions } from "../store/actions/user.actions";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
@@ -11,7 +10,7 @@ const LoginPage = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(userActions.login(username, password));
+    dispatch(login(username, password));
   }
   
 
