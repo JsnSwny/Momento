@@ -1,14 +1,23 @@
 import { combineReducers } from "redux";
+import { LOGIN_SUCCESS } from "../actions/types";
 
-const appReducer = combineReducers({});
-
-const rootReducer = (state, action) => {
-  if (action.type === "USER_LOGOUT") {
-    state = undefined;
+function LoginReducer(state, action) {
+  switch (action.type) {
+    case "LOGOUT_SUCCESS":
+      state = undefined;
+    
+    case LOGIN_SUCCESS:
+      return {
+        ...state,
+        isAuthenticated: true
+      }
+    default:
+      return {isAuthenticated: false};
   }
+}
 
-  return appReducer(state, action);
-};
+const rootReducer = combineReducers({
+  login: LoginReducer
+});
 
-export default (state, action) =>
-  rootReducer(action.type === "LOGOUT_SUCCESS" ? undefined : state, action);
+export default rootReducer;

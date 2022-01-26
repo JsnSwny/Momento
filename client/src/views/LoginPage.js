@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/actions/auth";
+import { Navigate } from "react-router-dom";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
@@ -13,6 +14,11 @@ const LoginPage = () => {
     dispatch(login(username, password));
   }
   
+  const auth = useSelector(state => state.login.isAuthenticated);
+
+  if (auth){
+    return <Navigate to="/project" />
+  }
 
   return (
     <div className="main">

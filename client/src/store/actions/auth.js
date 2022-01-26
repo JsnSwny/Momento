@@ -20,9 +20,6 @@ export const login = (username, password) => (dispatch) => {
                     username,
                     response
                 })
-                if (response.accessToken != null) {
-                    console.log("isAuthenticated")
-                }
             },
             error => {
                 console.log("login failed");
