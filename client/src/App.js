@@ -8,6 +8,7 @@ import ProjectPage from "./views/ProjectPage";
 import LoginPage from "./views/LoginPage";
 
 const App = () => {
+    
   return (
     <Provider store={store}>
       <Router>
