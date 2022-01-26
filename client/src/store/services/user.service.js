@@ -17,14 +17,14 @@ function login(username, passwordHash) {
         .then(handleResponse)
         .then(user => {
             // store user details and JWT token in session storage
-            sessionStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('user', JSON.stringify(user));
 
             return user;
         });
 }
 
 function logout() {
-    sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
 }
 
 function handleResponse(response) {
