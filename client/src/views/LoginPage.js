@@ -21,12 +21,12 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="main">
+    <div className="LoginRegistration">
       <div className="sub-main">
         <div>
           <div className="imgs">
             <div className="container-image">
-              {/* <img src={profile} alt="profile" className="profile"/> */}
+            <i class="far fa-user"></i>
             </div>
           </div>
 
@@ -36,17 +36,17 @@ const LoginPage = () => {
     
             </div>
             <form onSubmit={onSubmit}>
-            <div>
-              {/* <img src={email} alt = "email" className="email"/> */}
+            <div className="email">
+            <i class="fas fa-user"></i>
               <input type="text" placeholder="user name" className="name" value={username} onChange={(e) => setUsername(e.target.value)}/>
             </div>
 
-            <div className="second-input">
-              {/* <img src={pass} alt = "pass" className="email"/> */}
+            <div className="password">
+            <i class="fas fa-lock"></i>
               <input type="password" placeholder="password" className="name" value={password} onChange={(e) => setPassword(e.target.value)}/>
             </div>
 
-            <div className="login-button">
+            <div className="loginRegister-button">
             <button type="submit">Login</button>
           </div></form>
           
