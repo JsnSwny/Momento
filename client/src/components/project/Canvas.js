@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Circle, Line } from "react-konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 
-const Canvas = ({ selectedAction }) => {
+const Canvas = ({ selectedAction, setSelectedAction }) => {
   const initialRectangles = [
     {
       x: 10,
@@ -53,20 +53,21 @@ const Canvas = ({ selectedAction }) => {
     setTextElements([
       ...textElements,
       {
-        text: "This is a test example of a sentence in the canvas.",
+        text: "",
         x,
         y,
+        width: 200,
         fill: "black",
         id: textElements.at(-1).id + 1,
       },
     ]);
+    selectShape(textElements.at(-1).id + 1);
   };
 
   const handleClick = (e) => {
-    console.log(e);
     switch (selectedAction) {
       case "text":
-        insertText(100, 100);
+        insertText(e.evt.offsetX, e.evt.offsetY);
     }
   };
 
@@ -98,7 +99,7 @@ const Canvas = ({ selectedAction }) => {
   }, []);
 
   return (
-    <div className="konva-container">
+    <div className={`konva-container ${selectedAction}`}>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
@@ -121,6 +122,8 @@ const Canvas = ({ selectedAction }) => {
                   setTextElements(texts);
                 }}
                 stageRef={stageRef}
+                setSelectedId={selectShape}
+                setSelectedAction={setSelectedAction}
               />
             );
           })}

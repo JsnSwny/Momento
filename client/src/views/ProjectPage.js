@@ -14,7 +14,10 @@ const ProjectPage = () => {
           selectedAction={selectedAction}
           setSelectedAction={setSelectedAction}
         />
-        <Canvas selectedAction={selectedAction} />
+        <Canvas
+          selectedAction={selectedAction}
+          setSelectedAction={setSelectedAction}
+        />
       </div>
       <ProjectRightSidebar />
     </div>
