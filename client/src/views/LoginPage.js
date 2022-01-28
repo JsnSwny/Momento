@@ -12,12 +12,12 @@ const LoginPage = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     dispatch(login(username, password));
-  }
-  
-  const auth = useSelector(state => state.login.isAuthenticated);
+  };
 
-  if (auth){
-    return <Navigate to="/project" />
+  const auth = useSelector((state) => state.login.isAuthenticated);
+
+  if (auth) {
+    return <Navigate to="/project" />;
   }
 
   return (
@@ -32,29 +32,40 @@ const LoginPage = () => {
 
           <div>
             <div className="title">
-            <h1>Momento Login</h1>
-    
+              <h1>Momento Login</h1>
             </div>
             <form onSubmit={onSubmit}>
-            <div>
-              {/* <img src={email} alt = "email" className="email"/> */}
-              <input type="text" placeholder="user name" className="name" value={username} onChange={(e) => setUsername(e.target.value)}/>
-            </div>
+              <div>
+                {/* <img src={email} alt = "email" className="email"/> */}
+                <input
+                  type="text"
+                  placeholder="user name"
+                  className="name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
 
-            <div className="second-input">
-              {/* <img src={pass} alt = "pass" className="email"/> */}
-              <input type="password" placeholder="password" className="name" value={password} onChange={(e) => setPassword(e.target.value)}/>
-            </div>
+              <div className="second-input">
+                {/* <img src={pass} alt = "pass" className="email"/> */}
+                <input
+                  type="password"
+                  placeholder="password"
+                  className="name"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
 
-            <div className="login-button">
-            <button type="submit">Login</button>
-          </div></form>
-          
+              <div className="login-button">
+                <button type="submit">Login</button>
+              </div>
+            </form>
+
             <p className="link">
               <a href="#">Forgot password ?</a> Or <a href="#">Sign up</a>
             </p>
-          
-        </div>
+          </div>
         </div>
       </div>
     </div>

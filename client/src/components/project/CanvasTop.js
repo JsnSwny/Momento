@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CanvasActions from "./canvas/CanvasActions";
 import CanvasCurrentlyViewing from "./canvas/CanvasCurrentlyViewing";
 import CanvasPublish from "./canvas/CanvasPublish";
