@@ -1,8 +1,25 @@
 import config from './config';
 
-export const userService = {
-    login
+export const authService = {
+    login,
+    register
 };
+
+function register(username, firstName, lastName, emailAddress, passwordHash) {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, firstName, lastName, emailAddress, passwordHash })
+    };
+
+    return fetch(`${config.apiUrl}/api/auth/register`, requestOptions)
+        .then(handleResponse)
+        .then(response => {
+            return response;
+        });
+}
 
 function login(username, passwordHash) {
     const requestOptions = {

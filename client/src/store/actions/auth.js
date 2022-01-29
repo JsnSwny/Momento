@@ -1,33 +1,75 @@
-import { userService } from "../services/user.service";
+import { authService } from "../services/auth.service";
 import {
     LOGIN_SUCCESS,
-    LOGIN_FAILED,
-    USERS_LOGIN_REQUEST
+    LOGIN_FAILURE,
+    LOGOUT,
+    REGISTER_SUCCESS,
+    REGISTER_FAILURE,
+    SET_MESSAGE,
 } from "./types";
 
-export const login = (username, password) => (dispatch) => {
-    dispatch({ 
-        type: USERS_LOGIN_REQUEST,
-        username 
-    });
-
-    userService.login(username, password)
+export const register = (username, firstName, lastName, email, password) => (dispatch) => {
+    return authService.register(username, firstName, lastName, email, password)
         .then(
-            response => {
-                console.log("login successful");
+            (response) => {
                 dispatch({
-                    type: LOGIN_SUCCESS,
-                    username,
-                    response
-                })
+                    type: REGISTER_SUCCESS,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: response.data.message,
+                });
+
+                return Promise.resolve();
             },
-            error => {
-                console.log("login failed");
+            (error) => {
                 dispatch({
-                    type: LOGIN_FAILED,
-                    username,
-                    error
-                })
+                    type: REGISTER_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error.data.message,
+                });
+
+                return Promise.reject();
             }
         )
 }
+
+export const login = (username, password) => (dispatch) => {
+    return authService.login(username, password)
+        .then(
+            (response) => {
+                console.log("login successful");
+                dispatch({
+                    type: LOGIN_SUCCESS,
+                    payload: { username: response },
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("login failure");
+                dispatch({
+                    type: LOGIN_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error.data.message,
+                });
+
+                return Promise.reject();
+            }
+        )
+}
+
+export const logout = () => (dispatch) => {
+    authService.logout();
+
+    dispatch({
+        type: LOGOUT,
+    });
+};

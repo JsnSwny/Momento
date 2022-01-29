@@ -1,4 +1,4 @@
-import { userService } from "../services/user.service";
+import { authService } from "../services/auth.service";
 
 export const userActions = {
     login
@@ -6,9 +6,7 @@ export const userActions = {
 
 function login(username, password) {
     return dispatch => {
-        dispatch(request({ username }));
-
-        userService.login(username, password)
+        authService.login(username, password)
             .then(
                 user => {
                     console.log("login successful");
@@ -18,7 +16,4 @@ function login(username, password) {
                 }
             )
     }
-
-    function request(user) { return { type: 'USERS_LOGIN_REQUEST', user } }
-
 }
