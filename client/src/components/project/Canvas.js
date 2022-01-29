@@ -1,81 +1,45 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector, Provider } from "react-redux";
 import { Stage, Layer, Rect, Circle, Line } from "react-konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
+import store from "../../store/store";
+import { setSelectedElement } from "../../store/reducers/canvas";
 
 const Canvas = ({ selectedAction, setSelectedAction }) => {
-  const initialRectangles = [
-    {
-      x: 10,
-      y: 10,
-      width: 100,
-      height: 100,
-      fill: "red",
-      id: "rect1",
-    },
-    {
-      x: 150,
-      y: 150,
-      width: 268,
-      height: 100,
-      fill: "green",
-      id: "rect2",
-    },
-  ];
+  const dispatch = useDispatch();
+  const elements = useSelector((state) => state.canvas.elements);
+  const selectedElement = useSelector((state) => state.canvas.selectedElement);
+  const [rectangles, setRectangles] = useState([]);
 
-  const initialText = [
-    {
-      text: "This is a test example of a sentence in the canvas.",
-      x: 100,
-      y: 200,
-      fill: "black",
-      id: 1,
-    },
-  ];
-
-  const [rectangles, setRectangles] = useState(initialRectangles);
-
-  const [textElements, setTextElements] = useState(initialText);
-  const [selectedId, selectShape] = useState(null);
+  const [textElements, setTextElements] = useState([]);
   const stageRef = useRef();
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
-  const [textOptions, setTextOptions] = useState({
-    isDragging: false,
-    x: 50,
-    y: 50,
-  });
-
   const insertText = (x, y) => {
-    setTextElements([
-      ...textElements,
-      {
-        text: "",
-        x,
-        y,
-        width: 200,
-        fill: "black",
-        id: textElements.at(-1).id + 1,
-      },
-    ]);
-    selectShape(textElements.at(-1).id + 1);
+    let obj = {
+      text: "",
+      x,
+      y,
+      fontSize: 24,
+      fill: "#000000",
+      width: 200,
+      elType: "Text",
+    };
+    dispatch({ type: "ADD_ELEMENT", payload: obj });
   };
 
   const handleClick = (e) => {
+    if (selectedAction == "select" && !e.target.className) {
+      dispatch(setSelectedElement(null));
+      return;
+    }
     switch (selectedAction) {
       case "text":
         insertText(e.evt.offsetX, e.evt.offsetY);
-    }
-  };
-
-  const checkDeselect = (e) => {
-    // deselect when clicked on empty area
-    const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      selectShape(null);
     }
   };
 
@@ -106,37 +70,41 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
         onClick={handleClick}
         ref={stageRef}
       >
-        <Layer>
-          {textElements.map((item, i) => {
-            return (
-              <TextElement
-                key={i}
-                shapeProps={item}
-                isSelected={item.id === selectedId}
-                onSelect={() => {
-                  selectShape(item.id);
-                }}
-                onChange={(newAttrs) => {
-                  const texts = textElements.slice();
-                  texts[i] = newAttrs;
-                  setTextElements(texts);
-                }}
-                stageRef={stageRef}
-                setSelectedId={selectShape}
-                setSelectedAction={setSelectedAction}
-              />
-            );
-          })}
-        </Layer>
+        <Provider store={store}>
+          <Layer>
+            {elements.map((item, i) => {
+              return (
+                <TextElement
+                  key={i}
+                  shapeProps={item}
+                  isSelected={selectedElement && item.id === selectedElement.id}
+                  onSelect={() => {
+                    selectedAction == "select" &&
+                      dispatch(setSelectedElement(item.id));
+                  }}
+                  onChange={(newAttrs) => {
+                    dispatch({
+                      type: "UPDATE_ELEMENT",
+                      id: item.id,
+                      payload: { ...newAttrs, elType: "Text" },
+                    });
+                  }}
+                  stageRef={stageRef}
+                  setSelectedId={setSelectedElement}
+                  setSelectedAction={setSelectedAction}
+                />
+              );
+            })}
+          </Layer>
 
-        {rectangles.map((rect, i) => (
+          {/* {rectangles.map((rect, i) => (
           <Layer>
             <Rectangle
               key={i}
               shapeProps={rect}
               isSelected={rect.id === selectedId}
               onSelect={() => {
-                selectShape(rect.id);
+                selectedAction == "select" && selectShape(rect.id);
               }}
               onChange={(newAttrs) => {
                 const rects = rectangles.slice();
@@ -145,7 +113,8 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
               }}
             />
           </Layer>
-        ))}
+        ))} */}
+        </Provider>
       </Stage>
     </div>
   );

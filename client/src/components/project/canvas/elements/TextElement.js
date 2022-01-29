@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import { Transformer, Text } from "react-konva";
 
 const TextElement = ({
@@ -10,6 +11,7 @@ const TextElement = ({
   setSelectedId,
   setSelectedAction,
 }) => {
+  const dispatch = useDispatch();
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -26,7 +28,6 @@ const TextElement = ({
     const transformer = trRef.current;
     const stage = stageRef.current;
 
-    console.log(node, transformer, stage);
     // hide text node and transformer:
     node.hide();
     // if (transformer) {
@@ -99,10 +100,10 @@ const TextElement = ({
 
     function removeTextarea() {
       setSelectedId(null);
-      setSelectedAction(false);
       textarea.parentNode.removeChild(textarea);
       window.removeEventListener("click", handleOutsideClick);
       node.show();
+      setSelectedAction("select");
       if (transformer) {
         transformer.forceUpdate();
       }
@@ -132,6 +133,11 @@ const TextElement = ({
       // but don't hide on shift + enter
       if (e.keyCode === 13 && !e.shiftKey) {
         node.text(textarea.value);
+        dispatch({
+          type: "UPDATE_ELEMENT",
+          id: shapeProps.id,
+          payload: { ...shapeProps, text: textarea.value },
+        });
         removeTextarea();
       }
       // on esc do not set value back to node
@@ -145,11 +151,21 @@ const TextElement = ({
       setTextareaWidth(node.width() * scale);
       textarea.style.height = "auto";
       textarea.style.height = textarea.scrollHeight + node.fontSize() + "px";
+      dispatch({
+        type: "UPDATE_ELEMENT",
+        id: shapeProps.id,
+        payload: { ...shapeProps, text: textarea.value },
+      });
     });
 
     function handleOutsideClick(e) {
       if (e.target !== textarea) {
         node.text(textarea.value);
+        dispatch({
+          type: "UPDATE_ELEMENT",
+          id: shapeProps.id,
+          payload: { ...shapeProps, text: textarea.value },
+        });
         removeTextarea();
       }
     }

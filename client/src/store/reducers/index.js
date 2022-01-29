@@ -1,23 +1,12 @@
 import { combineReducers } from "redux";
-import { LOGIN_SUCCESS } from "../actions/types";
+import canvas from "./canvas";
 
-function LoginReducer(state, action) {
-  switch (action.type) {
-    case "LOGOUT_SUCCESS":
-      state = undefined;
-    
-    case LOGIN_SUCCESS:
-      return {
-        ...state,
-        isAuthenticated: true
-      }
-    default:
-      return {isAuthenticated: false};
-  }
-}
-
-const rootReducer = combineReducers({
-  login: LoginReducer
+const appReducer = combineReducers({
+  canvas,
 });
 
-export default rootReducer;
+const rootReducer = (state, action) => {
+  return appReducer(state, action);
+};
+
+export default (state, action) => rootReducer(state, action);
