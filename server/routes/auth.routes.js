@@ -18,4 +18,6 @@ module.exports = function(app) {
     );
 
     app.post("/api/auth/login", controller.login);
+
+    app.get("/api/verify/:token", controller.verify);
 };

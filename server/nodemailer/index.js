@@ -20,10 +20,10 @@ async function verifyEmail(receiver, name, link) {
     subject: "Momento - New account successfully registered", // Subject line
     text: "Dear " + name + ", \n\nThank you for registering with us!\nYou're one step away from creating memories with your friends and family! \
     We just need you to verify your email address.\n" + link, // plain text body
-    html: "<p>Dear " + name + ",</p> \
+    html: "<p>Dear " + name + `,</p> \
     <p>Thank you for registering with us!<br/>\
     You're one step away from creating memories with your friends and family!<br/> \
-    We just need you to verify your email address.<br/>Please follow the link below to activate your account: </p><p>" + link + "</p>"
+    We just need you to verify your email address.<br/>Please click <a href = '${link}'>here</a> to activate your account.</p>`
   });
 
   console.log("Message sent: %s", info.messageId);
