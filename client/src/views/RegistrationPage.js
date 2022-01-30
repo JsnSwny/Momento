@@ -19,25 +19,11 @@ const RegistrationPage = () => {
   const password = useRef({});
   password.current = watch("password", "");
 
-  /*
-  const verifyPassword = () => {
-    if (password !== null || confirmPassword !== null) {
-      if (password !== confirmPassword) {
-        console.log("Passwords don't match");
-      } else {
-        console.log("Passwords ok");
-      }
-    }
-  };
-  */
-
-  const onSubmit = (e) => {
-    console.log(e);
-    /*
+  const onSubmit = (e) => {    
     setSuccessful(false);
 
     dispatch(
-      registerAuth(username, firstName, lastName, emailAddress, password)
+      registerAuth(e.username, e.firstName, e.lastName, e.email, e.password)
     )
     .then(() => {
       setSuccessful(true);
@@ -45,7 +31,7 @@ const RegistrationPage = () => {
     .catch(() => {
       setSuccessful(false);
     })
-    */
+    
   };
 
   const loggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -150,6 +136,9 @@ const RegistrationPage = () => {
                   <h3>By registering an account with us you agree to our terms & conditions</h3><br/>
                   <button type="submit">Register</button>
                 </div>
+                <div>
+                  <br/>Already have an account? <Link to="/login">Proceed to login</Link>
+                </div>
               </div>)}
               {successfulRegister && (
                 <div>
@@ -160,9 +149,6 @@ const RegistrationPage = () => {
                 </div>
               )}
             </form>
-            <div>
-              <br/>Already have an account? <Link to="/login">Proceed to login</Link>
-            </div>
 
           
         </div>
