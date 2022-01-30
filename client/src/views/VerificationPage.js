@@ -23,7 +23,7 @@ const VerificationPage = () => {
                 <strong>Account confirmed!</strong>
             </h2>
             </header>
-            <Link to={"/login"}>Please Login</Link>
+            <Link to={"/login"}>You can login now</Link>
             </div>
         )}
         {message !== "Account verified" && (

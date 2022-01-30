@@ -2,25 +2,24 @@
 // import email from "./image/email.svg";
 // import pass from "./image/pass.svg";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { register } from "../store/actions/auth"
+import { registerAuth } from "../store/actions/auth"
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const RegistrationPage = () => {
-
   const dispatch = useDispatch();
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   
   const [successful, setSuccessful] = useState("");
 
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [emailAddress, setEmailAddress] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const password = useRef({});
+  password.current = watch("password", "");
 
+  /*
   const verifyPassword = () => {
     if (password !== null || confirmPassword !== null) {
       if (password !== confirmPassword) {
@@ -30,14 +29,15 @@ const RegistrationPage = () => {
       }
     }
   };
+  */
 
   const onSubmit = (e) => {
-    e.preventDefault();
-
+    console.log(e);
+    /*
     setSuccessful(false);
 
     dispatch(
-      register(username, firstName, lastName, emailAddress, password)
+      registerAuth(username, firstName, lastName, emailAddress, password)
     )
     .then(() => {
       setSuccessful(true);
@@ -45,6 +45,7 @@ const RegistrationPage = () => {
     .catch(() => {
       setSuccessful(false);
     })
+    */
   };
 
   const loggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -69,13 +70,18 @@ const RegistrationPage = () => {
             <div className="title">
             <h1>Momento Registration</h1>
             </div>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               {!successfulRegister && (
                 <div>
                   
                   <div className="Username">
                   <i className="fas fa-user"></i>
-                    <input type="text" placeholder="Username" className={message === "Username is already taken!" ? "name-invalid" : "name"} value={username} onChange={(e) => setUsername(e.target.value)}/>
+                    <input 
+                      type="text" 
+                      placeholder="Username" 
+                      className={message === "Username is already taken!" ? "name-invalid" : "name"} 
+                      {...register("username", {required: "Username is required", maxLength: { value: 20, message: "Username cannot be longer than 20 characters" }})} />
+                    {errors.username && <p>{errors.username.message}</p>}
                   </div>
                   
                   {message === "Username is already taken!" && (
@@ -86,17 +92,32 @@ const RegistrationPage = () => {
 
                   <div className="FirstName">
                   <i className="fas fa-user"></i>
-                    <input type="text" placeholder="First Name" className="name" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
+                    <input 
+                      type="text" 
+                      placeholder="First Name" 
+                      className="name" 
+                      {...register("firstName", {required: "First name is required", maxLength: { value: 20, message: "First name cannot be longer than 20 characters" }})} />
+                    {errors.firstName && <p>{errors.firstName.message}</p>}
                   </div>
 
                   <div className="LastName">
                   <i className="fas fa-user"></i>
-                    <input type="text" placeholder="Last Name" className="name" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+                    <input 
+                      type="text" 
+                      placeholder="Last Name" 
+                      className="name" 
+                      {...register("lastName", {required: "Last name is required", maxLength: { value: 20, message: "Last name cannot be longer than 20 characters" }})} />
+                    {errors.lastName && <p>{errors.lastName.message}</p>}
                   </div>
 
                   <div className="email">
                   <i className="fas fa-envelope"></i>
-                    <input type="text" placeholder="Email" className={message === "An account with this email address already exists!" ? "name-invalid" : "name"} value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)}/>
+                    <input 
+                      type="text" 
+                      placeholder="Email" 
+                      className={message === "An account with this email address already exists!" ? "name-invalid" : "name"} 
+                      {...register("email", {required: "Email is required", pattern: { value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/, message: "Please enter a valid email"}})} />
+                    {errors.email && <p>{errors.email.message}</p>}
                   </div>
                   
                   {message === "An account with this email address already exists!" && (
@@ -107,16 +128,27 @@ const RegistrationPage = () => {
                 
                   <div className="password">
                   <i className="fas fa-lock"></i>
-                    <input type="password" placeholder="Password" className="name" value={password} onChange={(e) => setPassword(e.target.value)} onBlur={verifyPassword}/>
+                    <input 
+                      type="password" 
+                      placeholder="Password" 
+                      className="name" 
+                      {...register("password", {required: "Password is required", minLength: { value: 8, message: "Password must have at least 8 characters" }})} />
+                    {errors.password && <p>{errors.password.message}</p>}
                   </div>
 
                   <div className="confirmPassword">
                   <i className="fas fa-lock"></i>
-                    <input type="password" placeholder="Confirm Password" className="name" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={verifyPassword}/>
+                    <input 
+                      type="password" 
+                      placeholder="Confirm Password" 
+                      className="name" 
+                      {...register("confirmPassword", {required: "Confirm your password", validate: value => value === password.current || "Passwords do not match" })} />
+                    {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
                   </div>
 
                   <div className="loginRegister-button">
-                  <button>Register</button>
+                  <h3>By registering an account with us you agree to our terms & conditions</h3><br/>
+                  <button type="submit">Register</button>
                 </div>
               </div>)}
               {successfulRegister && (
@@ -128,6 +160,9 @@ const RegistrationPage = () => {
                 </div>
               )}
             </form>
+            <div>
+              <br/>Already have an account? <Link to="/login">Proceed to login</Link>
+            </div>
 
           
         </div>
