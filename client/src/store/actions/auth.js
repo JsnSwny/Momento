@@ -30,7 +30,7 @@ export const register = (username, firstName, lastName, email, password) => (dis
 
                 dispatch({
                     type: SET_MESSAGE,
-                    payload: error.data.message,
+                    payload: error,
                 });
 
                 return Promise.reject();
@@ -58,7 +58,7 @@ export const login = (username, password) => (dispatch) => {
 
                 dispatch({
                     type: SET_MESSAGE,
-                    payload: error.data.message,
+                    payload: error,
                 });
 
                 return Promise.reject();

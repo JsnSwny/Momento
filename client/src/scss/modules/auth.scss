@@ -54,7 +54,7 @@
     }
     
     
-    .name{
+    .name, .name-invalid{
       padding-left: 70px;
       font-size: 20px;
     
@@ -148,5 +148,34 @@
       font-size: 16px;
       text-align: center;
     }
+
+    .name-invalid{
+      color: red;
+    }
+
+    .alert-input{
+      position: relative;
+      background: lightcoral;
+      width: 300px;
+      margin: auto;
+      border-radius: 15px;
+      margin-top: 5px;
+      font-size: 20px;
+      color: darkred;
+    }
+
+    .alert-success{
+      position: relative;
+      background: lightgreen;
+      width: 250px;
+      margin: auto;
+      border-radius: 15px;
+      margin-top: -20px;
+      margin-bottom: 10px;
+      padding: 15px;
+      font-size: 22px;
+      color: green;
+    }
+
   }
   

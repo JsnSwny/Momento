@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { register } from "../store/actions/auth"
+import { Link } from "react-router-dom";
 
 const RegistrationPage = () => {
 
@@ -48,13 +49,10 @@ const RegistrationPage = () => {
 
   const loggedIn = useSelector(state => state.auth.isLoggedIn);
   const successfulRegister = useSelector(state => state.auth.successful);
+  const message = useSelector(state => state.message.message);
 
   if (loggedIn){
     return <Navigate to="/project" />
-  }
-
-  if (successfulRegister){
-    return <Navigate to="/login" />
   }
 
   return (
@@ -72,39 +70,64 @@ const RegistrationPage = () => {
             <h1>Momento Registration</h1>
             </div>
             <form onSubmit={onSubmit}>
-            <div className="Username">
-            <i className="fas fa-user"></i>
-              <input type="text" placeholder="Username" className="name" value={username} onChange={(e) => setUsername(e.target.value)}/>
-            </div>
+              {!successfulRegister && (
+                <div>
+                  
+                  <div className="Username">
+                  <i className="fas fa-user"></i>
+                    <input type="text" placeholder="Username" className={message === "Username is already taken!" ? "name-invalid" : "name"} value={username} onChange={(e) => setUsername(e.target.value)}/>
+                  </div>
+                  
+                  {message === "Username is already taken!" && (
+                    <div className="alert-input">
+                      {message}
+                    </div>
+                  )}
 
-            <div className="FirstName">
-            <i className="fas fa-user"></i>
-              <input type="text" placeholder="First Name" className="name" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
-            </div>
+                  <div className="FirstName">
+                  <i className="fas fa-user"></i>
+                    <input type="text" placeholder="First Name" className="name" value={firstName} onChange={(e) => setFirstName(e.target.value)}/>
+                  </div>
 
-            <div className="LastName">
-            <i className="fas fa-user"></i>
-              <input type="text" placeholder="Last Name" className="name" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
-            </div>
+                  <div className="LastName">
+                  <i className="fas fa-user"></i>
+                    <input type="text" placeholder="Last Name" className="name" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+                  </div>
 
-            <div className="email">
-            <i className="fas fa-envelope"></i>
-              <input type="text" placeholder="Email" className="name" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)}/>
-            </div>
-          
-            <div className="password">
-            <i className="fas fa-lock"></i>
-              <input type="password" placeholder="Password" className="name" value={password} onChange={(e) => setPassword(e.target.value)} onBlur={verifyPassword}/>
-            </div>
+                  <div className="email">
+                  <i className="fas fa-envelope"></i>
+                    <input type="text" placeholder="Email" className={message === "An account with this email address already exists!" ? "name-invalid" : "name"} value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)}/>
+                  </div>
+                  
+                  {message === "An account with this email address already exists!" && (
+                    <div className="alert-input">
+                      {message}
+                    </div>
+                  )}
+                
+                  <div className="password">
+                  <i className="fas fa-lock"></i>
+                    <input type="password" placeholder="Password" className="name" value={password} onChange={(e) => setPassword(e.target.value)} onBlur={verifyPassword}/>
+                  </div>
 
-            <div className="confirmPassword">
-            <i className="fas fa-lock"></i>
-              <input type="password" placeholder="Confirm Password" className="name" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={verifyPassword}/>
-            </div>
+                  <div className="confirmPassword">
+                  <i className="fas fa-lock"></i>
+                    <input type="password" placeholder="Confirm Password" className="name" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={verifyPassword}/>
+                  </div>
 
-            <div className="loginRegister-button">
-            <button>Register</button>
-          </div></form>
+                  <div className="loginRegister-button">
+                  <button>Register</button>
+                </div>
+              </div>)}
+              {successfulRegister && (
+                <div>
+                  <div className="alert-success">
+                    <p>Registration successful!</p>
+                  </div>
+                  <Link to="/login">Proceed to login</Link>
+                </div>
+              )}
+            </form>
 
           
         </div>
