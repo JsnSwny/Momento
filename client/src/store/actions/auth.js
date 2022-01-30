@@ -38,6 +38,24 @@ export const register = (username, firstName, lastName, email, password) => (dis
         )
 }
 
+export const verifyUser = (token) => (dispatch) => {
+    return authService.verifyUser(token)
+        .then(
+            (response) => {
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: response.message,
+                });
+            },
+            (error) => {
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload:error.message,
+                });
+            }
+        )
+}
+
 export const login = (username, password) => (dispatch) => {
     return authService.login(username, password)
         .then(
