@@ -24,6 +24,8 @@ db.sequelize.sync();
 
 require("./routes/auth.routes")(app);
 require("./routes/user.routes")(app);
+require("./routes/project.routes")(app);
+require("./routes/page.routes")(app);
 
 app.get("/api", (req, res) => {
   res.json({ message: "Hello from server!" });
