@@ -10,7 +10,6 @@ import RegistrationPage from "./views/RegistrationPage";
 import VerificationPage from "./views/VerificationPage";
 
 const App = () => {
-    
   return (
     <Provider store={store}>
       <Router>

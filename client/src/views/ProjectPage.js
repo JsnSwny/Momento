@@ -5,7 +5,7 @@ import ProjectRightSidebar from "../components/project/ProjectRightSidebar";
 import CanvasTop from "../components/project/CanvasTop";
 
 const ProjectPage = () => {
-  const [selectedAction, setSelectedAction] = useState(false);
+  const [selectedAction, setSelectedAction] = useState("select");
   return (
     <div className="flex-container--between">
       <ProjectLeftSidebar />
@@ -14,7 +14,10 @@ const ProjectPage = () => {
           selectedAction={selectedAction}
           setSelectedAction={setSelectedAction}
         />
-        <Canvas selectedAction={selectedAction} />
+        <Canvas
+          selectedAction={selectedAction}
+          setSelectedAction={setSelectedAction}
+        />
       </div>
       <ProjectRightSidebar />
     </div>

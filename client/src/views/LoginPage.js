@@ -14,10 +14,10 @@ const LoginPage = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     dispatch(login(username, password));
-  }
+  };
   
-  const loggedIn = useSelector(state => state.auth.isLoggedIn);
-  const message = useSelector(state => state.message.message);
+  const loggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const message = useSelector((state) => state.message.message);
 
   if (loggedIn){
     return <Navigate to="/project" />
