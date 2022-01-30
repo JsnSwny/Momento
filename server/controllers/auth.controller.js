@@ -162,6 +162,31 @@ exports.verify = (req, res) => {
   }
 };
 
+exports.requestPwdChange = (req, res) => {
+  User.findOne({
+    where: {
+      emailAddress: req.body.emailAddress
+    }
+  })
+    .then(user => {
+      if (!user) {
+        return res.status(400).send({ message: "User with given email address does not exist" })
+      }
+
+      // generate a new token valid for 15 minutes
+      const token = jwt.sign({ emailAddress: user.emailAddress }, config.JWT_SECRET, {
+        expiresIn: 900 // 15 minutes
+      });
+
+      // generate a password reset link with the token above
+      const url = `http://localhost:3000/api/verifyPwdReset/${token}`
+
+      mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
+
+      return res.status(201).send({ message: `Sent a password reset link to ${req.body.emailAddress}` });
+    })
+};
+
 exports.verifyPwdReset = (req, res) => {
   const { token } = req.params;
 
@@ -204,36 +229,28 @@ exports.verifyPwdReset = (req, res) => {
   }
 };
 
-exports.passwordReset = (req, res) => {
-  User.findOne({
-    where: {
-      emailAddress: req.body.emailAddress
-    }
-  })
-    .then(user => {
-      if (!user) {
-        return res.status(400).send({ message: "User with given email address does not exist" })
-      }
 
-      // generate a new token valid for 15 minutes
-      const token = jwt.sign({ emailAddress: user.emailAddress }, config.JWT_SECRET, {
-        expiresIn: 900 // 15 minutes
-      });
-
-      // generate a password reset link with the token above
-      const url = `http://localhost:3001/api/verifyPwdReset/${token}`
-
-      mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
-
-      return res.status(201).send({ message: `Sent a password reset link to ${req.body.emailAddress}` });
-    })
-};
 
 exports.changePassword = (req, res) => {
+  // check if token is present
+  if (!req.body.token) {
+    return res.status(422).send({
+      message: "Token missing"
+    });
+  }
+
+  // Verify the token
+  let payload = null
+  try {
+    payload = jwt.verify(req.body.token, config.JWT_SECRET);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+
   try {
     User.findOne({
       where: {
-        emailAddress: req.body.emailAddress
+        emailAddress: payload.emailAddress
       }
     })
     .then(user => {
@@ -241,7 +258,7 @@ exports.changePassword = (req, res) => {
         return res.status(400).send({ message: "User does not exist" });
       }
 
-      var passwordHash = bcrypt.hashSync(req.body.passwordHash, 8)
+      var passwordHash = bcrypt.hashSync(req.body.password, 8)
 
       user.update({ passwordHash: passwordHash })
     })

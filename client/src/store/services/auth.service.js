@@ -3,7 +3,10 @@ import config from './config';
 export const authService = {
     login,
     register,
-    verifyUser
+    verifyUser,
+    verifyPwdReset,
+    changePassword,
+    requestPwdChange
 };
 
 function register(username, firstName, lastName, emailAddress, passwordHash) {
@@ -33,6 +36,50 @@ function verifyUser(token) {
     return fetch(`${config.apiUrl}/api/verify/${token}`, requestOptions)
         .then(handleResponse)
         .then(res => { return res })
+}
+
+function requestPwdChange(emailAddress) {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ emailAddress })
+    };
+
+    return fetch(`${config.apiUrl}/api/auth/passwordreset`, requestOptions)
+        .then(handleResponse)
+        .then(response => {
+            return response;
+        });
+}
+
+function verifyPwdReset(token) {
+    const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    return fetch(`${config.apiUrl}/api/verifyPwdReset/${token}`, requestOptions)
+        .then(handleResponse)
+        .then(res => { return res })
+}
+
+function changePassword(token, password) {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token, password })
+    };
+    return fetch(`${config.apiUrl}/api/auth/changePassword`, requestOptions)
+        .then(handleResponse)
+        .then((response) => {
+            return response;
+        });
 }
 
 function login(username, passwordHash) {

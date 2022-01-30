@@ -4,6 +4,7 @@ import {
     LOGIN_SUCCESS,
     LOGIN_FAILURE, 
     LOGOUT,
+    PWD_REQUEST_SUCCESS
  } from "../actions/types";
 
 const user = JSON.parse(localStorage.getItem("user"));
@@ -46,6 +47,11 @@ export default function (state = initialState, action) {
                 isLoggedIn: false,
                 user: null,
             };
+        case PWD_REQUEST_SUCCESS:
+            return {
+                ...state,
+                pwdReqSuccessful: true,
+            }
         default:
             return state;
     }

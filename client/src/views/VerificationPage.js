@@ -15,28 +15,25 @@ const VerificationPage = () => {
     const message = useSelector(state => state.message.message)
 
     return (
-    <div className="container">
-        {message === "Account verified" && (
-            <div>
-            <header className="jumbotron">
-            <h2>
-                <strong>Account confirmed!</strong>
-            </h2>
-            </header>
-            <Link to={"/login"}>You can login now</Link>
-            </div>
-        )}
-        {message !== "Account verified" && (
-            <div>
-            <header className="jumbotron">
-            <h2>
-                <strong>Invalid token or URL</strong>
-            </h2>
-            </header>
-            </div>
-        )}
-    </div>
-);
+        <div className="container">
+            {message === "Account verified" && (
+                <div>
+                    <header className="jumbotron">
+                        <h2><strong>Account confirmed!</strong></h2>
+                    </header>
+                    <Link to={"/login"}>You can login now</Link>
+                </div>
+            )}
+
+            {message !== "Account verified" && (
+                <div>
+                <header className="jumbotron">
+                <h2><strong>Invalid token or URL</strong></h2>
+                </header>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default VerificationPage;

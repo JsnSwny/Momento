@@ -8,6 +8,8 @@ import ProjectPage from "./views/ProjectPage";
 import LoginPage from "./views/LoginPage";
 import RegistrationPage from "./views/RegistrationPage";
 import VerificationPage from "./views/VerificationPage";
+import PasswordChange from "./views/PasswordChange";
+import RequestPasswordReset from "./views/RequestPasswordReset";
 
 const App = () => {
   return (
@@ -18,6 +20,8 @@ const App = () => {
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
           <Route path="/api/verify/:token" element={<VerificationPage />}></Route>
+          <Route path="/api/verifyPwdReset/:token" element={<PasswordChange />}></Route>
+          <Route path="/passwordreset" element={<RequestPasswordReset />}></Route>
         </Routes>
       </Router>
     </Provider>
