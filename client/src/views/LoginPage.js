@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/actions/auth";
 import { Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
+  
   const dispatch = useDispatch();
 
   const [username, setUsername] = useState("");
@@ -13,59 +15,67 @@ const LoginPage = () => {
     e.preventDefault();
     dispatch(login(username, password));
   };
+  
+  const loggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const message = useSelector((state) => state.message.message);
 
-  const auth = useSelector((state) => state.login.isAuthenticated);
-
-  if (auth) {
-    return <Navigate to="/project" />;
+  if (loggedIn){
+    return <Navigate to="/project" />
   }
 
   return (
-    <div className="main">
+    <div className="LoginRegistration">
       <div className="sub-main">
         <div>
           <div className="imgs">
             <div className="container-image">
-              {/* <img src={profile} alt="profile" className="profile"/> */}
+            <i className="far fa-user"></i>
             </div>
           </div>
 
           <div>
             <div className="title">
-              <h1>Momento Login</h1>
+            <h1>Momento Login</h1>
             </div>
             <form onSubmit={onSubmit}>
+
+            <div className="email">
+            <i className="fas fa-user"></i>
+              <input type="text" placeholder="Username" className={message === "User does not exist" ? "name-invalid" : "name"} value={username} onChange={(e) => setUsername(e.target.value)}/>
+            </div>
+
+            {message === "User does not exist" && (
               <div>
-                {/* <img src={email} alt = "email" className="email"/> */}
-                <input
-                  type="text"
-                  placeholder="user name"
-                  className="name"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
+                <div className="alert-input" role={alert}>
+                  {message}
+                </div>
               </div>
+            )}
 
-              <div className="second-input">
-                {/* <img src={pass} alt = "pass" className="email"/> */}
-                <input
-                  type="password"
-                  placeholder="password"
-                  className="name"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+            <div className="password">
+            <i className="fas fa-lock"></i>
+              <input type="password" placeholder="Password" className={message === "Invalid Password!" ? "name-invalid" : "name"} value={password} onChange={(e) => setPassword(e.target.value)}/>
+            </div>
+
+            {message === "Invalid Password!" && (
+              <div>
+                <div className="alert-input" role={alert}>
+                  {message}
+                </div>
               </div>
+            )}
 
-              <div className="login-button">
-                <button type="submit">Login</button>
-              </div>
-            </form>
-
+            <div className="loginRegister-button">
+            <button type="submit">Login</button>
+          </div></form>
+          
+          <ul></ul>
             <p className="link">
-              <a href="#">Forgot password ?</a> Or <a href="#">Sign up</a>
+              <a href="#">Forgot password ?</a> Or <li><Link to="/registration">Sign up</Link></li>
             </p>
-          </div>
+            <ul></ul>
+          
+        </div>
         </div>
       </div>
     </div>
