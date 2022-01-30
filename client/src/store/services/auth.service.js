@@ -2,7 +2,8 @@ import config from './config';
 
 export const authService = {
     login,
-    register
+    register,
+    verifyUser
 };
 
 function register(username, firstName, lastName, emailAddress, passwordHash) {
@@ -19,6 +20,19 @@ function register(username, firstName, lastName, emailAddress, passwordHash) {
         .then(response => {
             return response;
         });
+}
+
+function verifyUser(token) {
+    const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    return fetch(`${config.apiUrl}/api/verify/${token}`, requestOptions)
+        .then(handleResponse)
+        .then(res => { return res })
 }
 
 function login(username, passwordHash) {

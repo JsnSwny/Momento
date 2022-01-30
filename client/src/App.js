@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ProjectPage from "./views/ProjectPage";
 import LoginPage from "./views/LoginPage";
 import RegistrationPage from "./views/RegistrationPage";
+import VerificationPage from "./views/VerificationPage";
 
 const App = () => {
     
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/project" element={<ProjectPage />}></Route>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
+          <Route path="/api/verify/:token" element={<VerificationPage />}></Route>
         </Routes>
       </Router>
     </Provider>
