@@ -7,6 +7,7 @@ import { changePassword } from "../store/actions/auth";
 
 const PasswordChange = () => {
   const dispatch = useDispatch();
+  
   const token = window.location.pathname.split('/')[3]
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();

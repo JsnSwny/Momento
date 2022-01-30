@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/actions/auth";
 import { Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { CLEAR_MESSAGE } from "../store/actions/types";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch({
+      type: CLEAR_MESSAGE
+    })
+  }, []);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +63,7 @@ const LoginPage = () => {
               <input type="password" placeholder="Password" className={message === "Invalid Password!" ? "name-invalid" : "name"} value={password} onChange={(e) => setPassword(e.target.value)}/>
             </div>
 
-            {message === "Invalid Password!" && (
+            {message !== "User does not exist" && (
               <div>
                 <div className="alert-input" role={alert}>
                   {message}

@@ -1,11 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { requestPwdChange } from "../store/actions/auth";
+import { CLEAR_MESSAGE } from "../store/actions/types";
 
 const RequestPasswordReset = () => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch({
+      type: CLEAR_MESSAGE
+    })
+  }, []);
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 

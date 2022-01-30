@@ -2,15 +2,22 @@
 // import email from "./image/email.svg";
 // import pass from "./image/pass.svg";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { registerAuth } from "../store/actions/auth"
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { CLEAR_MESSAGE } from "../store/actions/types";
 
 const RegistrationPage = () => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch({
+      type: CLEAR_MESSAGE
+    })
+  }, []);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   
