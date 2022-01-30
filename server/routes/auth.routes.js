@@ -20,4 +20,10 @@ module.exports = function(app) {
     app.post("/api/auth/login", controller.login);
 
     app.get("/api/verify/:token", controller.verify);
+
+    app.post("/api/auth/passwordreset", controller.passwordReset);
+
+    app.get("/api/verifyPwdReset/:token", controller.verifyPwdReset);
+
+    app.post("/api/auth/changePassword", controller.changePassword);
 };

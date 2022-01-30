@@ -58,9 +58,9 @@ exports.register = (req, res) => {
     })
 
     // Email the user a verification link
-    const url = `http://localhost:3001/api/verify/${verificationToken}`
+    const url = `http://localhost:3000/api/verify/${verificationToken}`
 
-    mailer(req.body.emailAddress, req.body.firstName + " " + req.body.lastName, url);
+    mailer.verifyEmail(req.body.emailAddress, req.body.firstName + " " + req.body.lastName, url);
 
     return res.status(201).send({ message: `Sent a verification email to ${req.body.emailAddress}` });
 };
@@ -73,7 +73,7 @@ exports.login = (req, res) => {
     })
       .then(user => {
         if (!user) {
-          return res.status(404).send({ message: "User does not exist" });
+          return res.status(400).send({ message: "User does not exist" });
         }
   
         var passwordIsValid = bcrypt.compareSync(
@@ -119,7 +119,7 @@ exports.login = (req, res) => {
 };
 
 exports.verify = (req, res) => {
-  const { token } = req.params
+  const { token } = req.params;
 
   // check if token is present
   if (!token) {
@@ -156,6 +156,98 @@ exports.verify = (req, res) => {
 
     return res.status(200).send({
       message: "Account verified"
+    });
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+};
+
+exports.verifyPwdReset = (req, res) => {
+  const { token } = req.params;
+
+  // check if token is present
+  if (!token) {
+    return res.status(422).send({
+      message: "Token missing"
+    });
+  }
+
+  // verify the token
+  let payload = null
+  try {
+    payload = jwt.verify(token, config.JWT_SECRET);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+
+  // Find user with matching email address
+  try {
+    User.findOne({
+      where: {
+        emailAddress: payload.emailAddress
+      }
+    })
+    .then(user => {
+      if (!user) {
+        return res.status(404).send({
+          message: "User with this email address does not exist"
+        });
+      }
+
+      // send a successful response -> render the password reset form
+      return res.status(200).send({
+        message: "Password reset link verified"
+      })
+    })
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+};
+
+exports.passwordReset = (req, res) => {
+  User.findOne({
+    where: {
+      emailAddress: req.body.emailAddress
+    }
+  })
+    .then(user => {
+      if (!user) {
+        return res.status(400).send({ message: "User with given email address does not exist" })
+      }
+
+      // generate a new token valid for 15 minutes
+      const token = jwt.sign({ emailAddress: user.emailAddress }, config.JWT_SECRET, {
+        expiresIn: 900 // 15 minutes
+      });
+
+      // generate a password reset link with the token above
+      const url = `http://localhost:3001/api/verifyPwdReset/${token}`
+
+      mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
+
+      return res.status(201).send({ message: `Sent a password reset link to ${req.body.emailAddress}` });
+    })
+};
+
+exports.changePassword = (req, res) => {
+  try {
+    User.findOne({
+      where: {
+        emailAddress: req.body.emailAddress
+      }
+    })
+    .then(user => {
+      if (!user) {
+        return res.status(400).send({ message: "User does not exist" });
+      }
+
+      var passwordHash = bcrypt.hashSync(req.body.passwordHash, 8)
+
+      user.update({ passwordHash: passwordHash })
+    })
+
+    return res.status(200).send({
+      message: "Password successfully changed"
     });
   } catch (err) {
     return res.status(500).send(err);
