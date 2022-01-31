@@ -14,6 +14,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       passwordHash: {
         type: Sequelize.STRING
+      },
+      active: {
+        type: Sequelize.TINYINT
       }
     });
   
