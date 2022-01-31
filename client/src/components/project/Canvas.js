@@ -6,14 +6,14 @@ import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
 
-const Canvas = ({ selectedAction, setSelectedAction }) => {
+const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
   const [rectangles, setRectangles] = useState([]);
 
   const [textElements, setTextElements] = useState([]);
-  const stageRef = useRef();
+
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
