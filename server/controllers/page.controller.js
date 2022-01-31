@@ -76,6 +76,8 @@ exports.deletePage = (req, res) => {
 //Lock this function so that it can only be called once every 200ms per project
     pageLock.acquire(req.body.projectId, function (done) { 
 
+        console.log("DELETING...");
+
     //Find the project that the page is getting added to
     project.findOne({ where: { projectId: req.body.projectId } })
     .then(foundProject => {
@@ -113,28 +115,9 @@ exports.deletePage = (req, res) => {
                 res.status(500).send({ message: "Internal server error when deleting page" });
             }
 
-            page.findAndCountAll({ where: { projectId: foundProject.projectId } }).then(projectPages => { 
+            reorderProjectPages(foundProject.projectId);
 
-                //Adjust page numbers in the project accordingly
-                for (let i = 0; i < projectPages.count; i++) { 
-
-                    if (parseInt(projectPages.rows[i].pageNumber) > parseInt(req.body.pageNumber)) { 
-
-                        projectPages.rows[i].pageNumber = (parseInt(projectPages.rows[i].pageNumber) - 1).toString();
-
-                        projectPages.rows[i].save();
-                    }
-                }
-
-                res.status(200).send({ message: "success" });
-            }).catch(e => { 
-
-                console.log("Error finding page to be deleted: " + e.message);
-
-                res.status(500).send({ message: "Internal server error when deleting page" });
-            });
-
-            
+            res.status(200).send({ message: "success" });
 
         })
         .catch(e => { 
@@ -258,4 +241,38 @@ exports.editPage = (req, res) => {
 
                 res.status(500).send({ message: "Internal server error when editing page" });
             });
+};
+
+//Reorders pages in a project
+reorderProjectPages = async (projectId) => { 
+
+    pageLock.acquire(projectId, function (done) { 
+
+
+        page.findAndCountAll({ where: { projectId: projectId } }).then(projectPages => { 
+
+            projectPages.rows.sort((x, y) => (x - y));
+
+            //Adjust page numbers in the project accordingly
+            for (let i = 0; i < projectPages.count; i++) { 
+
+                projectPages.rows[i].pageNumber = i + 1;
+
+                projectPages.rows[i].save();
+            }
+
+        }).catch(e => { 
+
+            console.log("Error adjusting page numbers: " + e.message);
+
+        });
+
+        setTimeout(function () {
+            
+            done(); 
+          }, 200);
+    
+        }, function(err, ret) {
+            
+        }, {});
 };
