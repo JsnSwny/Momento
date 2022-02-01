@@ -20,29 +20,29 @@ res.status(200).send("Mod Content");
 
 exports.loadUserData = (req, res) => { 
 
-    // If user requesting somebody else's data
-    if (req.body.username) {
-        user.findOne({
-            where: {
-                username: req.body.username
-            }
-        }).then(user => {
-            if (!user || !user.active) {
-                return res.status(404).send({ message: "Page not found" });
-            }
-            return res.status(200).send({
-                username: user.username,
-                posts: []
-            })  
-        })
-    }
-    // If user requesting their own data
-    else if (req.userId == req.params.userId) {
+    if (req.userId == req.params.userId) {
     
         user.findOne({ where: { id: req.params.userId } }).then(foundUser => { 
 
             if (!foundUser) { 
                 return res.status(404).send({ message: "User not found" });
+            }
+            
+            // If user requesting somebody else's data
+            if (req.body.username != foundUser.username) {
+                user.findOne({
+                    where: {
+                        username: req.body.username
+                    }
+                }).then(user => {
+                    if (!user || !user.active) {
+                        return res.status(404).send({ message: "Page not found" });
+                    }
+                    return res.status(200).send({
+                        username: user.username,
+                        posts: []
+                    })  
+                })
             }
 
             project.findAndCountAll({ where: { ownerId: req.params.userId } }).then(userProjects => {

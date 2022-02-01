@@ -30,7 +30,7 @@ module.exports = function(app) {
     controller.adminBoard
     );
     
-  app.get(
+  app.post(
     "/api/user/:userId",
     [authJWT.verifyToken],
     controller.loadUserData
