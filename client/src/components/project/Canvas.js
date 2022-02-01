@@ -69,6 +69,20 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
   }, []);
 
     
+    var currentProjectData = {
+        projectId: -1,
+        ownerId: localStorage.getItem("user").id,
+        title: "",
+        description: "",
+        pageCount: 0
+    };
+
+    var currentPageData = {
+        pageId: -1,
+        pageNumber: -1,
+        pageData: ""
+    };
+    
     //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
     //Get this data from store.getState().user.userData, and store.getState().user.userData.projectList for a list of their projects (projectIds only)
     const loadUser = (userId) => {
@@ -76,6 +90,15 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
             loadUserData(userId, JSON.parse(localStorage.getItem("user")).accessToken)
           )
           .then(() => {
+              
+              //If the user has no projects, create a new one
+              if (store.getState().user.userData.projectList.length === 0) {
+                  
+                  createProject("New Project", "Project Description");
+              }
+              else { 
+                  loadProjectData(store.getState().user.userData.projectList[0]);
+              }
               
           })
           .catch(() => {
@@ -92,7 +115,18 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
         )
         .then(() => {
             
-            
+            currentProjectData = {
+                projectId: store.getState().project.newProjectId,
+                ownerId: localStorage.getItem("user").id,
+                title: title,
+                description: description,
+                pageCount: 0
+            };
+
+            //Add a new page to the project
+            addPage(currentProjectData.projectId, 1);
+
+            store.getState().user.userData.projectList.push(currentProjectData.projectId);
         })
         .catch(() => {
             
@@ -102,7 +136,6 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
     };
 
     //Returns information about the project (Title, Description, Page count)
-    //Get his data from store.getState().project.projectData
     const loadProjectData = (projectId) => { 
         
         dispatch(
@@ -110,7 +143,22 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
           )
           .then(() => {
             
+            currentProjectData = {
+                  projectId: projectId,
+                  ownerId: JSON.parse(localStorage.getItem("user")).id,
+                  title: store.getState().project.projectData.title,
+                  description: store.getState().project.projectData.description,
+                  pageCount: store.getState().project.projectData.pageCount
+              };
+
             
+            if (currentProjectData.pageCount > 0) {
+                loadPage(projectId, 1);
+            } else {
+                addPage(projectId, 1);
+            }
+
+              
           })
           .catch(() => {
             
@@ -141,6 +189,8 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
           )
           .then(() => {
             
+              currentProjectData.pageCount++;
+
               
           })
           .catch(() => {
@@ -165,18 +215,49 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
     };
 
     //Load a page from the project
-    //Access page  data from store.getState().project.pageData, and get the JSON of the page at store.getState().project.pageData.pageData
     const loadPage = (projectId, pageNumber) => { 
         dispatch(
             canvasLoadPage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
           )
           .then(() => {
             
-              console.log(store.getState().project.pageData.pageData);
-
+            currentPageData = {
+                pageId: store.getState().project.pageData.pageId,
+                pageNumber: store.getState().project.pageData.pageNumber,
+                pageData: store.getState().project.pageData.pageData
+            };
+              
+              //This is a kind of an awkward way to do this, but its the only way I could get it to work properly
               try {
                   
-                  //Display the page here using store.getState().project.pageData.pageData as the JSON
+                var loadingDiv = document.createElement('div');
+                
+                loadingDiv.setAttribute("id", "loadingContainer");
+                
+                loadingDiv.hidden = true;
+
+                document.body.insertBefore(loadingDiv, document.getElementsByClassName(".konva-container")[0]);
+
+                var loadingStage = Konva.Node.create(currentPageData.pageData, "loadingContainer");
+
+                var layers = loadingStage.getLayers();
+
+                for (let i = 0; i < layers.length; i++){
+                    
+                    var elements = layers[i].getChildren();
+
+                    for (let j = 0; j < elements.length; j++){
+                        
+                        console.log(elements[j]);
+
+                        if (elements[j].getType() === "Shape") {
+                            
+                            dispatch({ type: "ADD_ELEMENT", payload: elements[j].getAttrs() });
+                        }
+                    }
+                  }
+
+                  stageRef.current.add(new Konva.Layer());
                   
               } catch (e) { 
                   console.log("Failed to load page from JSON: " + e);
@@ -192,8 +273,7 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
     //save page to the server
     const savePage = (projectId, pageNumber) => { 
         
-        //Generate the JSON from konva and put it in here
-        var pageData = "";
+        var pageData = stageRef.current.toJSON();
 
         dispatch(
             canvasEditPage(projectId, pageNumber, pageData, JSON.parse(localStorage.getItem("user")).accessToken)
@@ -211,16 +291,21 @@ const Canvas = ({ selectedAction, setSelectedAction }) => {
     const autoSave = () => { 
         //Currently this just runs every time, but in future it should only run if a change has been made
         if (canvasHasBeenChanged || true) {
-            //Its also hard coded to only update the first page of the user's first project
-            savePage(store.getState().user.userData.projectList[0], 1);
+
+            if (currentProjectData.projectId !== -1 && currentPageData.pageNumber !== -1) {
+            
+                savePage(currentProjectData.projectId, currentPageData.pageNumber);
+            }
 
             canvasHasBeenChanged = false;
         }
     };
     
     //I dont know if this is the best way to do this, but it works for now
-    window.onpageshow = function () {
+    window.onload = function () {
         
+        //localStorage.removeItem("user");
+
         loadUser(JSON.parse(localStorage.getItem("user")).id);
 
         setInterval(autoSave, 5000);

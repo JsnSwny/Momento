@@ -20,7 +20,7 @@ export const newProject = (projectTitle, projectDescription, authToken) => (disp
                 console.log("Project created");
                 dispatch({
                     type: PROJECT_CREATE_SUCCESS,
-                    payload: { username: response },
+                    payload: { newProjectId: response.projectId },
                 });
 
                 return Promise.resolve();
@@ -49,7 +49,7 @@ export const loadProject = (projectId, authToken) => (dispatch) => {
                 console.log("Project loaded");
                 dispatch({
                     type: PROJECT_LOAD_SUCCESS,
-                    payload: { username: response },
+                    payload: { projectData: response },
                 });
 
                 return Promise.resolve();
@@ -78,7 +78,6 @@ export const editProject = (projectId, newTitle, newDescription, authToken) => (
                 console.log("Project edited");
                 dispatch({
                     type: PROJECT_EDIT_SUCCESS,
-                    payload: { username: response },
                 });
 
                 return Promise.resolve();

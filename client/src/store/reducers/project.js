@@ -29,7 +29,7 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                newProjectId: payload,
+                newProjectId: payload.newProjectId,
         };
     
         case PROJECT_CREATE_FAILURE:
@@ -54,7 +54,7 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                projectData: payload,
+                projectData: payload.projectData,
         };
     
         case PROJECT_LOAD_FAILURE:
