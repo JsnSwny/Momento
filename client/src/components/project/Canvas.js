@@ -151,7 +151,8 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                   pageCount: store.getState().project.projectData.pageCount
               };
 
-            
+            store.getState().project.projectData.projectId = projectId;
+
             if (currentProjectData.pageCount > 0) {
                 loadPage(projectId, 1);
             } else {
@@ -191,7 +192,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             
               currentProjectData.pageCount++;
 
-              
+              loadPage(projectId, currentProjectData.pageCount);
           })
           .catch(() => {
             
@@ -248,19 +249,17 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
 
                     for (let j = 0; j < elements.length; j++){
                         
-                        console.log(elements[j]);
-
-                        if (elements[j].getType() === "Shape") {
+                        if (elements[j] != undefined) {
+                            if (elements[j].getType() === "Shape") {
                             
-                            dispatch({ type: "ADD_ELEMENT", payload: elements[j].getAttrs() });
+                                dispatch({ type: "ADD_ELEMENT", payload: elements[j].getAttrs() });
+                            }
                         }
                     }
-                  }
-
-                  stageRef.current.add(new Konva.Layer());
+                }
                   
               } catch (e) { 
-                  console.log("Failed to load page from JSON: " + e);
+                  console.log("Failed to load page from JSON: " + e + "\n" + currentPageData.pageData);
               }
               
           })
@@ -273,19 +272,24 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     //save page to the server
     const savePage = (projectId, pageNumber) => { 
         
-        var pageData = stageRef.current.toJSON();
+        try {
+            var pageData = stageRef.current.toJSON();
 
-        dispatch(
-            canvasEditPage(projectId, pageNumber, pageData, JSON.parse(localStorage.getItem("user")).accessToken)
-          )
-          .then(() => {
-            
-              
-          })
-          .catch(() => {
-            
-            console.log("Error saving page");
-          })
+            dispatch(
+                canvasEditPage(projectId, pageNumber, pageData, JSON.parse(localStorage.getItem("user")).accessToken)
+              )
+              .then(() => {
+                
+                  
+              })
+              .catch(() => {
+                
+                console.log("Error saving page");
+              })
+        }
+        catch (e) {
+            console.log("Error converting canvas to JSON: " + e);
+        }
     };
     
     const autoSave = () => { 
