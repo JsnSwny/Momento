@@ -31,8 +31,10 @@ const CanvasActions = ({ selectedAction, setSelectedAction }) => {
         }`}
         icon={faCommentAlt}
       />
+      {/* <input type="file" onChange={(e) => console.log(e.target.value)} /> */}
       <FontAwesomeIcon
         onClick={() => setSelectedAction("image")}
+        onChange={(e) => console.log(e.target.value)}
         className={`canvas-actions__icon ${
           selectedAction == "image" ? "active" : ""
         }`}
