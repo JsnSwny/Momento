@@ -226,6 +226,7 @@ const TextElement = ({
             }
             return newBox;
           }}
+          ignoreStroke={true}
           padding={5}
           enabledAnchors={["middle-left", "middle-right"]}
         />

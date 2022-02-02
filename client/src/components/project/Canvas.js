@@ -25,9 +25,14 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
       x,
       y,
       fontSize: 24,
+      fontStyle: "normal",
+      fontFamily: "Arial, sans-serif",
       fill: "#000000",
       width: 200,
       elType: "Text",
+      strokeWidth: 0,
+      strokeScaleEnabled: false,
+      rotation: 0,
     };
     dispatch({ type: "ADD_ELEMENT", payload: obj });
   };

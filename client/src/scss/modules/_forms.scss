@@ -1,0 +1,27 @@
+.form {
+  &__control {
+    &:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+  &__label {
+    display: block;
+    font-weight: bold;
+  }
+  &__input {
+    display: block;
+    width: 100%;
+    border: 1px solid darken($gray, 10%);
+    border-radius: 5px;
+    padding: 0.5rem 0.5rem;
+    &:focus {
+      outline: none;
+      border: 1px solid $teal;
+    }
+    margin-top: 0.5rem;
+  }
+}
+
+textarea {
+  font-family: $base-font-family;
+}

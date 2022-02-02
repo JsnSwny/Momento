@@ -1,0 +1,43 @@
+.modal-container {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  left: 0;
+  margin-top: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  @extend .modal;
+  width: 400px;
+  padding: 1rem 2rem;
+  .heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .fa-times {
+      cursor: pointer;
+    }
+  }
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    .btn-3 {
+      font-size: 14px;
+    }
+  }
+  hr {
+    height: 1px;
+    background-color: $gray;
+    border: none;
+    margin: 1rem -2rem;
+  }
+}
