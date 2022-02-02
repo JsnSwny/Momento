@@ -16,5 +16,7 @@ config.DB_PASSWORD=process.env.DB_PASSWORD;
 config.JWT_SECRET=process.env.JWT_SECRET;
 config.SMTP_USER=process.env.SMTP_USER;
 config.SMTP_SECRET=process.env.SMTP_SECRET;
+config.AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
+config.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 
 module.exports = config;
