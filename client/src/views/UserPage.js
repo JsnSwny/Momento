@@ -136,7 +136,7 @@ const UserPage = () => {
                 <h2 className="name">{name}</h2>
                 <br/>
                 <span className="userBio">
-                  Nie pytają cię o imię walcząc z ostrym cieniem mgły
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </span>
               </div>
             </section>
