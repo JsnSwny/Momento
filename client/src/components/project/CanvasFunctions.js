@@ -141,6 +141,8 @@ const loadPage = (pageNumber) => (dispatch) => {
             nodesToRemove[i].destroy();
         }
           
+        dispatch({ type: "CLEAR_ELEMENTS"});
+          
           if (store.getState().project.currentPageData.pageData != null && store.getState().project.currentPageData.pageData !== "") {
           
                 try {

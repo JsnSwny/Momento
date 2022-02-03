@@ -17,6 +17,8 @@ export default function (state = initialState, action) {
 
     switch (type) {
         case USER_LOAD_SUCCESS:
+
+            console.log(payload.userData);
             return {
                 ...state,
                 operationSuccess: true,

@@ -12,7 +12,7 @@ const UserPage = () => {
     let id = JSON.parse(localStorage.getItem("user")).id;
     let accessToken = JSON.parse(localStorage.getItem("user")).accessToken;
     dispatch(
-      loadUserData(id, accessToken, user)
+      loadUserData(id, user)
     )
   });
 

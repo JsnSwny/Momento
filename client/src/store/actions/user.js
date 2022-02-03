@@ -6,9 +6,9 @@ import {
 
 } from "./types";
 
-export const loadUserData = (userId) => (dispatch) => { 
+export const loadUserData = (userId, username = -1) => (dispatch) => { 
 
-    return userService.loadUserData(userId, JSON.parse(localStorage.getItem("user")).accessToken)
+    return userService.loadUserData(userId, username, JSON.parse(localStorage.getItem("user")).accessToken)
     .then(
         (response) => {
             console.log("User data loaded");
