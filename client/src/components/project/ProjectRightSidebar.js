@@ -107,7 +107,7 @@ const ProjectRightSidebar = () => {
                 <label>Width</label>
                 <input
                   type="number"
-                  value={selectedElement?.width}
+                  value={selectedElement?.width.toFixed(2)}
                   onChange={(e) => {
                     dispatch(
                       updateElement(selectedElement?.id, {

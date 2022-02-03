@@ -34,10 +34,15 @@ export default (state = initialState, action) => {
         ),
       };
     case "REORDER_ELEMENTS":
-      console.log(action.payload);
       return {
         ...state,
         elements: action.payload,
+      };
+    case "CLEAR_ELEMENTS":
+      return {
+        ...state,
+        elements: [],
+        selectedElement: null,
       };
     default:
       return state;
@@ -63,4 +68,8 @@ export const deleteElement = (id) => ({
 export const reorderElements = (items) => ({
   type: "REORDER_ELEMENTS",
   payload: items,
+});
+
+export const clearElements = (items) => ({
+  type: "CLEAR_ELEMENTS",
 });
