@@ -25,8 +25,11 @@ const LoginPage = () => {
   const loggedIn = useSelector((state) => state.auth.isLoggedIn);
   const message = useSelector((state) => state.message.message);
 
-  if (loggedIn){
-    return <Navigate to="/project" />
+    if (loggedIn) {
+      
+        //This way the onload function runs in the canvas script
+        return window.location.href = "/project";
+    //return <Navigate to="/project" />
   }
 
   return (

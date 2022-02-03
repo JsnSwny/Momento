@@ -11,9 +11,9 @@ import {
     PAGE_EDIT_FAILURE,
 } from "./types";
 
-export const canvasAddPage = (projectId, pageNumber, authToken) => (dispatch) => {
+export const canvasAddPage = (projectId, pageNumber) => (dispatch) => {
 
-    return canvasService.addPage(projectId, pageNumber, authToken)
+    return canvasService.addPage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Page added");
@@ -40,8 +40,8 @@ export const canvasAddPage = (projectId, pageNumber, authToken) => (dispatch) =>
         )
 };
 
-export const canvasDeletePage = (projectId, pageNumber, authToken) => (dispatch) => {
-    return canvasService.deletePage(projectId, pageNumber, authToken)
+export const canvasDeletePage = (projectId, pageNumber) => (dispatch) => {
+    return canvasService.deletePage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Page deleted");
@@ -67,8 +67,8 @@ export const canvasDeletePage = (projectId, pageNumber, authToken) => (dispatch)
         )
 };
 
-export const canvasLoadPage = (projectId, pageNumber, authToken) => (dispatch) => {
-    return canvasService.loadPage(projectId, pageNumber, authToken)
+export const canvasLoadPage = (projectId, pageNumber) => (dispatch) => {
+    return canvasService.loadPage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Page loaded");
@@ -95,8 +95,8 @@ export const canvasLoadPage = (projectId, pageNumber, authToken) => (dispatch) =
         )
 };
 
-export const canvasEditPage = (projectId, pageNumber, newPageData, authToken) => (dispatch) => {
-    return canvasService.editPage(projectId, pageNumber, newPageData, authToken)
+export const canvasEditPage = (projectId, pageNumber, newPageData) => (dispatch) => {
+    return canvasService.editPage(projectId, pageNumber, newPageData, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Page saved");

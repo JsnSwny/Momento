@@ -12,9 +12,9 @@ import {
 
 } from "./types";
 
-export const newProject = (projectTitle, projectDescription, authToken) => (dispatch) => {
+export const newProject = (projectTitle, projectDescription) => (dispatch) => {
 
-    return projectService.createProject(projectTitle, projectDescription, authToken)
+    return projectService.createProject(projectTitle, projectDescription, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Project created");
@@ -41,9 +41,9 @@ export const newProject = (projectTitle, projectDescription, authToken) => (disp
         )
 };
 
-export const loadProject = (projectId, authToken) => (dispatch) => {
+export const loadProject = (projectId) => (dispatch) => {
 
-    return projectService.loadProject(projectId, authToken)
+    return projectService.loadProject(projectId, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Project loaded");
@@ -70,9 +70,9 @@ export const loadProject = (projectId, authToken) => (dispatch) => {
         )
 };
 
-export const editProject = (projectId, newTitle, newDescription, authToken) => (dispatch) => {
+export const editProject = (projectId, newTitle, newDescription) => (dispatch) => {
 
-    return projectService.editProject(projectId, newTitle, newDescription, authToken)
+    return projectService.editProject(projectId, newTitle, newDescription, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Project edited");

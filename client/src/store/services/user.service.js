@@ -4,7 +4,7 @@ export const userService = {
     loadUserData
 };
 
-function loadUserData(userId, authToken, username) { 
+function loadUserData(userId, authToken) { 
 
     const requestOptions = {
         method: 'POST',
@@ -12,7 +12,7 @@ function loadUserData(userId, authToken, username) {
             'Content-Type': 'application/json',
             "x-access-token": authToken
         },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ userId })
     };
 
     return fetch(`${config.apiUrl}/api/user/${userId}`, requestOptions)

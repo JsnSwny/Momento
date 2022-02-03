@@ -6,9 +6,9 @@ import {
 
 } from "./types";
 
-export const loadUserData = (userId, authToken, username) => (dispatch) => { 
+export const loadUserData = (userId) => (dispatch) => { 
 
-    return userService.loadUserData(userId, authToken, username)
+    return userService.loadUserData(userId, JSON.parse(localStorage.getItem("user")).accessToken)
     .then(
         (response) => {
             console.log("User data loaded");
@@ -16,7 +16,7 @@ export const loadUserData = (userId, authToken, username) => (dispatch) => {
                 type: USER_LOAD_SUCCESS,
                 payload: { userData: response },
             });
-
+            
             return Promise.resolve();
         },
         (error) => {

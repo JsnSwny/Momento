@@ -100,6 +100,7 @@ export default function (state = initialState, action) {
         };
     
         case PAGE_ADD_SUCCESS:
+            state.currentProjectData.pageCount++;
             return {
                 ...state,
                 operationSuccess: true,
