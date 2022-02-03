@@ -34,7 +34,7 @@ exports.createPage = (req, res) => {
                 })
                     .then(newPage => {
 
-                        res.status(200).send({ message: "success" });
+                        res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData });
             
                     })
                     .catch(e => { 

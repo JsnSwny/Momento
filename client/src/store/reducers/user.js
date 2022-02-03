@@ -5,6 +5,11 @@ import {
 
 const initialState = {
     operationSuccess: false,
+    currentUserData: {
+        userId: -1,
+        username: "",
+        projectList: []
+    },
   };
 
 export default function (state = initialState, action) {
@@ -16,6 +21,11 @@ export default function (state = initialState, action) {
                 ...state,
                 operationSuccess: true,
                 userData: payload.userData,
+                currentUserData: {
+                    userId: payload.userData.userId,
+                    username: payload.userData.username,
+                    projectList: payload.userData.projectList
+                }
         };
     
         case USER_LOAD_FAILURE:

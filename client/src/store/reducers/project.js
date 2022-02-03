@@ -19,6 +19,18 @@ import {
 
 const initialState = {
     operationSuccess: false,
+    currentProjectData: {
+        projectId: -1,
+        ownerId: localStorage.getItem("user").id,
+        title: "",
+        description: "",
+        pageCount: 0
+    },
+    currentPageData: {
+        pageId: -1,
+        pageNumber: -1,
+        pageData: ""
+    },
   };
 
 export default function (state = initialState, action) {
@@ -29,7 +41,13 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                newProjectId: payload.newProjectId,
+                currentProjectData: {
+                    projectId: payload.newProjectId,
+                    ownerId: localStorage.getItem("user").id,
+                    title: payload.title,
+                    description: payload.description,
+                    pageCount: 0
+                },
         };
     
         case PROJECT_CREATE_FAILURE:
@@ -54,7 +72,13 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                projectData: payload.projectData,
+                currentProjectData: {
+                    projectId: payload.projectData.projectId,
+                    ownerId: localStorage.getItem("user").id,
+                    title: payload.projectData.title,
+                    description: payload.projectData.description,
+                    pageCount: payload.projectData.pageCount
+                },
         };
     
         case PROJECT_LOAD_FAILURE:
@@ -79,7 +103,11 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                newPageNumber: payload,
+                currentPageData: {
+                    pageId: payload.pageNumber,
+                    pageNumber: payload.pageNumber,
+                    pageData: payload.pageData
+                }
             };
 
         case PAGE_ADD_FAILURE:
@@ -104,7 +132,11 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: true,
-                pageData: payload.pageData,
+                currentPageData: {
+                    pageId: payload.pageData.pageNumber,
+                    pageNumber: payload.pageData.pageNumber,
+                    pageData: payload.pageData.pageData
+                }
         };
     
         case PAGE_LOAD_FAILURE:

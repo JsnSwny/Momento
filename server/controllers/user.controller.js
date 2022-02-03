@@ -18,35 +18,36 @@ exports.moderatorBoard = (req, res) => {
 res.status(200).send("Mod Content");
 };
 
-exports.loadUserData = (req, res) => { 
+exports.loadUserData = (req, res) => {
 
-    if (req.userId == req.params.userId) {
+    // If user requesting somebody else's data
+    if (req.body.username) {
+        user.findOne({
+            where: {
+                username: req.body.username
+            }
+        }).then(user => {
+            if (!user || !user.active) {
+                return res.status(404).send({ message: "Page not found" });
+            }
+            return res.status(200).send({
+                username: user.username,
+                posts: []
+            })  
+        })
+    }
+    // If user requesting their own data
+    else if (req.userId == req.params.userId) {
     
         user.findOne({ where: { id: req.params.userId } }).then(foundUser => { 
 
             if (!foundUser) { 
                 return res.status(404).send({ message: "User not found" });
             }
-            
-            // If user requesting somebody else's data
-            if (req.body.username != foundUser.username) {
-                user.findOne({
-                    where: {
-                        username: req.body.username
-                    }
-                }).then(user => {
-                    if (!user || !user.active) {
-                        return res.status(404).send({ message: "Page not found" });
-                    }
-                    return res.status(200).send({
-                        username: user.username,
-                        posts: []
-                    })  
-                })
-            }
 
             project.findAndCountAll({ where: { ownerId: req.params.userId } }).then(userProjects => {
 
+                var userData = { userId: foundUser.userId, username: foundUser.username, projectList: [] };
                 //var userData = { userId: foundUser.userId, username: foundUser.username, projectList: [] };
 
                 var userData = {
@@ -61,6 +62,7 @@ exports.loadUserData = (req, res) => {
                 }
 
                 for (let i = 0; i < userProjects.count; i++) { 
+
                     userData.projectList.push(userProjects.rows[i].projectId);
                 }
 

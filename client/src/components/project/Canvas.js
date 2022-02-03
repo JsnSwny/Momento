@@ -68,23 +68,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
-    
-    var currentProjectData = {
-        projectId: -1,
-        ownerId: localStorage.getItem("user").id,
-        title: "",
-        description: "",
-        pageCount: 0
-    };
-
-    var currentPageData = {
-        pageId: -1,
-        pageNumber: -1,
-        pageData: ""
-    };
-    
     //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
-    //Get this data from store.getState().user.userData, and store.getState().user.userData.projectList for a list of their projects (projectIds only)
     const loadUser = (userId) => {
         store.dispatch(
             loadUserData(userId, JSON.parse(localStorage.getItem("user")).accessToken)
@@ -92,12 +76,12 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
           .then(() => {
               
               //If the user has no projects, create a new one
-              if (store.getState().user.userData.projectList.length === 0) {
+              if (store.getState().user.currentUserData.projectList.length === 0) {
                   
                   createProject("New Project", "Project Description");
               }
               else { 
-                  loadProjectData(store.getState().user.userData.projectList[0]);
+                  loadProjectData(store.getState().user.currentUserData.projectList[0]);
               }
               
           })
@@ -114,19 +98,11 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             newProject(title, description, JSON.parse(localStorage.getItem("user")).accessToken)
         )
         .then(() => {
-            
-            currentProjectData = {
-                projectId: store.getState().project.newProjectId,
-                ownerId: localStorage.getItem("user").id,
-                title: title,
-                description: description,
-                pageCount: 0
-            };
 
             //Add a new page to the project
-            addPage(currentProjectData.projectId, 1);
+            addPage(store.getState().project.currentProjectData.projectId, 1);
 
-            store.getState().user.userData.projectList.push(currentProjectData.projectId);
+            store.getState().user.userData.projectList.push(store.getState().project.currentProjectData.projectId);
         })
         .catch(() => {
             
@@ -142,18 +118,10 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             loadProject(projectId, JSON.parse(localStorage.getItem("user")).accessToken)
           )
           .then(() => {
-            
-            currentProjectData = {
-                  projectId: projectId,
-                  ownerId: JSON.parse(localStorage.getItem("user")).id,
-                  title: store.getState().project.projectData.title,
-                  description: store.getState().project.projectData.description,
-                  pageCount: store.getState().project.projectData.pageCount
-              };
 
-            store.getState().project.projectData.projectId = projectId;
+            store.getState().project.currentProjectData.projectId = projectId;
 
-            if (currentProjectData.pageCount > 0) {
+            if (store.getState().project.currentProjectData.pageCount > 0) {
                 loadPage(projectId, 1);
             } else {
                 addPage(projectId, 1);
@@ -190,9 +158,9 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
           )
           .then(() => {
             
-              currentProjectData.pageCount++;
+            store.getState().project.currentProjectData.pageCount++;
 
-              loadPage(projectId, currentProjectData.pageCount);
+              loadPage(projectId, store.getState().project.currentProjectData.pageCount);
           })
           .catch(() => {
             
@@ -221,45 +189,50 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             canvasLoadPage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
           )
           .then(() => {
-            
-            currentPageData = {
-                pageId: store.getState().project.pageData.pageId,
-                pageNumber: store.getState().project.pageData.pageNumber,
-                pageData: store.getState().project.pageData.pageData
-            };
               
-              //This is a kind of an awkward way to do this, but its the only way I could get it to work properly
-              try {
+              if (store.getState().project.currentPageData.pageData != null && store.getState().project.currentPageData.pageData !== "") {
+              
+                    try {
+
+                      var data = JSON.parse(store.getState().project.currentPageData.pageData);
                   
-                var loadingDiv = document.createElement('div');
-                
-                loadingDiv.setAttribute("id", "loadingContainer");
-                
-                loadingDiv.hidden = true;
+                      stageRef.current.setAttrs(data[0]);
 
-                document.body.insertBefore(loadingDiv, document.getElementsByClassName(".konva-container")[0]);
+                      var configureNode = (currentNode) => {
 
-                var loadingStage = Konva.Node.create(currentPageData.pageData, "loadingContainer");
+                          if (currentNode.getType() === "Shape") {
 
-                var layers = loadingStage.getLayers();
-
-                for (let i = 0; i < layers.length; i++){
-                    
-                    var elements = layers[i].getChildren();
-
-                    for (let j = 0; j < elements.length; j++){
-                        
-                        if (elements[j] != undefined) {
-                            if (elements[j].getType() === "Shape") {
-                            
-                                dispatch({ type: "ADD_ELEMENT", payload: elements[j].getAttrs() });
+                            if (currentNode.getAttrs()?.name === undefined) {
+                                
+                                dispatch({ type: "ADD_ELEMENT", payload: currentNode.getAttrs() });
+                                
                             }
-                        }
-                    }
-                }
+
+                              if (currentNode.getClassName() === "Image") {
+                            
+                                  //Load image
+                              }
+                        
+                          } else {
+
+                              for (let i = 0; i < currentNode.children.length; i++) {
+
+
+                                  configureNode(currentNode.children[i]);
+                              }
+                          }
+                      };
                   
-              } catch (e) { 
-                  console.log("Failed to load page from JSON: " + e + "\n" + currentPageData.pageData);
+                      for (let i = 0; i < data[1].length; i++) {
+                    
+                          var newNode = Konva.Node.create(data[1][i]);
+
+                          configureNode(newNode);
+                      }
+
+                  } catch (e) {
+                      console.log("Failed to load page from JSON: " + e + "\n" + store.getState().project.currentPageData.pageData);
+                  }
               }
               
           })
@@ -273,10 +246,25 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     const savePage = (projectId, pageNumber) => { 
         
         try {
-            var pageData = stageRef.current.toJSON();
+            
+            var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
+
+            var children = stageRef.current.getChildren()[0].getChildren();
+
+            console.log("Children: " + children.length);
+
+            for (let i = 0; i < children.length; i++) {
+
+                pageData[1].push(children[i].toJSON());
+
+                if (children[i].getClassName() === "Image") {
+                    
+                    //Save image
+                }
+            }
 
             dispatch(
-                canvasEditPage(projectId, pageNumber, pageData, JSON.parse(localStorage.getItem("user")).accessToken)
+                canvasEditPage(projectId, pageNumber, JSON.stringify(pageData), JSON.parse(localStorage.getItem("user")).accessToken)
               )
               .then(() => {
                 
@@ -286,6 +274,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                 
                 console.log("Error saving page");
               })
+              
         }
         catch (e) {
             console.log("Error converting canvas to JSON: " + e);
@@ -296,9 +285,9 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
         //Currently this just runs every time, but in future it should only run if a change has been made
         if (canvasHasBeenChanged || true) {
 
-            if (currentProjectData.projectId !== -1 && currentPageData.pageNumber !== -1) {
+            if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
             
-                savePage(currentProjectData.projectId, currentPageData.pageNumber);
+                savePage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber);
             }
 
             canvasHasBeenChanged = false;
@@ -306,7 +295,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     };
     
     //I dont know if this is the best way to do this, but it works for now
-    window.onload = function () {
+    window.onpageshow = function () {
         
         //localStorage.removeItem("user");
 
