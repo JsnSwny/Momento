@@ -12,9 +12,6 @@ const PageForm = ({ setOpen }) => {
     e.preventDefault();
     };
     
-  //Add to button later
-  //onClick={ dispatch(canvasFunctions.addPage(store.getState().project.currentProjectData.pageCount + 1)) }
-    
   return (
     <form onSubmit={onSubmit} className="form">
       <div className="form__control">
@@ -39,7 +36,7 @@ const PageForm = ({ setOpen }) => {
       </div>
       <hr />
       <div className="button-container">
-        <button className="btn" type="submit" value="Add Page">
+        <button className="btn" type="submit" value="Add Page" onClick={ dispatch(canvasFunctions.addPage(store.getState().project.currentProjectData.pageCount + 1)) }>
           Add Page
         </button>
       </div>
