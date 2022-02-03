@@ -21,7 +21,7 @@ const initialState = {
     operationSuccess: false,
     currentProjectData: {
         projectId: -1,
-        ownerId: localStorage.getItem("user").id,
+        ownerId: -1,
         title: "",
         description: "",
         pageCount: 0
