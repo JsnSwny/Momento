@@ -26,4 +26,6 @@ module.exports = function(app) {
     app.get("/api/verifyPwdReset/:token", controller.verifyPwdReset);
 
     app.post("/api/auth/changePassword", controller.changePassword);
+
+    app.post("/api/auth/refreshToken", controller.refreshToken);
 };
