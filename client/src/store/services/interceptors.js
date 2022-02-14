@@ -19,7 +19,7 @@ const setup = (store) => {
     const { dispatch } = store;
     axiosInstance.interceptors.response.use(
         (res) => {
-            return res;
+            return res.data;
         },
         async (err) => {
             const originalConfig = err.config;

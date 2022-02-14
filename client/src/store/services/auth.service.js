@@ -48,10 +48,10 @@ function login(username, passwordHash) {
         passwordHash
     })
     .then(user => {
-        if (user.data.accessToken) {
-            tokenService.setUser(user.data);
+        if (user.accessToken) {
+            tokenService.setUser(user);
         }
-        return user.data;
+        return user;
     });
 }
 

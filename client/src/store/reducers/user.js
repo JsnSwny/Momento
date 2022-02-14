@@ -18,15 +18,15 @@ export default function (state = initialState, action) {
     switch (type) {
         case USER_LOAD_SUCCESS:
 
-            console.log(payload.userData.data);
+            console.log(payload.userData);
             return {
                 ...state,
                 operationSuccess: true,
                 userData: payload.userData,
                 currentUserData: {
-                    userId: payload.userData.data.userId,
-                    username: payload.userData.data.username,
-                    projectList: payload.userData.data.projectList
+                    userId: payload.userData.userId,
+                    username: payload.userData.username,
+                    projectList: payload.userData.projectList
                 }
         };
     
