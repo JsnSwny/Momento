@@ -1,35 +1,11 @@
-import config from './config';
+import api from "./api.axios";
 
 export const userService = {
     loadUserData
 };
 
-function loadUserData(userId, username, authToken) { 
+function loadUserData(userId, username) { 
+    let requestOptions = username === -1 ? { userId } : { userId, username };
 
-    var requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            "x-access-token": authToken
-        }
-    };
-
-    requestOptions.body = username === -1 ? JSON.stringify({ userId }) : JSON.stringify({ userId, username });
-
-    return fetch(`${config.apiUrl}/api/user/${userId}`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
-}
-
-function handleResponse(response) {
-    return response.text().then(text => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-
-            const error = (data && data.message) || response.statusText;
-            return Promise.reject(error);
-        }
-
-        return data;
-    });
+    return api.post(`/user/${userId}`, requestOptions);
 }

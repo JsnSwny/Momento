@@ -1,4 +1,4 @@
-import config from './config';
+import api from "./api.axios";
 
 export const canvasService = {
     addPage,
@@ -7,78 +7,28 @@ export const canvasService = {
     editPage
 };
 
-function addPage(projectId, pageNumber, authToken) { 
-
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            "x-access-token": authToken
-        },
-        body: JSON.stringify({ projectId: projectId, newPageNumber: pageNumber })
-    };
-
-    return fetch(`${config.apiUrl}/api/page`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
+function addPage(projectId, newPageNumber) { 
+    return api.post("/page", {
+        projectId,
+        newPageNumber
+    })
 }
 
-function deletePage(projectId, pageNumber, authToken) { 
-
-    const requestOptions = {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            "x-access-token": authToken
-        },
-        body: JSON.stringify({ projectId: projectId, pageNumber: pageNumber })
-    };
-
-    return fetch(`${config.apiUrl}/api/page`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
+function deletePage(projectId, pageNumber) { 
+    return api.delete("/page", {
+        projectId,
+        pageNumber
+    })
 }
 
-function loadPage(projectId, pageNumber, authToken) { 
-
-    const requestOptions = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            "x-access-token": authToken
-        }
-    };
-
-    return fetch(`${config.apiUrl}/api/page/${projectId}/${pageNumber}`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
+function loadPage(projectId, pageNumber) { 
+    return api.get(`/page/${projectId}/${pageNumber}`)
 }
 
-function editPage(projectId, pageNumber, newPageData, authToken) { 
-
-    const requestOptions = {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            "x-access-token": authToken
-        },
-        body: JSON.stringify({ projectId: projectId, pageNumber: pageNumber, newPageData: newPageData })
-    };
-
-    return fetch(`${config.apiUrl}/api/page`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
-}
-
-function handleResponse(response) {
-    return response.text().then(text => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-
-            const error = (data && data.message) || response.statusText;
-            return Promise.reject(error);
-        }
-
-        return data;
-    });
+function editPage(projectId, pageNumber, newPageData) { 
+    return api.put("/page", {
+        projectId,
+        pageNumber,
+        newPageData
+    })
 }

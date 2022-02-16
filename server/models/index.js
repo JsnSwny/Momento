@@ -29,6 +29,7 @@ db.sequelize = sequelize;
 
 db.user = require("./user.model")(sequelize, Sequelize);
 db.role = require("./role.model")(sequelize, Sequelize);
+db.refreshToken = require("./refreshToken.model")(sequelize, Sequelize);
 db.project = require("./project.model")(sequelize, Sequelize);
 db.page = require("./page.model")(sequelize, Sequelize);
 
@@ -41,6 +42,14 @@ db.user.belongsToMany(db.role, {
   through: "user_roles",
   foreignKey: "userId",
   otherKey: "roleId"
+});
+
+//Connect the refreshToken table to the user table (one to one)
+db.user.hasOne(db.refreshToken, {
+  foreignKey: 'userId', targetKey: 'id'
+})
+db.refreshToken.belongsTo(db.user, {
+  foreignKey: 'userId', targetKey: 'id'
 });
 
 //Connect the user table to the projects table (one to many). The user in this instance is the owner of the project

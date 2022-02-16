@@ -6,7 +6,8 @@ import {
     REGISTER_SUCCESS,
     REGISTER_FAILURE,
     SET_MESSAGE,
-    PWD_REQUEST_SUCCESS
+    PWD_REQUEST_SUCCESS,
+    REFRESH_TOKEN
 } from "./types";
 
 export const registerAuth = (username, firstName, lastName, email, password) => (dispatch) => {
@@ -148,3 +149,10 @@ export const logout = () => (dispatch) => {
         type: LOGOUT,
     });
 };
+
+export const refreshToken = (accessToken) => (dispatch) => {
+    dispatch({
+        type: REFRESH_TOKEN,
+        payload: accessToken
+    })
+}

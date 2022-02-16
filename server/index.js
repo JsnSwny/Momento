@@ -20,14 +20,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./models");
-const Role = db.role;
 
 db.sequelize.sync();
-
-const mailer = require("./nodemailer/index")
-// Careful with uncommenting this line - SMTP server can only send 300 messages
-// a day on a free plan
-//mailer("aas20@hw.ac.uk", "Adrian Szarapow", "http://localhost:3000/login");
 
 require("./routes/auth.routes")(app);
 require("./routes/user.routes")(app);
