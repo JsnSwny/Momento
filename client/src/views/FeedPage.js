@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import Post from "../components/feed/Post";
 import ScrapCard from "../components/feed/ScrapCard";
 
 const FeedPage = () => {
   const filterList = ["Holidays", "Weddings", "Nature", "Anniversary"];
   const [currentFilter, setCurrentFilter] = useState(filterList[0]);
+  const posts = useSelector((state) => state.posts.posts);
 
   return (
     <div className="wrapper--md">
@@ -31,11 +33,9 @@ const FeedPage = () => {
           </ul>
         </div>
         <ul>
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
+          {posts.map((post) => (
+            <Post post={post} />
+          ))}
         </ul>
       </div>
     </div>

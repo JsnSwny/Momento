@@ -1,16 +1,14 @@
 import React from "react";
+import { differenceInMinutes } from "date-fns";
 
-const Comment = () => {
+const Comment = ({ obj }) => {
   return (
     <li className="flex-container">
-      <img className="profile-picture" src="/images/filler-image.jpeg" />
-      <div>
-        <h4>Joe Doe</h4>
-        <p>
-          Vivamus magna justo, lacinia eget consectetur sed, convallis at
-          tellus.
-        </p>
-        <small>32m</small>
+      <img className="profile-picture" src={obj.imageURL} />
+      <div className="feed-post__comment-content">
+        <h4>{obj.name}</h4>
+        <p>{obj.comment}</p>
+        <small>32m ago</small>
       </div>
     </li>
   );
