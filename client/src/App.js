@@ -8,6 +8,7 @@ import ProjectPage from "./views/ProjectPage";
 import LoginPage from "./views/LoginPage";
 import RegistrationPage from "./views/RegistrationPage";
 import VerificationPage from "./views/VerificationPage";
+import FeedPage from "./views/FeedPage";
 import PasswordChange from "./views/PasswordChange";
 import RequestPasswordReset from "./views/RequestPasswordReset";
 import UserPage from "./views/UserPage";
@@ -18,6 +19,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/project" element={<ProjectPage />}></Route>
+          <Route path="/" element={<FeedPage />}></Route>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
           <Route path="/api/verify/:token" element={<VerificationPage />}></Route>

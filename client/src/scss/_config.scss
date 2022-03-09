@@ -1,11 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;700&display=swap");
 
 // /*======Typography=======*/
-$base-font-family: "Lato", sans-serif;
+$base-font-family: "Montserrat", sans-serif;
 
 // /*======Colors=======*/
 $gray: rgb(230, 230, 230);
 $teal: #5bcac3;
+$red: rgb(236, 76, 76);
 
 // /*======Breakpoints=======*/
 $breakpoints: (
@@ -44,5 +45,5 @@ $breakpoints: (
 body {
   background-color: #faffff;
   min-height: 100vh;
-  font-family: "Dancing Script", cursive;
+  font-family: $base-font-family;
 }
