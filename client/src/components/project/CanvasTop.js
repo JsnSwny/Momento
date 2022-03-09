@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect, useRef } from "react";
 import CanvasActions from "./canvas/CanvasActions";
 import CanvasCurrentlyViewing from "./canvas/CanvasCurrentlyViewing";
 import CanvasPublish from "./canvas/CanvasPublish";
+import { useSelector, useDispatch } from "react-redux";
+import { canvasEditPage } from "../../store/actions/canvas";
+import { canvasFunctions } from "../project/CanvasFunctions";
 import { clearElements } from "../../store/reducers/canvas";
 
 const CanvasTop = ({ selectedAction, setSelectedAction, stageRef }) => {
@@ -25,12 +27,7 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef }) => {
 
         <i
           class="fas fa-save"
-          onClick={() => {
-            const stage = stageRef.current;
-
-            // Run call to store stage
-            console.log(stage.toJSON());
-          }}
+          onClick={() => dispatch(canvasFunctions.savePage())}
         ></i>
         <CanvasPublish />
       </div>

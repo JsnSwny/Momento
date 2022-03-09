@@ -2,6 +2,7 @@ const db = require("../models");
 const config = require("../config");
 const User = db.user;
 const Role = db.role;
+const RefreshToken = db.refreshToken;
 
 const Op = db.Sequelize.Op;
 
@@ -71,7 +72,7 @@ exports.login = (req, res) => {
         username: req.body.username
       }
     })
-      .then(user => {
+      .then(async (user) => {
         if (!user) {
           return res.status(400).send({ message: "User does not exist" });
         }
@@ -96,8 +97,12 @@ exports.login = (req, res) => {
         }
   
         var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
-          expiresIn: 86400 // 24 hours token expiration
+          expiresIn: config.JWT_EXPIRATION
         });
+
+        var refreshToken = await RefreshToken.createToken(user);
+
+        console.log(refreshToken)
   
         var authorities = [];
         user.getRoles().then(roles => {
@@ -109,7 +114,8 @@ exports.login = (req, res) => {
             username: user.username,
             emailAddress: user.emailAddress,
             roles: authorities,
-            accessToken: token
+            accessToken: token,
+            refreshToken: refreshToken
           });
         });
       })
@@ -162,6 +168,31 @@ exports.verify = (req, res) => {
   }
 };
 
+exports.requestPwdChange = (req, res) => {
+  User.findOne({
+    where: {
+      emailAddress: req.body.emailAddress
+    }
+  })
+    .then(user => {
+      if (!user) {
+        return res.status(400).send({ message: "User with given email address does not exist" })
+      }
+
+      // generate a new token valid for 15 minutes
+      const token = jwt.sign({ emailAddress: user.emailAddress }, config.JWT_SECRET, {
+        expiresIn: 900 // 15 minutes
+      });
+
+      // generate a password reset link with the token above
+      const url = `http://localhost:3000/api/verifyPwdReset/${token}`
+
+      mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
+
+      return res.status(201).send({ message: `Sent a password reset link to ${req.body.emailAddress}` });
+    })
+};
+
 exports.verifyPwdReset = (req, res) => {
   const { token } = req.params;
 
@@ -204,36 +235,26 @@ exports.verifyPwdReset = (req, res) => {
   }
 };
 
-exports.passwordReset = (req, res) => {
-  User.findOne({
-    where: {
-      emailAddress: req.body.emailAddress
-    }
-  })
-    .then(user => {
-      if (!user) {
-        return res.status(400).send({ message: "User with given email address does not exist" })
-      }
-
-      // generate a new token valid for 15 minutes
-      const token = jwt.sign({ emailAddress: user.emailAddress }, config.JWT_SECRET, {
-        expiresIn: 900 // 15 minutes
-      });
-
-      // generate a password reset link with the token above
-      const url = `http://localhost:3001/api/verifyPwdReset/${token}`
-
-      mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
-
-      return res.status(201).send({ message: `Sent a password reset link to ${req.body.emailAddress}` });
-    })
-};
-
 exports.changePassword = (req, res) => {
+  // check if token is present
+  if (!req.body.token) {
+    return res.status(422).send({
+      message: "Token missing"
+    });
+  }
+
+  // Verify the token
+  let payload = null
+  try {
+    payload = jwt.verify(req.body.token, config.JWT_SECRET);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+
   try {
     User.findOne({
       where: {
-        emailAddress: req.body.emailAddress
+        emailAddress: payload.emailAddress
       }
     })
     .then(user => {
@@ -241,7 +262,7 @@ exports.changePassword = (req, res) => {
         return res.status(400).send({ message: "User does not exist" });
       }
 
-      var passwordHash = bcrypt.hashSync(req.body.passwordHash, 8)
+      var passwordHash = bcrypt.hashSync(req.body.password, 8)
 
       user.update({ passwordHash: passwordHash })
     })
@@ -253,3 +274,52 @@ exports.changePassword = (req, res) => {
     return res.status(500).send(err);
   }
 };
+
+exports.refreshToken = async (req, res) => {
+  const { refreshToken: requestToken } = req.body;
+  if (requestToken === null) {
+    return res.status(403).send({ 
+      message: "No refresh token received" 
+    });
+  }
+  try {
+    let refreshToken = await RefreshToken.findOne({
+      where: {
+        token: requestToken
+      }
+    });
+
+    if (!refreshToken) {
+      return res.status(403).send({ 
+        message: "Refresh token not found in the database" 
+      });
+    }
+
+    if (RefreshToken.verifyRefreshToken(refreshToken)) {
+      RefreshToken.destroy({
+        where: {
+          id: refreshToken.id
+        }
+      });
+
+      return res.status(403).send({ 
+        message: "Refresh token expired. Make a new login request"
+      });
+    }
+
+    const user = await refreshToken.getUser();
+    let newAccessToken = jwt.sign({ id: user.id }, config.JWT_SECRET, {
+      expiresIn: config.JWT_EXPIRATION
+    });
+
+    return res.status(200).send({
+      accessToken: newAccessToken,
+      refreshToken: refreshToken.token
+    });
+    
+  } catch (err) {
+    return res.status(500).send({
+      message: err
+    });
+  }
+}

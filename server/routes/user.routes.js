@@ -28,5 +28,11 @@ module.exports = function(app) {
     "/api/dev/admin",
     [authJWT.verifyToken, authJWT.isAdmin],
     controller.adminBoard
+    );
+    
+  app.post(
+    "/api/user/:userId",
+    [authJWT.verifyToken],
+    controller.loadUserData
   );
 };

@@ -12,7 +12,7 @@ exports.createProject = (req, res) => {
         description: req.body.description
     })
         .then(newProject => {
-            res.status(200).send({ message: "success", projectId: newProject.projectId });
+            res.status(200).send({ message: "success", projectId: newProject.projectId, title: newProject.title, description: newProject.description });
     })
         .catch(e => { 
             console.log("Internal server error when creating new project: " + e.message);
@@ -36,7 +36,7 @@ exports.loadProject = (req, res) => {
             //Include the number of pages in the project
             page.max("pageNumber", { where: { projectId: req.params.projectId } }).then(numPages => { 
 
-                var projectData = { ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: numPages };
+                var projectData = { projectId: req.params.projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: numPages };
 
                 res.status(200).send(JSON.stringify(projectData));
 

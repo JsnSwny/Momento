@@ -1,77 +1,60 @@
-import config from './config';
+import api from "./api.axios";
+import { tokenService } from "./token.service";
 
 export const authService = {
     login,
     register,
-    verifyUser
+    verifyUser,
+    verifyPwdReset,
+    changePassword,
+    requestPwdChange,
+    logout
 };
 
 function register(username, firstName, lastName, emailAddress, passwordHash) {
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, firstName, lastName, emailAddress, passwordHash })
-    };
-
-    return fetch(`${config.apiUrl}/api/auth/register`, requestOptions)
-        .then(handleResponse)
-        .then(response => {
-            return response;
-        });
+    return api.post("/auth/register", {
+        username,
+        firstName,
+        lastName,
+        emailAddress,
+        passwordHash
+    });
 }
 
 function verifyUser(token) {
-    const requestOptions = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
+    return api.get(`/verify/${token}`);
+}
 
-    return fetch(`${config.apiUrl}/api/verify/${token}`, requestOptions)
-        .then(handleResponse)
-        .then(res => { return res })
+function requestPwdChange(emailAddress) {
+    return api.post("/auth/passwordreset", {
+        emailAddress
+    })
+}
+
+function verifyPwdReset(token) {
+    return api.get(`/verifyPwdReset/${token}`);
+}
+
+function changePassword(token, password) {
+    return api.post("/auth/changePassword", {
+        token,
+        password
+    })
 }
 
 function login(username, passwordHash) {
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, passwordHash })
-    };
-
-    return fetch(`${config.apiUrl}/api/auth/login`, requestOptions)
-        .then(handleResponse)
-        .then(user => {
-            // store user details and JWT token in session storage
-            localStorage.setItem('user', JSON.stringify(user));
-
-            return user;
-        });
+    return api.post("/auth/login", {
+        username,
+        passwordHash
+    })
+    .then(user => {
+        if (user.accessToken) {
+            tokenService.setUser(user);
+        }
+        return user;
+    });
 }
 
 function logout() {
-    localStorage.removeItem('user');
-}
-
-function handleResponse(response) {
-    return response.text().then(text => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-            if (response.status === 401) {
-                // auto logout if 401 response returned from api
-                logout();
-                //location.reload(true);
-            }
-
-            const error = (data && data.message) || response.statusText;
-            return Promise.reject(error);
-        }
-
-        return data;
-    });
+    tokenService.removeUser();
 }

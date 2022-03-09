@@ -1,0 +1,130 @@
+.User {
+    text-align: center;
+    justify-content: center;
+    display: block;
+    padding-top: 90px;
+    padding-bottom: 90px;
+    border-radius: 10px;
+    background-color: #e1e3eb;
+
+
+    .Profile {
+        text-align: center;
+        justify-content: center;
+        display: flex;
+        padding-top: 90px;
+        padding-bottom: 90px;
+        border-radius: 10px;
+        background-color: #e1e3eb;
+
+        .header {
+            
+        }
+
+        .ProfilePicture {
+            padding-right: 10rem;
+            float: left;
+
+            .profPicBtn, .profilePic {
+                border-radius: 50%;
+                border: none;
+                width: 200px;
+            }
+
+            .profPicBtn {
+                cursor: pointer;
+            }
+        }
+
+        .UserInfo {
+            float: right;    
+        
+            .headerTop {
+                padding-bottom: 2rem;
+            }
+
+            .username {
+                float: left;
+                font-size: 1.8rem;
+            }
+        
+            .editProfile {
+                float: right;
+                padding-left: 4rem;
+                padding-top: 1rem;
+            }
+
+            .followBtnDiv {
+                float: right;
+                padding-top: 0.5rem;
+            }
+
+            .followButton {
+                background-color: #5bcac3;
+                color: white;
+                width: 6rem;
+                height: 2rem;
+                font-weight: bolder;
+                border: none;
+                border-radius: 0.5rem;
+                cursor: pointer;
+            }
+
+            .userStats {
+                padding-top: 2rem;
+                padding-bottom: 1rem;
+            }
+
+            .userName-Bio {
+                .name {
+                    float: left;
+                }
+
+                .userBio {
+                    float: left;
+                    width: 22rem;
+                    word-wrap: inherit;
+                }
+            }
+        }
+
+        .category {
+            width: 100%;
+            border-top: 10px #5bcac3;
+            justify-content: center;
+        }
+        
+    }
+
+    .profileLink {
+        padding-inline: 3rem;
+        text-decoration: none;
+        font-size: 1.5rem;
+        color: grey;
+    }
+
+}
+
+.modalTitle {
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+    font-size: 1.5rem;
+}
+
+.modalButton, .modalButtonRed, .modalButtonBlue {
+    width: 100%;
+    height: 4rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: "Dancing Script", cursive;
+    cursor: pointer;
+}
+
+.modalButtonRed {
+    color: red;
+}
+
+.modalButtonBlue {
+    color: #5bcac3;
+}

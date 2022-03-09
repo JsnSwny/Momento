@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector, Provider } from "react-redux";
+import { loadUserData } from "../../store/actions/user";
+import { newProject, loadProject, editProject } from "../../store/actions/project";
+import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
+import { canvasFunctions } from "../project/CanvasFunctions";
 import { Stage, Layer, Rect, Circle, Line } from "react-konva";
+import Konva from "konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
@@ -19,6 +24,8 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     height: window.innerHeight,
   });
 
+    var canvasHasBeenChanged = false;
+    
   const insertText = (x, y) => {
     let obj = {
       text: "",
@@ -67,6 +74,33 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
+
+    const autoSave = () => { 
+        //Currently this just runs every time, but in future it should only run if a change has been made
+        if (canvasHasBeenChanged || true) {
+
+            if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
+            
+                dispatch(canvasFunctions.savePage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+            }
+
+            canvasHasBeenChanged = false;
+        }
+    };
+    
+    //I dont know if this is the best way to do this, but it works for now
+    window.onpageshow = function () {
+        
+        //localStorage.removeItem("user");
+
+        dispatch(canvasFunctions.loadUser(stageRef));
+        
+        setInterval(autoSave, 5000);
+    };
+    
+    
+
+    
   return (
     <div className={`konva-container ${selectedAction}`}>
       <Stage

@@ -9,6 +9,9 @@ import LoginPage from "./views/LoginPage";
 import RegistrationPage from "./views/RegistrationPage";
 import VerificationPage from "./views/VerificationPage";
 import FeedPage from "./views/FeedPage";
+import PasswordChange from "./views/PasswordChange";
+import RequestPasswordReset from "./views/RequestPasswordReset";
+import UserPage from "./views/UserPage";
 
 const App = () => {
   return (
@@ -19,10 +22,10 @@ const App = () => {
           <Route path="/" element={<FeedPage />}></Route>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
-          <Route
-            path="/api/verify/:token"
-            element={<VerificationPage />}
-          ></Route>
+          <Route path="/api/verify/:token" element={<VerificationPage />}></Route>
+          <Route path="/api/verifyPwdReset/:token" element={<PasswordChange />}></Route>
+          <Route path="/passwordreset" element={<RequestPasswordReset />}></Route>
+          <Route path="/user/:username" element={<UserPage />}></Route>
         </Routes>
       </Router>
     </Provider>

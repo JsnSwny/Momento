@@ -2,36 +2,32 @@
 // import email from "./image/email.svg";
 // import pass from "./image/pass.svg";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { registerAuth } from "../store/actions/auth"
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { CLEAR_MESSAGE } from "../store/actions/types";
 
 const RegistrationPage = () => {
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch({
+      type: CLEAR_MESSAGE
+    })
+  }, []);
+
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   
-  const [successful, setSuccessful] = useState("");
-
   const password = useRef({});
   password.current = watch("password", "");
 
-  const onSubmit = (e) => {    
-    setSuccessful(false);
-
+  const onSubmit = (e) => {   
     dispatch(
       registerAuth(e.username, e.firstName, e.lastName, e.email, e.password)
     )
-    .then(() => {
-      setSuccessful(true);
-    })
-    .catch(() => {
-      setSuccessful(false);
-    })
-    
   };
 
   const loggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -48,20 +44,19 @@ const RegistrationPage = () => {
         <div>
           <div className="imgs">
             <div className="container-image">
-            <i className="far fa-user"></i>
+              <i className="far fa-user"></i>
             </div>
           </div>
 
           <div>
             <div className="title">
-            <h1>Momento Registration</h1>
+              <h1>Momento Registration</h1>
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
               {!successfulRegister && (
                 <div>
-                  
                   <div className="Username">
-                  <i className="fas fa-user"></i>
+                    <i className="fas fa-user"></i>
                     <input 
                       type="text" 
                       placeholder="Username" 
@@ -77,7 +72,7 @@ const RegistrationPage = () => {
                   )}
 
                   <div className="FirstName">
-                  <i className="fas fa-user"></i>
+                    <i className="fas fa-user"></i>
                     <input 
                       type="text" 
                       placeholder="First Name" 
@@ -133,13 +128,15 @@ const RegistrationPage = () => {
                   </div>
 
                   <div className="loginRegister-button">
-                  <h3>By registering an account with us you agree to our terms & conditions</h3><br/>
-                  <button type="submit">Register</button>
+                    <h3>By registering an account with us you agree to our terms & conditions</h3><br/>
+                    <button type="submit">Register</button>
+                  </div>
+                  <div>
+                    <br/>Already have an account? <Link to="/login">Proceed to login</Link>
+                  </div>
                 </div>
-                <div>
-                  <br/>Already have an account? <Link to="/login">Proceed to login</Link>
-                </div>
-              </div>)}
+              )}
+
               {successfulRegister && (
                 <div>
                   <div className="alert-success">
@@ -149,13 +146,11 @@ const RegistrationPage = () => {
                 </div>
               )}
             </form>
-
-          
-        </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default RegistrationPage;

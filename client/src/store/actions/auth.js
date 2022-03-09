@@ -6,6 +6,8 @@ import {
     REGISTER_SUCCESS,
     REGISTER_FAILURE,
     SET_MESSAGE,
+    PWD_REQUEST_SUCCESS,
+    REFRESH_TOKEN
 } from "./types";
 
 export const registerAuth = (username, firstName, lastName, email, password) => (dispatch) => {
@@ -56,11 +58,68 @@ export const verifyUser = (token) => (dispatch) => {
         )
 }
 
+export const requestPwdChange = (email) => (dispatch) => {
+    return authService.requestPwdChange(email)
+    .then(
+        (response) => {
+            dispatch({
+                type: PWD_REQUEST_SUCCESS,
+            });
+
+            dispatch({
+                type: SET_MESSAGE,
+                payload: response.message,
+            });
+        },
+        (error) => {
+            dispatch({
+                type: SET_MESSAGE,
+                payload:error,
+            });
+        }
+    )
+}
+
+export const verifyPwdReset = (token) => (dispatch) => {
+    return authService.verifyPwdReset(token)
+    .then(
+        (response) => {
+            dispatch({
+                type: SET_MESSAGE,
+                payload: response.message,
+            });
+        },
+        (error) => {
+            dispatch({
+                type: SET_MESSAGE,
+                payload:error,
+            });
+        }
+    )
+}
+
+export const changePassword = (token, password) => (dispatch) => {
+    return authService.changePassword(token, password)
+        .then(
+            (response) => {
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: response.message,
+                });
+            },
+            (error) => {
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload:error.message,
+                });
+            }
+        )
+}
+
 export const login = (username, password) => (dispatch) => {
     return authService.login(username, password)
         .then(
             (response) => {
-                console.log("login successful");
                 dispatch({
                     type: LOGIN_SUCCESS,
                     payload: { username: response },
@@ -69,7 +128,6 @@ export const login = (username, password) => (dispatch) => {
                 return Promise.resolve();
             },
             (error) => {
-                console.log("login failure");
                 dispatch({
                     type: LOGIN_FAILURE,
                 });
@@ -91,3 +149,10 @@ export const logout = () => (dispatch) => {
         type: LOGOUT,
     });
 };
+
+export const refreshToken = (accessToken) => (dispatch) => {
+    dispatch({
+        type: REFRESH_TOKEN,
+        payload: accessToken
+    })
+}

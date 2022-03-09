@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import store from "../../store/store";
+import { canvasFunctions } from "../project/CanvasFunctions";
 
 const PageForm = ({ setOpen }) => {
   const dispatch = useDispatch();
@@ -8,8 +10,8 @@ const PageForm = ({ setOpen }) => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-  };
-
+    };
+    
   return (
     <form onSubmit={onSubmit} className="form">
       <div className="form__control">
@@ -34,7 +36,7 @@ const PageForm = ({ setOpen }) => {
       </div>
       <hr />
       <div className="button-container">
-        <button className="btn" type="submit" value="Add Page">
+        <button className="btn" type="submit" value="Add Page" onClick={ dispatch(canvasFunctions.addPage(store.getState().project.currentProjectData.pageCount + 1)) }>
           Add Page
         </button>
       </div>
