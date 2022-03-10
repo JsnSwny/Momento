@@ -22,9 +22,6 @@ module.exports = (sequelize, Sequelize) => {
       },
       active: {
         type: Sequelize.TINYINT
-      },
-      profilePicture: {
-        type: Sequelize.STRING
       }
     });
   

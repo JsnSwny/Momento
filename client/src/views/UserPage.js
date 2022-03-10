@@ -3,9 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loadUserData } from "../store/actions/user";
 import { Link } from "react-router-dom";
 import Modal from 'react-modal';
-import axios from 'axios';
-import { awsService } from '../store/services/aws.service';
-import { updateProfilePic } from "../store/actions/aws";
 
 const UserPage = () => {
   const dispatch = useDispatch();
@@ -40,11 +37,9 @@ const UserPage = () => {
     } return null;
   })
 
-  const profilePicture = useSelector((state) => {
-    if (operationSuccess) {
-      return state.user.userData.profilePicture;
-    } return "https://www.w3schools.com/howto/img_avatar2.png";
-  })
+  const changeProfilePic = () => {
+    console.log(username);
+  }
 
   const [modalIsOpen, setIsOpen] = useState(false);
   const openModal = () => {
@@ -67,35 +62,21 @@ const UserPage = () => {
 
   Modal.setAppElement('#root');
 
+  
+	const [selectedFile, setSelectedFile] = useState();
+	const [isSelected, setIsSelected] = useState(false);
   const inputFile = useRef(null);
 
   const onUploadClick = () => {
     inputFile.current.click();
   }
 
-  const changeHandler = async (event) => {
-    // Split the filename to get the file type
-    let fileName = event.target.files[0].name
-    let fileType = fileName.split(".")[1];
-    let presignedUrl = await awsService.getSignedUrl(fileType);
-    handleSubmission(presignedUrl, event.target.files[0]);
+  const changeHandler = (event) => {
+		setSelectedFile(event.target.files[0]);
+		setIsSelected(true);
 	};
 
-  const handleSubmission = async (presignedUrl, file) => {
-    await axios.put(
-      presignedUrl,
-      file
-    )
-    .then(async (response) => {
-      let photoUrl = presignedUrl.split("?")[0]
-      await dispatch(updateProfilePic(photoUrl));
-      window.location.reload();
-    })
-			.catch((error) => {
-				console.error('Error:', error);
-			});
-
-  }
+  const [presignedUrl, setPresignedUrl] = useState();
 
   return (
     <div className="User" id="user">
@@ -122,13 +103,13 @@ const UserPage = () => {
               {ownProfile && (
                 <div>
                   <button onClick={openModal} className="profPicBtn" title="Change Profile Picture">
-                    <img className="profilePic" src={profilePicture} />
+                    <img className="profilePic" src="https://www.w3schools.com/howto/img_avatar2.png" />
                   </button>
                 </div>
               )}
               {!ownProfile && (
                 <div>
-                  <img className="profilePic" src={profilePicture} />
+                  <img className="profilePic" src="https://www.w3schools.com/howto/img_avatar2.png" />
                 </div>
               )}
             </div>
