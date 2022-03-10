@@ -2,7 +2,8 @@ import api from "./api.axios";
 
 export const awsService = {
     getSignedUrl,
-    updateProfilePic
+    updateProfilePic,
+    deleteProfilePic
 };
 
 function getSignedUrl(fileType) {
@@ -15,4 +16,8 @@ function updateProfilePic(url) {
     return api.post("/updateProfilePic", {
         url
     })
+}
+
+function deleteProfilePic() {
+    return api.post("/deleteProfilePic");
 }

@@ -43,15 +43,17 @@ exports.updateProfilePic = (req, res) => {
                 }
             })
             .then(async (foundUser) => {
-                // delete previous profile pic from S3
-                var key = foundUser.profilePicture.split("/")[3];
-                s3.deleteObject({Bucket: "momento-s3", Key: key}, function(err,data) {
-                    if (err) {
-                        console.log("Error deleting S3 object");
-                    } else {
-                        console.log("Objected deleted successfully");
-                    }
-                })
+                if (foundUser.profilePicture !== null) {
+                    // delete previous profile pic from S3
+                    var key = foundUser.profilePicture.split("/")[3];
+                    s3.deleteObject({Bucket: "momento-s3", Key: key}, function(err,data) {
+                        if (err) {
+                            console.log("Error deleting S3 object");
+                        } else {
+                            console.log("Object deleted successfully");
+                        }
+                    })
+                }
                 foundUser.profilePicture = req.body.url
                 await foundUser.save();
                 res.status(200).send({ message: "Profile picture updated successfully" });
@@ -73,7 +75,35 @@ exports.deleteObject = (req, res) => {
         if (err) {
             return res.status(500).send("Error deleting S3 object");
         } else {
-            res.status(200).send({ message: "Objected deleted successfully" });
+            res.status(200).send({ message: "Object deleted successfully" });
         }
     })
+}
+
+exports.deleteProfilePicture = (req, res) => {
+    try {
+        user.findOne({
+            where: {
+                id: req.userId
+            }
+        })
+        .then(async (foundUser) => {
+            if (foundUser.profilePicture !== null) {
+                // delete previous profile pic from S3
+                var key = foundUser.profilePicture.split("/")[3];
+                s3.deleteObject({Bucket: "momento-s3", Key: key}, function(err,data) {
+                    if (err) {
+                        console.log("Error deleting S3 object");
+                    } else {
+                        console.log("Object deleted successfully");
+                    }
+                })
+            }
+            foundUser.profilePicture = null;
+            await foundUser.save();
+            res.status(200).send({ message: "Profile picture deleted successfully" });
+        })
+    } catch (err) {
+        return res.status(500).send("Error deleting profile picture");
+    }
 }

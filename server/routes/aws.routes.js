@@ -21,4 +21,10 @@ module.exports = function(app) {
         [authJWT.verifyToken],
         controller.updateProfilePic
     )
+
+    app.post(
+        "/api/deleteProfilePic",
+        [authJWT.verifyToken],
+        controller.deleteProfilePicture
+    )
 }

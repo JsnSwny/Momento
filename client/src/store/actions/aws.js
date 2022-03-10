@@ -49,3 +49,25 @@ export const updateProfilePic = (url) => (dispatch) => {
         }
     )
 }
+
+export const deleteProfilePic = () => (dispatch) => {
+    return awsService.deleteProfilePic()
+    .then(
+        (response) => {
+            dispatch({
+                type: AWS_UPLOAD_SUCCESS,
+                payload: response
+            });
+
+            return Promise.resolve();
+        },
+        (error) => {
+            dispatch({
+                type: AWS_UPLOAD_FAILURE,
+                payload: error
+            });
+
+            return Promise.reject();
+        }
+    )
+}

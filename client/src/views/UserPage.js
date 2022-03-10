@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import Modal from 'react-modal';
 import axios from 'axios';
 import { awsService } from '../store/services/aws.service';
-import { updateProfilePic } from "../store/actions/aws";
+import { deleteProfilePic, updateProfilePic } from "../store/actions/aws";
 
 const UserPage = () => {
   const dispatch = useDispatch();
@@ -104,7 +104,11 @@ const UserPage = () => {
 			.catch((error) => {
 				console.error('Error:', error);
 			});
+  }
 
+  const deleteCurrentProfilePic = async () => {
+    await dispatch(deleteProfilePic());
+    window.location.reload();
   }
 
   return (
@@ -118,10 +122,10 @@ const UserPage = () => {
         <div className="modalTitle">
           <h3>Change Profile Picture</h3>
         </div>
-        <input type="file" name="file" ref={inputFile} onChange={changeHandler} hidden />
+        <input type="file" name="file" ref={inputFile} accept=".jpg,.jpeg,.png,.gif" onChange={changeHandler} hidden />
         <div>
           <button className="modalButtonBlue" onClick={onUploadClick}>Upload picture</button>
-          <button className="modalButtonRed">Delete current picture</button>
+          <button className="modalButtonRed" onClick={() => deleteCurrentProfilePic()}>Delete current picture</button>
           <button className="modalButton" onClick={closeModal}>Cancel</button>
         </div>
       </Modal>
