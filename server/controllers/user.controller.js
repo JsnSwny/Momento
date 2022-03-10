@@ -32,6 +32,7 @@ exports.loadUserData = (req, res) => {
             }
             return res.status(200).send({
                 username: user.username,
+                profilePicture: user.profilePicture,
                 posts: []
             })  
         })

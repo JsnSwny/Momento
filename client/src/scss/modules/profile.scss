@@ -28,7 +28,9 @@
             .profPicBtn, .profilePic {
                 border-radius: 50%;
                 border: none;
+                height: 200px;
                 width: 200px;
+                object-fit: cover;
             }
 
             .profPicBtn {
