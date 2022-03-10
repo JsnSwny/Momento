@@ -43,7 +43,7 @@ const UserPage = () => {
   const profilePicture = useSelector((state) => {
     if (operationSuccess) {
       return state.user.userData.profilePicture;
-    } return "https://www.w3schools.com/howto/img_avatar2.png";
+    }
   })
 
   const [modalIsOpen, setIsOpen] = useState(false);
@@ -74,11 +74,21 @@ const UserPage = () => {
   }
 
   const changeHandler = async (event) => {
+    // check if less than max size
+    let maxFileSize = 5 * 1024 * 1024;
+    if (event.target.files[0].size > maxFileSize) {
+      window.alert("File too big!");
+      return;
+    }
     // Split the filename to get the file type
     let fileName = event.target.files[0].name
     let fileType = fileName.split(".")[1];
-    let presignedUrl = await awsService.getSignedUrl(fileType);
-    handleSubmission(presignedUrl, event.target.files[0]);
+    if (fileType === "jpg" || fileType === "jpeg" || fileType === "png" || fileType === "gif") {
+      let presignedUrl = await awsService.getSignedUrl(fileType);
+      handleSubmission(presignedUrl, event.target.files[0]);
+    } else {
+      window.alert("Unsupported file type!");
+    }
 	};
 
   const handleSubmission = async (presignedUrl, file) => {
@@ -122,13 +132,13 @@ const UserPage = () => {
               {ownProfile && (
                 <div>
                   <button onClick={openModal} className="profPicBtn" title="Change Profile Picture">
-                    <img className="profilePic" src={profilePicture} />
+                    <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
                   </button>
                 </div>
               )}
               {!ownProfile && (
                 <div>
-                  <img className="profilePic" src={profilePicture} />
+                  <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
                 </div>
               )}
             </div>
