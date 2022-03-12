@@ -14,6 +14,12 @@ module.exports = function(app) {
         "/api/getPosts",
         [authJWT.verifyToken],
         controller.getPosts
+    );
+
+    app.post(
+        "/api/addComment",
+        [authJWT.verifyToken],
+        controller.addComment
     )
 
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const convertDateDiff = (dateDiff) => {
   var seconds = Math.floor(dateDiff / 1000);
@@ -18,12 +19,16 @@ const convertDateDiff = (dateDiff) => {
 }
 
 const Comment = ({ obj }) => {
-  var dateDiff = Date.now() - (new Date(obj.commented_at.toString()).getTime());
+  var dateDiff = (obj.commented_at !== undefined ? 
+    Date.now() - (new Date(obj.commented_at.toString()).getTime())
+    : 0);
   return (
     <li className="flex-container">
-      <img className="profile-picture" src={obj.imageURL} />
+      <Link to={`/user/${obj.username}`} target="_blank" rel="noopener noreferrer">
+        <img className="profile-picture" src={obj.imageURL} />
+      </Link>
       <div className="feed-post__comment-content">
-        <h4>{obj.name}</h4>
+        <Link to={`/user/${obj.username}`} target="_blank" rel="noopener noreferrer"><h4>{obj.name}</h4></Link>
         <p>{obj.comment}</p>
         <small>{convertDateDiff(dateDiff)}</small>
       </div>

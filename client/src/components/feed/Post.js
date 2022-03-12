@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
-import { likePost, unlikePost, addComment } from "../../store/actions/posts";
+import { likePost, unlikePost, addComment, getPosts } from "../../store/actions/posts";
 
 const Post = ({ post }) => {
   const dispatch = useDispatch();
@@ -11,17 +11,10 @@ const Post = ({ post }) => {
     e.preventDefault();
 
     dispatch(
-      addComment(
-        {
-          name: "Bob Ross",
-          imageURL:
-            "https://yt3.ggpht.com/ytc/AKedOLSRSl8xsTNuQU_f6sg3bHI19gZYUSqLu2I78S90MQ=s900-c-k-c0x00ffffff-no-rj",
-          comment,
-          commented_at: new Date(),
-        },
-        post.id
-      )
+      addComment(comment, post.id)
     );
+
+    dispatch(getPosts());
 
     setComment("");
   };
@@ -49,8 +42,6 @@ const Post = ({ post }) => {
               <p>{post.collaborators}</p>
             </li>
             <li>
-              {console.log(likedPosts, post.id)}
-              {console.log(likedPosts.includes(post.id))}
               <i
                 className={`fas fa-heart ${
                   likedPosts.includes(post.id) ? "active" : ""

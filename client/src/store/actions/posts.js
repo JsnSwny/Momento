@@ -20,11 +20,18 @@ export const unlikePost = (item) => (dispatch, getState) =>
 });
 
 export const addComment = (comment, postId) => (dispatch, getState) => {
-  dispatch({
-    type: ADD_COMMENT,
-    payload: comment,
-    postId,
-  });
+  return postsService.addComment(postId, comment)
+  .then(
+    (response) => {
+      dispatch({
+        type: ADD_COMMENT,
+        payload: comment,
+        postId,
+      });
+
+      return Promise.resolve();
+    }
+  )
 };
 
 export const getPosts = () => (dispatch) => {
