@@ -1,12 +1,19 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Post from "../components/feed/Post";
 import ScrapCard from "../components/feed/ScrapCard";
+import { getPosts } from "../store/actions/posts";
 
 const FeedPage = () => {
+  const dispatch = useDispatch();
   const filterList = ["Holidays", "Weddings", "Nature", "Anniversary"];
   const [currentFilter, setCurrentFilter] = useState(filterList[0]);
   const posts = useSelector((state) => state.posts.posts);
+
+  useEffect(() => {
+    console.log("sending request for posts")
+    dispatch(getPosts());
+  }, []);
 
   return (
     <div className="wrapper--md">

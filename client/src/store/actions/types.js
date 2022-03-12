@@ -13,6 +13,8 @@ export const CLEAR_MESSAGE = "CLEAR_MESSAGE";
 export const LIKE_POST = "LIKE_POST";
 export const UNLIKE_POST = "UNLIKE_POST";
 export const ADD_COMMENT = "ADD_COMMENT";
+export const POSTS_LOADED = "POSTS_LOADED";
+
 export const PWD_REQUEST_SUCCESS = "PWD_REQUEST_SUCCESS";
 
 export const USER_LOAD_SUCCESS = "USER_LOAD_SUCCESS";
