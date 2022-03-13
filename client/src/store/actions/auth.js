@@ -20,7 +20,7 @@ export const registerAuth = (username, firstName, lastName, email, password) => 
 
                 dispatch({
                     type: SET_MESSAGE,
-                    payload: response.data.message,
+                    payload: response.message,
                 });
 
                 return Promise.resolve();

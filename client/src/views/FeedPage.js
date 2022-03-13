@@ -11,7 +11,6 @@ const FeedPage = () => {
   const posts = useSelector((state) => state.posts.posts);
 
   useEffect(() => {
-    console.log("sending request for posts")
     dispatch(getPosts());
   }, []);
 

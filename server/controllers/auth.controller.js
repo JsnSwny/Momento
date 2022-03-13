@@ -101,8 +101,6 @@ exports.login = (req, res) => {
         });
 
         var refreshToken = await RefreshToken.createToken(user);
-
-        console.log(refreshToken)
   
         var authorities = [];
         user.getRoles().then(roles => {

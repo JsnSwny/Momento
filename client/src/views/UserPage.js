@@ -13,7 +13,6 @@ const UserPage = () => {
   useEffect(() => {
     const user = window.location.pathname.split('/')[2]
     let id = JSON.parse(localStorage.getItem("user")).id;
-    let accessToken = JSON.parse(localStorage.getItem("user")).accessToken;
     dispatch(
       loadUserData(id, user)
     )
