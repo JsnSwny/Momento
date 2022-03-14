@@ -35,7 +35,7 @@ const RegistrationPage = () => {
   const message = useSelector(state => state.message.message);
 
   if (loggedIn){
-    return <Navigate to="/project" />
+    return <Navigate to="/" />
   }
 
   return (
