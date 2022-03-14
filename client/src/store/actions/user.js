@@ -11,7 +11,6 @@ export const loadUserData = (userId, username = -1) => (dispatch) => {
     return userService.loadUserData(userId, username, JSON.parse(localStorage.getItem("user")).accessToken)
     .then(
         (response) => {
-            console.log("User data loaded");
             dispatch({
                 type: USER_LOAD_SUCCESS,
                 payload: { userData: response },
@@ -20,7 +19,6 @@ export const loadUserData = (userId, username = -1) => (dispatch) => {
             return Promise.resolve();
         },
         (error) => {
-            console.log("Error loading user data: " + error);
             dispatch({
                 type: USER_LOAD_FAILURE,
             });

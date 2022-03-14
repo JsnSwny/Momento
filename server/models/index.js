@@ -47,7 +47,7 @@ db.user.belongsToMany(db.role, {
 //Connect the refreshToken table to the user table (one to one)
 db.user.hasOne(db.refreshToken, {
   foreignKey: 'userId', targetKey: 'id'
-})
+});
 db.refreshToken.belongsTo(db.user, {
   foreignKey: 'userId', targetKey: 'id'
 });
@@ -58,8 +58,53 @@ db.project.belongsTo(db.user, { foreignKey: "projectId" });
 
 //Connect the project table to the pages table (one to many)
 db.project.hasMany(db.page, { foreignKey: "pageId" });
-db.page.belongsTo(db.project, { foreignKey: "pageId" })
+db.page.belongsTo(db.project, { foreignKey: "pageId" });
 
-db.ROLES = ["user", "mod", "admin"]
+db.ROLES = ["user", "mod", "admin"];
+
+//Posts, comments and likes
+db.post = require("./posts.model")(sequelize, Sequelize);
+db.comment = require("./comments.model")(sequelize, Sequelize);
+db.like = require("./likes.model")(sequelize, Sequelize);
+
+//Define posts <-> users relationship
+db.user.hasMany(db.post, {
+  foreignKey: 'userId', targetKey: 'id'
+});
+db.post.belongsTo(db.user, {
+  foreignKey: 'userId', targetKey: 'id'
+});
+
+//Define comments <-> posts relationship
+db.post.hasMany(db.comment, {
+  foreignKey: 'postId', targetKey: 'id'
+});
+db.comment.belongsTo(db.post, {
+  foreignKey: 'postId', targetKey: 'id'
+});
+
+//Define comments <-> users relationship
+db.user.hasMany(db.comment, {
+  foreignKey: 'authorId', targetKey: 'id'
+});
+db.comment.belongsTo(db.user, {
+  foreignKey: 'authorId', targetKey: 'id'
+});
+
+//Define likes <-> posts relationship
+db.post.hasMany(db.like, {
+  foreignKey: 'postId', targetKey: 'id'
+});
+db.like.belongsTo(db.post, {
+  foreignKey: 'postId', targetKey: 'id'
+});
+
+//Define likes <-> users relationship
+db.user.hasMany(db.like, {
+  foreignKey: 'authorId', targetKey: 'id'
+});
+db.like.belongsTo(db.user, {
+  foreignKey: 'authorId', targetKey: 'id'
+});
 
 module.exports = db;

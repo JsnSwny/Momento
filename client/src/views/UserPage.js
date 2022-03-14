@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loadUserData } from "../store/actions/user";
 import { Link } from "react-router-dom";
 import Modal from 'react-modal';
+import axios from 'axios';
+import { awsService } from '../store/services/aws.service';
+import { deleteProfilePic, updateProfilePic } from "../store/actions/aws";
 
 const UserPage = () => {
   const dispatch = useDispatch();
@@ -10,7 +13,6 @@ const UserPage = () => {
   useEffect(() => {
     const user = window.location.pathname.split('/')[2]
     let id = JSON.parse(localStorage.getItem("user")).id;
-    let accessToken = JSON.parse(localStorage.getItem("user")).accessToken;
     dispatch(
       loadUserData(id, user)
     )
@@ -37,9 +39,11 @@ const UserPage = () => {
     } return null;
   })
 
-  const changeProfilePic = () => {
-    console.log(username);
-  }
+  const profilePicture = useSelector((state) => {
+    if (operationSuccess) {
+      return state.user.userData.profilePicture;
+    }
+  })
 
   const [modalIsOpen, setIsOpen] = useState(false);
   const openModal = () => {
@@ -62,21 +66,49 @@ const UserPage = () => {
 
   Modal.setAppElement('#root');
 
-  
-	const [selectedFile, setSelectedFile] = useState();
-	const [isSelected, setIsSelected] = useState(false);
   const inputFile = useRef(null);
 
   const onUploadClick = () => {
     inputFile.current.click();
   }
 
-  const changeHandler = (event) => {
-		setSelectedFile(event.target.files[0]);
-		setIsSelected(true);
+  const changeHandler = async (event) => {
+    // check if less than max size
+    let maxFileSize = 5 * 1024 * 1024;
+    if (event.target.files[0].size > maxFileSize) {
+      window.alert("File too big!");
+      return;
+    }
+    // Split the filename to get the file type
+    let fileName = event.target.files[0].name
+    let fileType = fileName.split(".")[1];
+    if (fileType === "jpg" || fileType === "jpeg" || fileType === "png" || fileType === "gif") {
+      let presignedUrl = await awsService.getSignedUrl(fileType);
+      handleSubmission(presignedUrl, event.target.files[0]);
+    } else {
+      window.alert("Unsupported file type!");
+    }
 	};
 
-  const [presignedUrl, setPresignedUrl] = useState();
+  const handleSubmission = async (presignedUrl, file) => {
+    await axios.put(
+      presignedUrl,
+      file
+    )
+    .then(async (response) => {
+      let photoUrl = presignedUrl.split("?")[0]
+      await dispatch(updateProfilePic(photoUrl));
+      window.location.reload();
+    })
+			.catch((error) => {
+				console.error('Error:', error);
+			});
+  }
+
+  const deleteCurrentProfilePic = async () => {
+    await dispatch(deleteProfilePic());
+    window.location.reload();
+  }
 
   return (
     <div className="User" id="user">
@@ -89,10 +121,10 @@ const UserPage = () => {
         <div className="modalTitle">
           <h3>Change Profile Picture</h3>
         </div>
-        <input type="file" name="file" ref={inputFile} onChange={changeHandler} hidden />
+        <input type="file" name="file" ref={inputFile} accept=".jpg,.jpeg,.png,.gif" onChange={changeHandler} hidden />
         <div>
           <button className="modalButtonBlue" onClick={onUploadClick}>Upload picture</button>
-          <button className="modalButtonRed">Delete current picture</button>
+          <button className="modalButtonRed" onClick={() => deleteCurrentProfilePic()}>Delete current picture</button>
           <button className="modalButton" onClick={closeModal}>Cancel</button>
         </div>
       </Modal>
@@ -103,13 +135,13 @@ const UserPage = () => {
               {ownProfile && (
                 <div>
                   <button onClick={openModal} className="profPicBtn" title="Change Profile Picture">
-                    <img className="profilePic" src="https://www.w3schools.com/howto/img_avatar2.png" />
+                    <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
                   </button>
                 </div>
               )}
               {!ownProfile && (
                 <div>
-                  <img className="profilePic" src="https://www.w3schools.com/howto/img_avatar2.png" />
+                  <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
                 </div>
               )}
             </div>

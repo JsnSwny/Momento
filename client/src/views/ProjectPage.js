@@ -3,17 +3,11 @@ import Canvas from "../components/project/Canvas";
 import ProjectLeftSidebar from "../components/project/ProjectLeftSidebar";
 import ProjectRightSidebar from "../components/project/ProjectRightSidebar";
 import CanvasTop from "../components/project/CanvasTop";
-import { useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
+
 
 const ProjectPage = () => {
   const [selectedAction, setSelectedAction] = useState("select");
   const stageRef = useRef();
-  const loggedIn = useSelector((state) => state.auth.isLoggedIn);
-
-  if (!loggedIn) {
-    return <Navigate to="/login" />
-  }
 
   return (
     <div className="flex-container--between">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/actions/auth";
-import { Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { CLEAR_MESSAGE } from "../store/actions/types";
 
@@ -28,7 +27,7 @@ const LoginPage = () => {
     if (loggedIn) {
       
         //This way the onload function runs in the canvas script
-        return window.location.href = "/project";
+        return window.location.href = "/";
     //return <Navigate to="/project" />
   }
 

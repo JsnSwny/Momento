@@ -101,8 +101,6 @@ exports.login = (req, res) => {
         });
 
         var refreshToken = await RefreshToken.createToken(user);
-
-        console.log(refreshToken)
   
         var authorities = [];
         user.getRoles().then(roles => {
@@ -112,6 +110,8 @@ exports.login = (req, res) => {
           res.status(200).send({
             id: user.id,
             username: user.username,
+            name: user.firstName + " " + user.lastName,
+            imageURL: user.profilePicture,
             emailAddress: user.emailAddress,
             roles: authorities,
             accessToken: token,
