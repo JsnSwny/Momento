@@ -7,3 +7,8 @@ export const REGISTER_FAILURE = "REGISTER_FAILURE";
 
 export const SET_MESSAGE = "SET_MESSAGE";
 export const CLEAR_MESSAGE = "CLEAR_MESSAGE";
+export const ADD_PAGE = "ADD_PAGE";
+export const UPDATE_PAGE = "UPDATE_PAGE";
+export const SET_ACTIVE_PAGE = "SET_ACTIVE_PAGE";
+export const SET_EDITING_PAGE = "SET_EDITING_PAGE";
+export const DELETE_PAGE = "DELETE_PAGE";

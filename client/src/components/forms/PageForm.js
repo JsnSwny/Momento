@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { addPage } from "../../store/actions/project";
 
 const PageForm = ({ setOpen }) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   const onSubmit = (e) => {
     e.preventDefault();
+    dispatch(addPage(title));
+    setOpen(false);
   };
 
   return (
@@ -22,15 +24,6 @@ const PageForm = ({ setOpen }) => {
           autoFocus
           value={title}
         ></input>
-      </div>
-      <div className="form__control">
-        <label className="form__label">Description*</label>
-        <textarea
-          className="form__input"
-          name="description"
-          onChange={(e) => setDescription(e.target.value)}
-          value={description}
-        ></textarea>
       </div>
       <hr />
       <div className="button-container">
