@@ -1,7 +1,6 @@
 import React, { useState, Fragment, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Modal from "../layout/Modal";
-import PageForm from "../forms/PageForm";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import {
   addPage,
@@ -41,9 +40,6 @@ const ProjectLeftSidebar = () => {
 
   return (
     <Fragment>
-      <Modal open={open} setOpen={setOpen} title="Add New Page">
-        <PageForm setOpen={setOpen} />
-      </Modal>
       <div className="sidebar sidebar--left">
         <div className="sidebar__title">
           <h4>{project.currentProjectData.title}</h4>

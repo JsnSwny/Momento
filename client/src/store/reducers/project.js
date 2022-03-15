@@ -170,12 +170,13 @@
 //             return state;
 //     }
 // }
-//   ADD_PAGE,
-//   UPDATE_PAGE,
-//   SET_ACTIVE_PAGE,
-//   SET_EDITING_PAGE,
-//   DELETE_PAGE,
-// } from "../actions/types";
+import {
+  ADD_PAGE,
+  UPDATE_PAGE,
+  SET_ACTIVE_PAGE,
+  SET_EDITING_PAGE,
+  DELETE_PAGE,
+} from "../actions/types";
 
 const initialState = {
   pages: [
