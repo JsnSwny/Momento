@@ -22,7 +22,7 @@ const ProjectPage = () => {
           stageRef={stageRef}
         />
       </div>
-      <ProjectRightSidebar />
+      <ProjectRightSidebar selectedAction={selectedAction} />
     </div>
   );
 };

@@ -12,4 +12,10 @@
   &.text {
     cursor: text;
   }
+  &.draw {
+    cursor: url("/public/images/pen.svg"), default;
+  }
+  &.eraser {
+    cursor: url("/public/images/eraser.svg"), text;
+  }
 }

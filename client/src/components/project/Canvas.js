@@ -10,14 +10,53 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
-  const [rectangles, setRectangles] = useState([]);
 
-  const [textElements, setTextElements] = useState([]);
+  const drawingOptions = useSelector((state) => state.canvas.drawingOptions);
 
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+
+  const [tool, setTool] = useState("pen");
+  const [lines, setLines] = useState([]);
+  const isDrawing = useRef(false);
+
+  const handleMouseDown = (e) => {
+    if (selectedAction == "draw" || selectedAction == "eraser") {
+      isDrawing.current = true;
+      const pos = e.target.getStage().getPointerPosition();
+      setLines([
+        ...lines,
+        {
+          tool: selectedAction == "draw" ? "pen" : "eraser",
+          points: [pos.x, pos.y],
+          colour: drawingOptions.colour,
+          thickness: drawingOptions.thickness,
+        },
+      ]);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    // no drawing - skipping
+    if (!isDrawing.current) {
+      return;
+    }
+    const stage = e.target.getStage();
+    const point = stage.getPointerPosition();
+    let lastLine = lines[lines.length - 1];
+    // add point
+    lastLine.points = lastLine.points.concat([point.x, point.y]);
+
+    // replace last
+    lines.splice(lines.length - 1, 1, lastLine);
+    setLines(lines.concat());
+  };
+
+  const handleMouseUp = () => {
+    isDrawing.current = false;
+  };
 
   const insertText = (x, y) => {
     let obj = {
@@ -74,6 +113,9 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
         height={stageSize.height}
         onClick={handleClick}
         ref={stageRef}
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
       >
         <Provider store={store}>
           <Layer>
@@ -100,6 +142,19 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                 />
               );
             })}
+            {lines.map((line, i) => (
+              <Line
+                key={i}
+                points={line.points}
+                stroke={line.colour}
+                strokeWidth={line.thickness}
+                tension={0.5}
+                lineCap="round"
+                globalCompositeOperation={
+                  line.tool === "eraser" ? "destination-out" : "source-over"
+                }
+              />
+            ))}
           </Layer>
 
           {/* {rectangles.map((rect, i) => (

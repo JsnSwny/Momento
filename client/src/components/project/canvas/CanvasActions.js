@@ -5,6 +5,7 @@ import {
   faCommentAlt,
   faImage,
   faMousePointer,
+  faEraser,
 } from "@fortawesome/free-solid-svg-icons";
 
 const CanvasActions = ({ selectedAction, setSelectedAction }) => {
@@ -23,6 +24,13 @@ const CanvasActions = ({ selectedAction, setSelectedAction }) => {
           selectedAction == "draw" ? "active" : ""
         }`}
         icon={faPencilAlt}
+      />
+      <FontAwesomeIcon
+        onClick={() => setSelectedAction("eraser")}
+        className={`canvas-actions__icon ${
+          selectedAction == "eraser" ? "active" : ""
+        }`}
+        icon={faEraser}
       />
       <FontAwesomeIcon
         onClick={() => setSelectedAction("text")}
