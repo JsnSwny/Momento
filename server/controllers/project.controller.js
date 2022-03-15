@@ -33,20 +33,28 @@ exports.loadProject = (req, res) => {
                 return res.status(404).send({ message: "Project not found" });
             }
 
-            //Include the number of pages in the project
-            page.max("pageNumber", { where: { projectId: req.params.projectId } }).then(numPages => { 
+            //Compile page data
+            pageTitles = page.findAndCountAll({ where: { projectId: req.params.projectId } })
+                .then(pages => { 
 
-                var projectData = { projectId: req.params.projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: numPages };
+                    pageInfo = [];
 
-                res.status(200).send(JSON.stringify(projectData));
+                    for (let i = 0; i < pages.count; i++) { 
 
-            }).catch(e => { 
+                        pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription });
+                    }
 
-                console.log("Internal server error when loading project: " + e.message);
+                    var projectData = { projectId: req.params.projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: pageInfo.length, pageInfo: pageInfo };
 
-                res.status(500).send({ message: "Internal server error when loading project" });
+                    res.status(200).send(JSON.stringify(projectData));
 
-            });
+                }).catch(e => { 
+
+                    console.log("Internal server error when loading project: " + e.message);
+    
+                    res.status(500).send({ message: "Internal server error when loading project" });
+    
+                });
 
         }).catch(e => {
 

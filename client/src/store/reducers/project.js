@@ -29,8 +29,10 @@ const initialState = {
     currentPageData: {
         pageId: -1,
         pageNumber: -1,
+        title: "",
         pageData: ""
     },
+    pages: [],
   };
 
 export default function (state = initialState, action) {
@@ -69,6 +71,10 @@ export default function (state = initialState, action) {
         };
     
         case PROJECT_LOAD_SUCCESS:
+            for (let i = 0; i < payload.projectData.pageCount; i++){
+                state.pages.push({ pageNumber: i + 1, pageTitle: payload.projectData.pageInfo[i].title, pageDescription: payload.projectData.pageInfo[i].description });
+            }
+            
             return {
                 ...state,
                 operationSuccess: true,
@@ -101,12 +107,14 @@ export default function (state = initialState, action) {
     
         case PAGE_ADD_SUCCESS:
             state.currentProjectData.pageCount++;
+            state.pages.push({ pageNumber: state.pages.length + 1, pageTitle: payload.newPageData.pageTitle, pageDescription: payload.newPageData.pageDescription });
             return {
                 ...state,
                 operationSuccess: true,
                 currentPageData: {
                     pageId: payload.pageNumber,
                     pageNumber: payload.pageNumber,
+                    title: payload.pageTitle,
                     pageData: payload.pageData
                 }
             };

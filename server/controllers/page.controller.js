@@ -30,11 +30,13 @@ exports.createPage = (req, res) => {
                 //Create new page object
                 page.create({
                     projectId: req.body.projectId,
-                    pageNumber: projectPages.count + 1
+                    pageNumber: projectPages.count + 1,
+                    pageTitle: req.body.pageTitle,
+                    pageDescription: req.body.pageDescription
                 })
                     .then(newPage => {
 
-                        res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData });
+                        res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
             
                     })
                     .catch(e => { 

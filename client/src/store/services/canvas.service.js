@@ -7,10 +7,13 @@ export const canvasService = {
     editPage
 };
 
-function addPage(projectId, newPageNumber) { 
+function addPage(projectId, newPageNumber, pageTitle, pageDescription) {
+    
     return api.post("/page", {
         projectId,
-        newPageNumber
+        newPageNumber,
+        pageTitle,
+        pageDescription
     })
 }
 

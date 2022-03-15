@@ -42,7 +42,7 @@ const createProject = (title, description) => (dispatch) => {
     .then(() => {
 
         //Add a new page to the project
-        dispatch(addPage(1));
+        dispatch(addPage(1, "Page 1", "Description"));
 
         store.getState().user.userData.projectList.push(store.getState().project.currentProjectData.projectId);
     })
@@ -66,7 +66,7 @@ const loadProjectData = (projectId) => (dispatch) => {
         if (store.getState().project.currentProjectData.pageCount > 0) {
             dispatch(loadPage(1));
         } else {
-            dispatch(addPage(1));
+            createProject("Project Name", "Description");
         }
 
           
@@ -94,12 +94,11 @@ const editProjectData = (newTitle, newDescription) => (dispatch) => {
 };
 
 //Add a new page to the project
-const addPage = (pageNumber) => (dispatch) => {
+const addPage = (pageNumber, title, description) => (dispatch) => {
     
-    console.log(pageNumber);
-
     dispatch(
-        canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber)
+        
+        canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
       .then(() => {
         
@@ -202,7 +201,6 @@ const loadPage = (pageNumber) => (dispatch) => {
 const savePage = () => (dispatch) => { 
     
     try {
-        
         var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
 
         var children = stageRef.current.getChildren()[0].getChildren();

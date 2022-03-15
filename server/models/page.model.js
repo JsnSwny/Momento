@@ -13,6 +13,12 @@ module.exports = (sequelize, Sequelize) => {
       },
       pageData: {
         type: Sequelize.STRING
+      },
+      pageTitle: {
+        type: Sequelize.STRING
+      },
+      pageDescription: {
+        type: Sequelize.STRING
       }
     });
   

@@ -1,8 +1,15 @@
 import React, { useState, Fragment } from "react";
 import Modal from "../layout/Modal";
 import PageForm from "../forms/PageForm";
+import { useSelector, useDispatch } from "react-redux";
+import { canvasFunctions } from "../project/CanvasFunctions";
 
 const ProjectLeftSidebar = () => {
+
+    const dispatch = useDispatch();
+    const project = useSelector((state) => state.project);
+
+
   const [open, setOpen] = useState(false);
   return (
     <Fragment>
@@ -11,13 +18,15 @@ const ProjectLeftSidebar = () => {
       </Modal>
       <div className="sidebar sidebar--left">
         <div className="sidebar__title">
-          <h4>Jason's Holiday</h4>
+            <h4>{ project.currentProjectData.title }</h4>
         </div>
-        <ul className="sidebar__list">
-          <li>Day 1</li>
-          <li>Day 2</li>
-          <li>Day 3</li>
-          <li>Day 4</li>
+              <ul className="sidebar__list">
+              {project.pages.map((page) => (
+                  <li
+                      onClick={() => dispatch(canvasFunctions.loadPage(page.pageNumber))}>
+                      {page.pageTitle.slice(0, 10)}
+                  </li>
+              ))}
         </ul>
         <button onClick={() => setOpen(true)}>+ Add New Page</button>
       </div>

@@ -11,9 +11,9 @@ import {
     PAGE_EDIT_FAILURE,
 } from "./types";
 
-export const canvasAddPage = (projectId, pageNumber) => (dispatch) => {
-
-    return canvasService.addPage(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
+export const canvasAddPage = (projectId, pageNumber, title, description) => (dispatch) => {
+    
+    return canvasService.addPage(projectId, pageNumber, title, description, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
                 console.log("Page added");
