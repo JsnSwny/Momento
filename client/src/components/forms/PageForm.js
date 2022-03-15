@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+<<<<<<< HEAD
 import store from "../../store/store";
 import { canvasFunctions } from "../project/CanvasFunctions";
+=======
+import { addPage } from "../../store/actions/project";
+>>>>>>> canvas-functionality
 
 const PageForm = ({ setOpen }) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   const onSubmit = (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     };
     
     const AddPage = () => {
@@ -17,6 +21,11 @@ const PageForm = ({ setOpen }) => {
 
         setOpen(false);
     };
+=======
+    dispatch(addPage(title));
+    setOpen(false);
+  };
+>>>>>>> canvas-functionality
 
   return (
     <form onSubmit={onSubmit} className="form">
@@ -30,15 +39,6 @@ const PageForm = ({ setOpen }) => {
           autoFocus
           value={title}
         ></input>
-      </div>
-      <div className="form__control">
-        <label className="form__label">Description*</label>
-        <textarea
-          className="form__input"
-          name="description"
-          onChange={(e) => setDescription(e.target.value)}
-          value={description}
-        ></textarea>
       </div>
       <hr />
       <div className="button-container">

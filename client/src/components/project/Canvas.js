@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector, Provider } from "react-redux";
 import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject } from "../../store/actions/project";
-import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
+import {
+  newProject,
+  loadProject,
+  editProject,
+} from "../../store/actions/project";
+import {
+  canvasAddPage,
+  canvasDeletePage,
+  canvasLoadPage,
+  canvasEditPage,
+} from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import { Stage, Layer, Rect, Circle, Line } from "react-konva";
 import Konva from "konva";
@@ -15,17 +24,60 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
-  const [rectangles, setRectangles] = useState([]);
 
-  const [textElements, setTextElements] = useState([]);
+  const drawingOptions = useSelector((state) => state.canvas.drawingOptions);
+
+  const [currentLine, setCurrentLine] = useState("");
 
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
-    var canvasHasBeenChanged = false;
-    
+  var canvasHasBeenChanged = false;
+
+  const [tool, setTool] = useState("pen");
+  const isDrawing = useRef(false);
+
+  const handleMouseDown = (e) => {
+    if (selectedAction == "draw" || selectedAction == "eraser") {
+      isDrawing.current = true;
+      const pos = e.target.getStage().getPointerPosition();
+      setCurrentLine({
+        tool: selectedAction == "draw" ? "pen" : "eraser",
+        points: [pos.x, pos.y],
+        colour: drawingOptions.colour,
+        thickness: drawingOptions.thickness,
+        elType: "Line",
+        text: "Line",
+      });
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    // no drawing - skipping
+    if (!isDrawing.current) {
+      return;
+    }
+    const stage = e.target.getStage();
+    const point = stage.getPointerPosition();
+    const currentPoints = currentLine.points;
+    currentPoints.concat([point.x, point.y]);
+    setCurrentLine({
+      ...currentLine,
+      points: [...currentLine.points, point.x, point.y],
+    });
+  };
+
+  const handleMouseUp = () => {
+    isDrawing.current = false;
+
+    if (currentLine) {
+      dispatch({ type: "ADD_ELEMENT", payload: currentLine });
+      setCurrentLine("");
+    }
+  };
+
   const insertText = (x, y) => {
     let obj = {
       text: "",
@@ -74,33 +126,34 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
+  const autoSave = () => {
+    //Currently this just runs every time, but in future it should only run if a change has been made
+    if (canvasHasBeenChanged || true) {
+      if (
+        store.getState().project.currentProjectData.projectId !== -1 &&
+        store.getState().project.currentPageData.pageNumber !== -1
+      ) {
+        dispatch(
+          canvasFunctions.savePage(
+            store.getState().project.currentProjectData.projectId,
+            store.getState().project.currentPageData.pageNumber
+          )
+        );
+      }
 
-    const autoSave = () => { 
-        //Currently this just runs every time, but in future it should only run if a change has been made
-        if (canvasHasBeenChanged || true) {
+      canvasHasBeenChanged = false;
+    }
+  };
 
-            if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
-            
-                dispatch(canvasFunctions.savePage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
-            }
+  //I dont know if this is the best way to do this, but it works for now
+  window.onpageshow = function () {
+    //localStorage.removeItem("user");
 
-            canvasHasBeenChanged = false;
-        }
-    };
-    
-    //I dont know if this is the best way to do this, but it works for now
-    window.onpageshow = function () {
-        
-        //localStorage.removeItem("user");
+    dispatch(canvasFunctions.loadUser(stageRef));
 
-        dispatch(canvasFunctions.loadUser(stageRef));
-        
-        setInterval(autoSave, 5000);
-    };
-    
-    
+    setInterval(autoSave, 5000);
+  };
 
-    
   return (
     <div className={`konva-container ${selectedAction}`}>
       <Stage
@@ -108,32 +161,74 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
         height={stageSize.height}
         onClick={handleClick}
         ref={stageRef}
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
       >
         <Provider store={store}>
           <Layer>
             {elements.map((item, i) => {
-              return (
-                <TextElement
-                  key={i}
-                  shapeProps={item}
-                  isSelected={selectedElement && item.id === selectedElement.id}
-                  onSelect={() => {
-                    selectedAction == "select" &&
-                      dispatch(setSelectedElement(item.id));
-                  }}
-                  onChange={(newAttrs) => {
-                    dispatch({
-                      type: "UPDATE_ELEMENT",
-                      id: item.id,
-                      payload: { ...newAttrs, elType: "Text" },
-                    });
-                  }}
-                  stageRef={stageRef}
-                  setSelectedId={setSelectedElement}
-                  setSelectedAction={setSelectedAction}
-                />
-              );
+              switch (item.elType) {
+                case "Text":
+                  return (
+                    <TextElement
+                      key={i}
+                      shapeProps={item}
+                      isSelected={
+                        selectedElement && item.id === selectedElement.id
+                      }
+                      onSelect={() => {
+                        selectedAction == "select" &&
+                          dispatch(setSelectedElement(item.id));
+                      }}
+                      onChange={(newAttrs) => {
+                        dispatch({
+                          type: "UPDATE_ELEMENT",
+                          id: item.id,
+                          payload: { ...newAttrs, elType: "Text" },
+                        });
+                      }}
+                      stageRef={stageRef}
+                      setSelectedId={setSelectedElement}
+                      setSelectedAction={setSelectedAction}
+                    />
+                  );
+                case "Line":
+                  return (
+                    <Line
+                      key={i}
+                      points={item.points}
+                      stroke={item.colour}
+                      strokeWidth={item.thickness}
+                      tension={0.5}
+                      lineCap="round"
+                      globalCompositeOperation={
+                        item.tool === "eraser"
+                          ? "destination-out"
+                          : "source-over"
+                      }
+                    />
+                  );
+                default:
+                  return false;
+              }
             })}
+
+            {isDrawing && (
+              <Line
+                key={0}
+                points={currentLine.points}
+                stroke={currentLine.colour}
+                strokeWidth={currentLine.thickness}
+                tension={0.5}
+                lineCap="round"
+                globalCompositeOperation={
+                  currentLine.tool === "eraser"
+                    ? "destination-out"
+                    : "source-over"
+                }
+              />
+            )}
           </Layer>
 
           {/* {rectangles.map((rect, i) => (

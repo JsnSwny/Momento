@@ -1,6 +1,7 @@
 const initialState = {
   elements: [],
   selectedElement: null,
+  drawingOptions: { colour: "#000000", thickness: 0.5 },
 };
 
 export default (state = initialState, action) => {
@@ -11,7 +12,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         elements: [...state.elements, obj],
-        selectedElement: obj,
+        selectedElement: obj.elType != "Line" && obj,
       };
     case "UPDATE_ELEMENT":
       return {
@@ -44,10 +45,33 @@ export default (state = initialState, action) => {
         elements: [],
         selectedElement: null,
       };
+
+    case "SET_DRAWING_COLOUR":
+      console.log("Updating colour");
+      return {
+        ...state,
+        drawingOptions: { ...state.drawingOptions, colour: action.payload },
+      };
+
+    case "SET_DRAWING_THICKNESS":
+      return {
+        ...state,
+        drawingOptions: { ...state.drawingOptions, thickness: action.payload },
+      };
     default:
       return state;
   }
 };
+
+export const setDrawingColour = (colour) => ({
+  type: "SET_DRAWING_COLOUR",
+  payload: colour,
+});
+
+export const setDrawingThickness = (size) => ({
+  type: "SET_DRAWING_THICKNESS",
+  payload: size,
+});
 
 export const setSelectedElement = (id) => ({
   type: "SET_SELECTED",
