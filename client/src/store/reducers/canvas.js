@@ -12,7 +12,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         elements: [...state.elements, obj],
-        selectedElement: obj,
+        selectedElement: obj.elType != "Line" && obj,
       };
     case "UPDATE_ELEMENT":
       return {

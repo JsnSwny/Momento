@@ -13,28 +13,28 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
 
   const drawingOptions = useSelector((state) => state.canvas.drawingOptions);
 
+  const [currentLine, setCurrentLine] = useState("");
+
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
   const [tool, setTool] = useState("pen");
-  const [lines, setLines] = useState([]);
   const isDrawing = useRef(false);
 
   const handleMouseDown = (e) => {
     if (selectedAction == "draw" || selectedAction == "eraser") {
       isDrawing.current = true;
       const pos = e.target.getStage().getPointerPosition();
-      setLines([
-        ...lines,
-        {
-          tool: selectedAction == "draw" ? "pen" : "eraser",
-          points: [pos.x, pos.y],
-          colour: drawingOptions.colour,
-          thickness: drawingOptions.thickness,
-        },
-      ]);
+      setCurrentLine({
+        tool: selectedAction == "draw" ? "pen" : "eraser",
+        points: [pos.x, pos.y],
+        colour: drawingOptions.colour,
+        thickness: drawingOptions.thickness,
+        elType: "Line",
+        text: "Line",
+      });
     }
   };
 
@@ -45,17 +45,21 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     }
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
-    let lastLine = lines[lines.length - 1];
-    // add point
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
-
-    // replace last
-    lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
+    const currentPoints = currentLine.points;
+    currentPoints.concat([point.x, point.y]);
+    setCurrentLine({
+      ...currentLine,
+      points: [...currentLine.points, point.x, point.y],
+    });
   };
 
   const handleMouseUp = () => {
     isDrawing.current = false;
+
+    if (currentLine) {
+      dispatch({ type: "ADD_ELEMENT", payload: currentLine });
+      setCurrentLine("");
+    }
   };
 
   const insertText = (x, y) => {
@@ -120,41 +124,67 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
         <Provider store={store}>
           <Layer>
             {elements.map((item, i) => {
-              return (
-                <TextElement
-                  key={i}
-                  shapeProps={item}
-                  isSelected={selectedElement && item.id === selectedElement.id}
-                  onSelect={() => {
-                    selectedAction == "select" &&
-                      dispatch(setSelectedElement(item.id));
-                  }}
-                  onChange={(newAttrs) => {
-                    dispatch({
-                      type: "UPDATE_ELEMENT",
-                      id: item.id,
-                      payload: { ...newAttrs, elType: "Text" },
-                    });
-                  }}
-                  stageRef={stageRef}
-                  setSelectedId={setSelectedElement}
-                  setSelectedAction={setSelectedAction}
-                />
-              );
+              switch (item.elType) {
+                case "Text":
+                  return (
+                    <TextElement
+                      key={i}
+                      shapeProps={item}
+                      isSelected={
+                        selectedElement && item.id === selectedElement.id
+                      }
+                      onSelect={() => {
+                        selectedAction == "select" &&
+                          dispatch(setSelectedElement(item.id));
+                      }}
+                      onChange={(newAttrs) => {
+                        dispatch({
+                          type: "UPDATE_ELEMENT",
+                          id: item.id,
+                          payload: { ...newAttrs, elType: "Text" },
+                        });
+                      }}
+                      stageRef={stageRef}
+                      setSelectedId={setSelectedElement}
+                      setSelectedAction={setSelectedAction}
+                    />
+                  );
+                case "Line":
+                  return (
+                    <Line
+                      key={i}
+                      points={item.points}
+                      stroke={item.colour}
+                      strokeWidth={item.thickness}
+                      tension={0.5}
+                      lineCap="round"
+                      globalCompositeOperation={
+                        item.tool === "eraser"
+                          ? "destination-out"
+                          : "source-over"
+                      }
+                    />
+                  );
+                default:
+                  return false;
+              }
             })}
-            {lines.map((line, i) => (
+
+            {isDrawing && (
               <Line
-                key={i}
-                points={line.points}
-                stroke={line.colour}
-                strokeWidth={line.thickness}
+                key={0}
+                points={currentLine.points}
+                stroke={currentLine.colour}
+                strokeWidth={currentLine.thickness}
                 tension={0.5}
                 lineCap="round"
                 globalCompositeOperation={
-                  line.tool === "eraser" ? "destination-out" : "source-over"
+                  currentLine.tool === "eraser"
+                    ? "destination-out"
+                    : "source-over"
                 }
               />
-            ))}
+            )}
           </Layer>
 
           {/* {rectangles.map((rect, i) => (
