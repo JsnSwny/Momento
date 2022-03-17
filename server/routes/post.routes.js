@@ -20,6 +20,18 @@ module.exports = function(app) {
         "/api/addComment",
         [authJWT.verifyToken],
         controller.addComment
+    );
+
+    app.post(
+        "/api/likePost",
+        [authJWT.verifyToken],
+        controller.likePost
+    );
+
+    app.post(
+        "/api/unlikePost",
+        [authJWT.verifyToken],
+        controller.unlikePost
     )
 
 }

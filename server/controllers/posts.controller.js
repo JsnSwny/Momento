@@ -8,7 +8,8 @@ const Like = db.like;
 exports.getPosts = async (req, res) => {
     try {
         var postsResponse = {
-            posts: []
+            posts: [],
+            likedPosts: []
         };
 
         var following = await Followers.findAndCountAll({
@@ -34,8 +35,11 @@ exports.getPosts = async (req, res) => {
         .then(async (posts) => {
 
             for (let i = 0; i < posts.rows.length; i++) {
-
-
+                for (let j = 0; j < posts.rows[i].likes.length; j++) {
+                    if (posts.rows[i].likes[j].userId === req.userId) {
+                        postsResponse.likedPosts.push(posts.rows[i].id);
+                    }
+                }
                 // structure single post response
                 var postData = {
                     id: posts.rows[i].id,
@@ -106,3 +110,50 @@ exports.addComment = (req, res) => {
         res.status(500).send({ message: "Internal server error when adding a new comment" });
     }
 };
+
+exports.likePost = async (req, res) => {
+    try {
+        Like.findOne({
+            where: {
+                postId: req.body.postId,
+                userId: req.userId
+            }
+        })
+        .then((like) => {
+            if (like) {
+                return res.status(400).send('Post already liked');
+            } else {
+                Like.create({
+                    postId: req.body.postId,
+                    userId: req.userId
+                })
+                .then((like) => {
+                    return res.status(200).send('Post liked successfully');
+                })
+            }
+        })
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+};
+
+exports.unlikePost = async (req, res) => {
+    try {
+        Like.findOne({
+            where: {
+                postId: req.body.postId,
+                userId: req.userId
+            }
+        })
+        .then((like) => {
+            if (like) {
+                like.destroy();
+                return res.status(200).send('Post unliked successfully');
+            } else {
+                return res.status(400).send('Post not liked');
+            }
+        })
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+}

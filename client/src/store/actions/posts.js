@@ -6,18 +6,29 @@ import {
   POSTS_LOADED
 } from "./types";
 
-export const likePost = (item) => (dispatch, getState) => {
-  dispatch({
-    type: LIKE_POST,
-    id: item.id,
-  });
+export const likePost = (postId) => (dispatch, getState) => {
+  return postsService.likePost(postId)
+  .then(
+    (response) => {
+      dispatch({
+        type: LIKE_POST,
+        id: postId,
+      });
+    }
+  )
 };
 
-export const unlikePost = (item) => (dispatch, getState) =>
-  dispatch({
-    type: UNLIKE_POST,
-    id: item.id,
-});
+export const unlikePost = (postId) => (dispatch, getState) => {  
+  return postsService.unlikePost(postId)
+  .then(
+    (response) => {
+      dispatch({
+        type: UNLIKE_POST,
+        id: postId,
+      });
+    }
+  )
+};
 
 export const addComment = (comment, postId) => (dispatch, getState) => {
   return postsService.addComment(postId, comment)

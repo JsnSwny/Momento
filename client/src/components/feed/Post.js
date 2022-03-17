@@ -50,8 +50,8 @@ const Post = ({ post }) => {
                   console.log(likedPosts);
                   dispatch(
                     likedPosts.includes(post.id)
-                      ? unlikePost(post)
-                      : likePost(post)
+                      ? unlikePost(post.id)
+                      : likePost(post.id)
                   );
                 }}
               ></i>
