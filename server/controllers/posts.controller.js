@@ -40,6 +40,11 @@ exports.getPosts = async (req, res) => {
                         postsResponse.likedPosts.push(posts.rows[i].id);
                     }
                 }
+
+                // update views
+                posts.rows[i].views = posts.rows[i].views + 1;
+                await posts.rows[i].save();
+
                 // structure single post response
                 var postData = {
                     id: posts.rows[i].id,
