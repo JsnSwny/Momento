@@ -101,10 +101,10 @@ db.like.belongsTo(db.post, {
 
 //Define likes <-> users relationship
 db.user.hasMany(db.like, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
 });
 db.like.belongsTo(db.user, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
 });
 
 // Followers table

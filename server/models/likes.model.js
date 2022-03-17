@@ -8,11 +8,8 @@ module.exports = (sequelize, Sequelize) => {
         postId: {
             type: Sequelize.INTEGER
         },
-        authorId: {
+        userId: {
             type: Sequelize.INTEGER
-        },
-        dateLiked: {
-            type: Sequelize.DATE
         }
     });
   

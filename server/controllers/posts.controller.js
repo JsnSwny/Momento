@@ -3,6 +3,7 @@ const User = db.user;
 const Post = db.post;
 const Comment = db.comment;
 const Followers = db.followers;
+const Like = db.like;
 
 exports.getPosts = async (req, res) => {
     try {
@@ -27,11 +28,13 @@ exports.getPosts = async (req, res) => {
         Post.findAndCountAll({
             where: {
                 userId: followArray
-            }
+            },
+            include: Like
         })
         .then(async (posts) => {
 
-            for (let i = 0; i < posts.count; i++) {
+            for (let i = 0; i < posts.rows.length; i++) {
+
 
                 // structure single post response
                 var postData = {
@@ -39,7 +42,7 @@ exports.getPosts = async (req, res) => {
                     title: posts.rows[i].title,
                     description: posts.rows[i].description,
                     imageURL: posts.rows[i].imageURL,
-                    likes: 200, // no likes table yet - to be implemented
+                    likes: posts.rows[i].likes.length,
                     views: posts.rows[i].views,
                     collaborators: posts.rows[i].collaborators,
                     comments: []
