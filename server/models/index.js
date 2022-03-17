@@ -107,4 +107,9 @@ db.like.belongsTo(db.user, {
   foreignKey: 'authorId', targetKey: 'id'
 });
 
+// Followers table
+db.followers = require("./followers.model")(sequelize, Sequelize);
+db.followers.belongsTo(db.user, {foreignKey: 'userId1'});
+db.followers.belongsTo(db.user, {foreignKey: 'userId2'});
+
 module.exports = db;

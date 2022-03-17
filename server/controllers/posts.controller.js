@@ -2,15 +2,33 @@ const db = require("../models");
 const User = db.user;
 const Post = db.post;
 const Comment = db.comment;
+const Followers = db.followers;
 
-exports.getPosts = (req, res) => {
+exports.getPosts = async (req, res) => {
     try {
         var postsResponse = {
             posts: []
         };
 
+        var following = await Followers.findAndCountAll({
+            where: {
+                userId1: req.userId
+            },
+            attributes: ['userId2']
+        });
+
+        var followArray = [];
+
+        for (let i = 0; i < following.count; i++) {
+            followArray.push(following.rows[i].userId2);
+        }
+
         // get all posts
-        Post.findAndCountAll()
+        Post.findAndCountAll({
+            where: {
+                userId: followArray
+            }
+        })
         .then(async (posts) => {
 
             for (let i = 0; i < posts.count; i++) {

@@ -34,8 +34,7 @@ exports.loadUserData = (req, res) => {
                 username: user.username,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                profilePicture: user.profilePicture,
-                posts: []
+                profilePicture: user.profilePicture
             })  
         })
     }
@@ -60,8 +59,7 @@ exports.loadUserData = (req, res) => {
                     lastName: foundUser.lastName,
                     emailAddress: foundUser.emailAddress,
                     roles: foundUser.roles,
-                    projectList: [],
-                    posts: []
+                    projectList: []
                 }
 
                 for (let i = 0; i < userProjects.count; i++) { 
