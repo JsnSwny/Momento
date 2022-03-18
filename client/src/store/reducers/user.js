@@ -1,6 +1,5 @@
 import {
-    USER_LOAD_SUCCESS,
-    USER_LOAD_FAILURE,
+    USER_LOAD_SUCCESS
 } from "../actions/types";
 
 const initialState = {
@@ -26,14 +25,7 @@ export default function (state = initialState, action) {
                     username: payload.userData.username,
                     projectList: payload.userData.projectList
                 }
-        };
-    
-        case USER_LOAD_FAILURE:
-            return {
-                ...state,
-                operationSuccess: false,
-        };
-        
+        };        
         default:
             return state;
     }

@@ -1,8 +1,6 @@
 import { 
     REGISTER_SUCCESS,
-    REGISTER_FAILURE,
     LOGIN_SUCCESS,
-    LOGIN_FAILURE, 
     LOGOUT,
     PWD_REQUEST_SUCCESS,
     REFRESH_TOKEN,
@@ -25,23 +23,11 @@ export default function (state = initialState, action) {
                 isLoggedIn: false,
                 successful: true,
             };
-        case REGISTER_FAILURE:
-            return {
-                ...state,
-                isLoggedIn: false,
-                successful: false,
-            }
         case LOGIN_SUCCESS:
             return {
                 ...state,
                 isLoggedIn: true,
                 user: payload.user,
-            };
-        case LOGIN_FAILURE:
-            return {
-                ...state,
-                isLoggedIn: false,
-                user: null,
             };
         case LOGOUT:
             return {

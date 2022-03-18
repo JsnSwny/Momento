@@ -24,11 +24,11 @@ const Comment = ({ obj }) => {
     : 0);
   return (
     <li className="flex-container">
-      <Link to={`/user/${obj.username}`} target="_blank" rel="noopener noreferrer">
+      <Link to={`/user/${obj.username}`}>
         <img className="profile-picture" src={obj.imageURL} />
       </Link>
       <div className="feed-post__comment-content">
-        <Link to={`/user/${obj.username}`} target="_blank" rel="noopener noreferrer"><h4>{obj.name}</h4></Link>
+        <Link to={`/user/${obj.username}`}><h4>{obj.name}</h4></Link>
         <p>{obj.comment}</p>
         <small>{convertDateDiff(dateDiff)}</small>
       </div>
