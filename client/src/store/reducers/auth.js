@@ -5,7 +5,8 @@ import {
     LOGIN_FAILURE, 
     LOGOUT,
     PWD_REQUEST_SUCCESS,
-    REFRESH_TOKEN
+    REFRESH_TOKEN,
+    USER_FOLLOWED
  } from "../actions/types";
 
 const user = JSON.parse(localStorage.getItem("user"));
@@ -58,6 +59,16 @@ export default function (state = initialState, action) {
                 ...state,
                 user: { ...user, accessToken: payload }
             };
+        case USER_FOLLOWED:
+            return {
+                ...state,
+                user: {
+                    ...user,
+                    following: state.user.following.includes(payload.id)
+                        ? state.user.following.filter((item) => item !== payload.id)
+                        : [...state.user.following, payload.id]
+                }
+            }
         default:
             return state;
     }

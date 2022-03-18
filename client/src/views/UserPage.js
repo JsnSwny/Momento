@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadUserData } from "../store/actions/user";
+import { followUser, loadUserData } from "../store/actions/user";
 import { Link } from "react-router-dom";
 import Modal from 'react-modal';
 import axios from 'axios';
@@ -25,17 +25,17 @@ const UserPage = () => {
     } return null;
   });
 
+  const id = useSelector((state) => {
+    if (operationSuccess) {
+      return state.user.userData.id;
+    } return null;
+  })
+
   const ownProfile = username === JSON.parse(localStorage.getItem("user")).username;
 
   const name = useSelector((state) => {
     if (operationSuccess && ownProfile) {
       return state.user.userData.firstName + " " + state.user.userData.lastName;
-    } return null;
-  })
-
-  const postCount = useSelector((state) => {
-    if (operationSuccess) {
-      return state.user.userData.posts.length;
     } return null;
   })
 
@@ -110,6 +110,8 @@ const UserPage = () => {
     window.location.reload();
   }
 
+  const following = useSelector((state) => state.auth.user.following.includes(id));
+
   return (
     <div className="User" id="user">
       <Modal
@@ -155,14 +157,19 @@ const UserPage = () => {
                     <h2>Edit profile</h2>
                   </div>
                 )}
-                {!ownProfile && (
+                {!ownProfile && !following && (
                   <div className="followBtnDiv">
-                    <button className="followButton">Follow</button>
+                    <button className="followButton" onClick={() => dispatch(followUser(id))}>Follow</button>
                   </div>
+                )}
+                {!ownProfile && following && (
+                  <div className="followBtnDiv">
+                    <button className="unfollowButton" onClick={() => dispatch(followUser(id))}>Unfollow</button>
+                </div>
                 )}
               </div>
               <ul className="userStats">
-              {postCount} posts    94 followers    29 following
+               94 followers    29 following
               </ul>
               <div className="userName-Bio">
                 <h2 className="name">{name}</h2>

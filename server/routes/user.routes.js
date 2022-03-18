@@ -10,29 +10,16 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/dev/all", controller.allAccess);
-
-  app.get(
-    "/api/dev/user",
-    [authJWT.verifyToken],
-    controller.userBoard
-  );
-
-  app.get(
-    "/api/dev/mod",
-    [authJWT.verifyToken, authJWT.isModerator],
-    controller.moderatorBoard
-  );
-
-  app.get(
-    "/api/dev/admin",
-    [authJWT.verifyToken, authJWT.isAdmin],
-    controller.adminBoard
-    );
-    
   app.post(
     "/api/user/:userId",
     [authJWT.verifyToken],
     controller.loadUserData
   );
+
+  app.post(
+    "/api/followUser",
+    [authJWT.verifyToken],
+    controller.followUser
+  );
+
 };
