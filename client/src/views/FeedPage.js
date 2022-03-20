@@ -3,19 +3,35 @@ import { useDispatch, useSelector } from "react-redux";
 import Post from "../components/feed/Post";
 import ScrapCard from "../components/feed/ScrapCard";
 import { getPosts } from "../store/actions/posts";
+import { newProject } from "../store/actions/project";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const FeedPage = () => {
   const dispatch = useDispatch();
   const filterList = ["Holidays", "Weddings", "Nature", "Anniversary"];
   const [currentFilter, setCurrentFilter] = useState(filterList[0]);
   const posts = useSelector((state) => state.posts.posts);
+  const [projectTitle, setProjectTitle] = useState("");
+  let navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getPosts());
   }, []);
 
+  const onSubmit = (e) => {
+    e.preventDefault();
+    dispatch(newProject(projectTitle, "Test")).then((res) => {
+      navigate(`/project/${res.projectId}`);
+    });
+  };
   return (
     <div className="wrapper--md">
+      <input
+        type="text"
+        value={projectTitle}
+        onChange={(e) => setProjectTitle(e.target.value)}
+      />
+      <button onClick={onSubmit}>Create Project</button>
       <div className="feed">
         <h2>My Scraps</h2>
         <div className="flex-container post-cards">

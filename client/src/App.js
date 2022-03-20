@@ -18,31 +18,53 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 };
 
 const App = () => {
-
   const auth = useSelector((state) => state.auth.isLoggedIn);
 
   return (
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />}></Route>
-          <Route path="/registration" element={<RegistrationPage />}></Route>
-          <Route path="/api/verify/:token" element={<VerificationPage />}></Route>
-          <Route path="/api/verifyPwdReset/:token" element={<PasswordChange />}></Route>
-          <Route path="/passwordreset" element={<RequestPasswordReset />}></Route>
-          <Route path="/project" 
-            element={<PrivateRoute isAuthenticated={auth}><ProjectPage /></PrivateRoute>}>
-          </Route>
-          <Route path="/" 
-            element={<PrivateRoute isAuthenticated={auth}><FeedPage /></PrivateRoute>}>
-          </Route>
-          <Route path="/" 
-            element={<PrivateRoute isAuthenticated={auth}><FeedPage /></PrivateRoute>}>
-          </Route>
-          <Route path="/user/:username" 
-            element={<PrivateRoute isAuthenticated={auth}><UserPage /></PrivateRoute>}>
-          </Route>
-        </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />}></Route>
+        <Route path="/registration" element={<RegistrationPage />}></Route>
+        <Route path="/api/verify/:token" element={<VerificationPage />}></Route>
+        <Route
+          path="/api/verifyPwdReset/:token"
+          element={<PasswordChange />}
+        ></Route>
+        <Route path="/passwordreset" element={<RequestPasswordReset />}></Route>
+        <Route
+          path="/project/:id"
+          element={
+            <PrivateRoute isAuthenticated={auth}>
+              <ProjectPage />
+            </PrivateRoute>
+          }
+        ></Route>
+        <Route
+          path="/"
+          element={
+            <PrivateRoute isAuthenticated={auth}>
+              <FeedPage />
+            </PrivateRoute>
+          }
+        ></Route>
+        <Route
+          path="/"
+          element={
+            <PrivateRoute isAuthenticated={auth}>
+              <FeedPage />
+            </PrivateRoute>
+          }
+        ></Route>
+        <Route
+          path="/user/:username"
+          element={
+            <PrivateRoute isAuthenticated={auth}>
+              <UserPage />
+            </PrivateRoute>
+          }
+        ></Route>
+      </Routes>
+    </Router>
   );
 };
 
