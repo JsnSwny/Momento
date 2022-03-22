@@ -25,6 +25,8 @@ exports.getPosts = async (req, res) => {
             followArray.push(following.rows[i].userId2);
         }
 
+        followArray.push(req.userId)
+
         // get all posts
         Post.findAndCountAll({
             where: {
