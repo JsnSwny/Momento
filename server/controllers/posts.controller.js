@@ -12,20 +12,29 @@ exports.getPosts = async (req, res) => {
             likedPosts: []
         };
 
-        var following = await Followers.findAndCountAll({
-            where: {
-                userId1: req.userId
-            },
-            attributes: ['userId2']
-        });
-
         var followArray = [];
 
-        for (let i = 0; i < following.count; i++) {
-            followArray.push(following.rows[i].userId2);
-        }
+        if (!req.body.username) {
+            var following = await Followers.findAndCountAll({
+                where: {
+                    userId1: req.userId
+                },
+                attributes: ['userId2']
+            });
 
-        followArray.push(req.userId)
+            for (let i = 0; i < following.count; i++) {
+                followArray.push(following.rows[i].userId2);
+            }
+
+            followArray.push(req.userId)
+        } else {
+            var user = await User.findOne({
+                where: {
+                    username: req.body.username
+                }
+            });
+            followArray.push(user.id);
+        }
 
         // get all posts
         Post.findAndCountAll({

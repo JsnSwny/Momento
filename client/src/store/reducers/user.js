@@ -9,6 +9,13 @@ const initialState = {
         username: "",
         projectList: []
     },
+    userData: {
+        id: null,
+        username: null,
+        firstName: null,
+        lastName: null,
+        profilePicture: null
+    }
   };
 
 export default function (state = initialState, action) {

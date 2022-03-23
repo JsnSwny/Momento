@@ -7,8 +7,10 @@ export const postsService = {
     unlikePost
 };
 
-function getPosts() {
-    return api.post(`/getPosts`);
+function getPosts(username) {
+    return api.post(`/getPosts`, {
+        username
+    });
 };
 
 function addComment(postId, text) {

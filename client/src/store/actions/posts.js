@@ -57,4 +57,18 @@ export const getPosts = () => (dispatch) => {
       return Promise.resolve();
     }
   )
-}
+};
+
+export const getUserPosts = (username) => (dispatch) => {
+  return postsService.getPosts(username)
+  .then(
+    (response) => {
+      dispatch({
+        type: POSTS_LOADED,
+        payload: response
+      });
+
+      return Promise.resolve();
+    }
+  )
+};
