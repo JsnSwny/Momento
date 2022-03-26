@@ -20,7 +20,7 @@ import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
 
-const Canvas = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {
+const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
@@ -153,12 +153,6 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {
 
     setInterval(autoSave, 5000);
   };
-
-  if (selectedAction === "image") {
-    inputFile.current.click();
-  }
-
-  console.log(elements)
 
   return (
     <div className={`konva-container ${selectedAction}`}>

@@ -46,7 +46,6 @@ const ProjectPage = () => {
     .then(async (response) => {
       let imageUrl = presignedUrl.split("?")[0]
       // use imageUrl for Konva Image object
-      console.log(imageUrl);
       addImage(imageUrl);
     })
     .catch((error) => {
@@ -88,13 +87,13 @@ const ProjectPage = () => {
           selectedAction={selectedAction}
           setSelectedAction={setSelectedAction}
           stageRef={stageRef}
+          inputFile={inputFile}
         />
         <input type="file" name="image" ref={inputFile} accept=".jpg,.jpeg,.png" onChange={changeHandler} hidden />
         <Canvas
           selectedAction={selectedAction}
           setSelectedAction={setSelectedAction}
           stageRef={stageRef}
-          inputFile={inputFile}
         />
       </div>
       <ProjectRightSidebar selectedAction={selectedAction} />
