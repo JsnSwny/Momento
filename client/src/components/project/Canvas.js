@@ -13,14 +13,14 @@ import {
   canvasEditPage,
 } from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
-import { Stage, Layer, Rect, Circle, Line } from "react-konva";
+import { Stage, Layer, Rect, Circle, Line, Image } from "react-konva";
 import Konva from "konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
 
-const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
+const Canvas = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
@@ -154,6 +154,12 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     setInterval(autoSave, 5000);
   };
 
+  if (selectedAction === "image") {
+    inputFile.current.click();
+  }
+
+  console.log(elements)
+
   return (
     <div className={`konva-container ${selectedAction}`}>
       <Stage
@@ -209,6 +215,25 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                       }
                     />
                   );
+                case "Image":
+                  return (
+                    <Image
+                      key={i}
+                      width={item.width}
+                      height={item.height}
+                      image={item.imgObj}
+                      isSelected={
+                        selectedElement && item.id === selectedElement.id
+                      }
+                      onSelect={() => {
+                        selectedAction == "select" &&
+                          dispatch(setSelectedElement(item.id));
+                      }}
+                      stageRef={stageRef}
+                      setSelectedId={setSelectedElement}
+                      setSelectedAction={setSelectedAction}
+                    />
+                  )
                 default:
                   return false;
               }

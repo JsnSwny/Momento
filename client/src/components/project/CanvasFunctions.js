@@ -1,10 +1,10 @@
-// import Konva from "konva";
-// import store from "../../store/store";
+import Konva from "konva";
+import store from "../../store/store";
 // import { loadUserData } from "../../store/actions/user";
 // import { newProject, loadProject, editProject } from "../../store/actions/project";
-// import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
+import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
 
-// var stageRef;
+var stageRef;
 
 // //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
 // const loadUser = (stage) => (dispatch) => {
@@ -194,41 +194,49 @@
 // };
 
 // //save page to the server
-// const savePage = () => (dispatch) => {
+const savePage = (stage) => (dispatch) => {
 
-//     try {
-//         var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
+    stageRef = stage;
+    try {
+        var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
+        var children = stageRef.current.getChildren()[0].getChildren();
 
-//         var children = stageRef.current.getChildren()[0].getChildren();
+        for (let i = 0; i < children.length; i++) {
+            if (children[i].getClassName() === "Image") {
+                //Save image
+                let image = {
+                    attrs: {
+                        width: children[i].attrs.width,
+                        height: children[i].attrs.height,
+                        src: children[i].attrs.image.src
+                    },
+                    className: "Image"
+                }
+                pageData[1].push(JSON.stringify(image));
+            } else {
+                pageData[1].push(children[i].toJSON());
+            }
+        }
 
-//         for (let i = 0; i < children.length; i++) {
+        dispatch(
+            canvasEditPage(
+                store.getState().project.currentProjectData.projectId, 
+                store.getState().project.currentPage, 
+                JSON.stringify(pageData))
+          )
+          .then(() => {
+            console.log("Page saved successfully");
+          })
+          .catch(() => {
+            console.log("Error saving page");
+          })
+    }
+    catch (e) {
+        console.log("Error converting canvas to JSON: " + e);
+    }
+};
 
-//             pageData[1].push(children[i].toJSON());
-
-//             if (children[i].getClassName() === "Image") {
-
-//                 //Save image
-//             }
-//         }
-
-//         dispatch(
-//             canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, JSON.stringify(pageData))
-//           )
-//           .then(() => {
-
-//           })
-//           .catch(() => {
-
-//             console.log("Error saving page");
-//           })
-
-//     }
-//     catch (e) {
-//         console.log("Error converting canvas to JSON: " + e);
-//     }
-// };
-
-// export const canvasFunctions = {
+export const canvasFunctions = {
 //     loadUser,
 //     createProject,
 //     loadProjectData,
@@ -236,5 +244,5 @@
 //     addPage,
 //     deletePage,
 //     loadPage,
-//     savePage
-// };
+    savePage
+};

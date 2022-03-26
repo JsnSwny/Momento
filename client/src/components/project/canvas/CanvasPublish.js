@@ -1,7 +1,7 @@
 import React from "react";
 
 const CanvasPublish = () => {
-  return <button className="btn">Publish</button>;
+  return <button className="btn" onClick={() => console.log("publishing project")}>Publish</button>;
 };
 
 export default CanvasPublish;
