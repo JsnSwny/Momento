@@ -1,7 +1,7 @@
 import Konva from "konva";
 import store from "../../store/store";
 import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject } from "../../store/actions/project";
+import { newProject, loadProject, editProject, initCanvasConnection, stillHere } from "../../store/actions/project";
 import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
 
 var stageRef;
@@ -23,7 +23,7 @@ const loadUser = (stage) => (dispatch) => {
           }
           else { 
 
-              dispatch(loadProjectData(store.getState().user.currentUserData.projectList[0]));
+              dispatch(loadProjectData(store.getState().user.currentUserData.projectList[0].projectId));
           }
           
       })
@@ -101,8 +101,10 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
         canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
       .then(() => {
-        
+          
           dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
+
+            dispatch(savePage());
       })
       .catch(() => {
         
@@ -125,16 +127,43 @@ const deletePage = (pageNumber) => (dispatch) => {
       })
 };
 
+var configureNode = (currentNode, loadNodes) => {
+
+    if (currentNode.getType() === "Shape") {
+
+      if (currentNode.getAttrs()?.name === undefined) {
+          
+          if (loadNodes) {
+              store.dispatch({ type: "LOAD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
+          } else {
+            store.dispatch({ type: "LOAD_ADD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
+          }
+      }
+
+        if (currentNode.getClassName() === "Image") {
+      
+            //Load image
+        }
+  
+    } else {
+
+        for (let i = 0; i < currentNode.children.length; i++) {
+
+
+            configureNode(currentNode.children[i], loadNodes);
+        }
+    }
+};
+
 //Load a page from the project
 const loadPage = (pageNumber) => (dispatch) => { 
+
     dispatch(
         canvasLoadPage(store.getState().project.currentProjectData.projectId, pageNumber)
       )
       .then(() => {
           
         var nodesToRemove = stageRef.current.getChildren()[0].getChildren();
-                    
-        console.log("NODES: " + nodesToRemove.length);
 
         for (let i = 0; i < nodesToRemove.length; i++){
             nodesToRemove[i].destroy();
@@ -148,44 +177,23 @@ const loadPage = (pageNumber) => (dispatch) => {
 
                   var data = JSON.parse(store.getState().project.currentPageData.pageData);
               
-                  stageRef.current.setAttrs(data[0]);
+                  stageRef.current.setAttrs(JSON.parse(data[0]));
 
-                  var configureNode = (currentNode) => {
+                  
 
-                      if (currentNode.getType() === "Shape") {
-
-                        if (currentNode.getAttrs()?.name === undefined) {
-                            
-                            dispatch({ type: "ADD_ELEMENT", payload: currentNode.getAttrs() });
-                        }
-
-                          if (currentNode.getClassName() === "Image") {
-                        
-                              //Load image
-                          }
-                    
-                      } else {
-
-                          for (let i = 0; i < currentNode.children.length; i++) {
-
-
-                              configureNode(currentNode.children[i]);
-                          }
-                      }
-                  };
-              
                   for (let i = 0; i < data[1].length; i++) {
-                
-                      var newNode = Konva.Node.create(data[1][i]);
 
-                      configureNode(newNode);
+                      var newNode = Konva.Node.create((data[1][i].data));
+
+                      newNode.id(data[1][i].ID);
+
+                      configureNode(newNode, true);
                     }
                     
                     stageRef.current.draw();
 
-                    dispatch({ type: "SET_SELECTED", payload: null });
+                } catch (e) {
 
-              } catch (e) {
                   console.log("Failed to load page from JSON: " + e + "\n" + store.getState().project.currentPageData.pageData);
               }
           }
@@ -197,40 +205,137 @@ const loadPage = (pageNumber) => (dispatch) => {
       })
 };
 
-//save page to the server
-const savePage = () => (dispatch) => { 
-    
-    try {
-        var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
+const loadCanvasUpdate = (stringData, dispatch) => {
 
-        var children = stageRef.current.getChildren()[0].getChildren();
+    var canvasData = JSON.parse(stringData.data);
 
-        for (let i = 0; i < children.length; i++) {
+    try{
+        for (let i = 0; i < canvasData.length; i++) {
+            switch (canvasData[i].changeType) {
+                case 0:
+                    stageRef.current.setAttrs(canvasData[i].elementData);
+                    break;
+            
+                case 1:
+                    
+                    var newNode = Konva.Node.create(canvasData[i].elementData);
 
-            pageData[1].push(children[i].toJSON());
+                    newNode.id(canvasData[i].ID);
 
-            if (children[i].getClassName() === "Image") {
+                    configureNode(newNode, false);
+
+                    break;
+            
+                case 2:
+                    var changedElement = stageRef.current.findOne(n => { return n.id() === canvasData[i].ID });
                 
-                //Save image
+                    changedElement.setAttrs(canvasData[i].elementData);
+
+                    store.dispatch({ type: "LOAD_UPDATE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
+
+                    changedElement.show();
+
+                    break;
+            
+                case 3:
+
+                    stageRef.current.findOne(n => { return n.id() === canvasData[i].ID }).destroy();
+                
+                    store.dispatch({ type: "LOAD_DELETE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
+
+                    break;
+            
+                default:
+                    console.log("Invalid change type: " + canvasData[i].changeType);
+                    break;
             }
         }
 
-        dispatch(
-            canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, JSON.stringify(pageData))
-          )
-          .then(() => {
+        stageRef.current.draw();
+
+    } catch (e) {
+
+        console.log("Error parsing canvas changes: " + e);  
+    }
+};
+
+const savePage = (dispatch) => {
+
+    var changes = store.getState().canvas.changes;
+
+    var pageData = [];
+
+    try {
+        if (changes.length === 0) {
+            pageData.push({ changeType: 0, elementData: JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }) });
+
+            var pageNumber = store.getState().project.currentPageData.pageNumber === undefined ? store.getState().project.currentProjectData.pageCount : store.getState().project.currentPageData.pageNumber;
+
+            store.dispatch(
+                canvasEditPage(store.getState().project.currentProjectData.projectId, pageNumber, pageData)
+            )
+                .then(() => {
+                
+                
+                })
+                .catch(() => {
+                
+                    console.log("Error initialising page data");
+                })
+            return;
+        }
+
+        for (let i = 0; i < changes.length; i++){
+                var elementData = stageRef.current.findOne(n => { return n.id() === changes[i].id});
+
+            var attributes = elementData.getAttrs();
             
-              
-          })
-          .catch(() => {
+            var attributesString;
+
+            if (attributes[0]) {
+
+                attributesString = "";
+
+                var j = 0;
+
+                while (attributes[j]) {
+                    attributesString+= attributes[j]
+                    j++;
+                }
+
+                console.log(attributesString);
+            }
+            else {
+                attributesString = elementData.toJSON();
+            }
+            
+            pageData.push({ changeType: changes[i].type, ID: changes[i].id, elementData: attributesString });
+        }
+        
+        store.dispatch(
+            canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, pageData)
+        )
+        .then(() => {
+            
+            
+        })
+        .catch(() => {
             
             console.log("Error saving page");
-          })
+        })
           
     }
     catch (e) {
         console.log("Error converting canvas to JSON: " + e);
     }
+};
+
+const startCanvasConnection = (dispatch) => {
+    store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+};
+
+const updateEditingStatus = (dispatch) => {
+    store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
 };
 
 export const canvasFunctions = {
@@ -241,5 +346,8 @@ export const canvasFunctions = {
     addPage,
     deletePage,
     loadPage,
-    savePage
+    loadCanvasUpdate,
+    savePage,
+    startCanvasConnection,
+    updateEditingStatus
 };

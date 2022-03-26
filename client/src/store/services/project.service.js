@@ -3,10 +3,10 @@ import api from "./api.axios";
 export const projectService = {
     createProject,
     loadProject,
-    editProject
+    editProject,
+    initCanvasConnection,
+    stillHere
 };
-
-
 
 function createProject(title, description) { 
     return api.post("/project", {
@@ -24,5 +24,19 @@ function editProject(projectId, newTitle, newDescription) {
         projectId,
         newTitle,
         newDescription
+    })
+}
+
+function initCanvasConnection(projectId, pageNumber) { 
+    return api.post(`/projectCanvasConnection`, {
+        projectId,
+        pageNumber
+    })
+}
+
+function stillHere(projectId, pageNumber) { 
+    return api.post(`/project/${projectId}`, {
+        projectId,
+        pageNumber
     })
 }

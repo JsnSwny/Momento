@@ -1,4 +1,6 @@
 import { projectService } from "../services/project.service";
+import { canvasFunctions } from "../../components/project/CanvasFunctions";
+import store from "../../store/store";
 import {
     SET_MESSAGE,
     PROJECT_CREATE_SUCCESS,
@@ -9,6 +11,10 @@ import {
     PROJECT_LOAD_FAILURE,
     PROJECT_EDIT_SUCCESS,
     PROJECT_EDIT_FAILURE,
+    PROJECT_INITCANVASCONNECTION_SUCCESS,
+    PROJECT_INITCANVASCONNECTION_FAILURE,
+    PROJECT_EDITINGSTATUSUPDATE_SUCCESS,
+    PROJECT_EDITINGSTATUSUPDATE_FAILURE,
 
 } from "./types";
 
@@ -92,6 +98,76 @@ export const editProject = (projectId, newTitle, newDescription) => (dispatch) =
                     type: SET_MESSAGE,
                     payload: error,
                 });
+
+                return Promise.reject();
+            }
+        )
+};
+
+export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
+
+    return projectService.initCanvasConnection(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
+        .then(
+            (response) => {
+                dispatch({
+                    type: PROJECT_INITCANVASCONNECTION_SUCCESS,
+                    payload: {  },
+                });
+
+                var socket = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+
+                socket.addEventListener("open", () => {
+                    socket.send(JSON.stringify({ userId: store.getState().user.currentUserData.userId, token: JSON.parse(localStorage.getItem("user")).accessToken }));
+                });
+
+                socket.addEventListener("message", (msg) => {
+                    canvasFunctions.loadCanvasUpdate(msg);
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("Error initialising canvas connection: " + error);
+                dispatch({
+                    type: PROJECT_INITCANVASCONNECTION_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error,
+                });
+
+                canvasFunctions.startCanvasConnection();
+
+                return Promise.reject();
+            }
+        )
+};
+
+export const stillHere = (projectId, pageNumber) => (dispatch) => {
+
+    return projectService.stillHere(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
+        .then(
+            (response) => {
+                dispatch({
+                    type: PROJECT_EDITINGSTATUSUPDATE_SUCCESS,
+                    payload: {  },
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("Error updating editing status: " + error);
+                dispatch({
+                    type: PROJECT_EDITINGSTATUSUPDATE_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error,
+                });
+
+                canvasFunctions.startCanvasConnection();
 
                 return Promise.reject();
             }

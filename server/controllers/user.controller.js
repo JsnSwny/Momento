@@ -1,6 +1,7 @@
 const db = require("../models");
 const user = db.user;
 const project = db.project;
+const projectRole = db.projectRole;
 
 exports.allAccess = (req, res) => {
     res.status(200).send("Public Content");
@@ -48,28 +49,41 @@ exports.loadUserData = (req, res) => {
                 return res.status(404).send({ message: "User not found" });
             }
 
-            project.findAndCountAll({ where: { ownerId: req.params.userId } }).then(userProjects => {
+            var userData = {
+                userId: foundUser.id,
+                username: foundUser.username,
+                firstName: foundUser.firstName,
+                lastName: foundUser.lastName,
+                emailAddress: foundUser.emailAddress,
+                roles: foundUser.roles,
+                projectList: [],
+                posts: []
+            }
 
-                var userData = { userId: foundUser.userId, username: foundUser.username, projectList: [] };
-                //var userData = { userId: foundUser.userId, username: foundUser.username, projectList: [] };
+            projectRole.findAndCountAll({ where: { userId: req.params.userId } }).then(userProjectRoles => { 
 
-                var userData = {
-                    userId: foundUser.userId,
-                    username: foundUser.username,
-                    firstName: foundUser.firstName,
-                    lastName: foundUser.lastName,
-                    emailAddress: foundUser.emailAddress,
-                    roles: foundUser.roles,
-                    projectList: [],
-                    posts: []
+                for (let i = 0; i < userProjectRoles.count; i++) { 
+                    console.log(2);
+                    project.findOne({ where: { projectId: userProjectRoles.rows[i].projectId } })
+                        .then(foundProject => { 
+                            
+                            userData.projectList.push({
+                                projectId: foundProject.projectId,
+                                title: foundProject.title,
+                                description: foundProject.description,
+                                role: userProjectRoles.rows[i].roleName
+                            });
+                            
+
+                            if (i === (userProjectRoles.count - 1)) {
+
+                                res.status(200).send(JSON.stringify(userData));
+                            }
+                            
+                        }).catch(e => {
+                            console.log("Error loading user's project data: " + e.message);
+                        });
                 }
-
-                for (let i = 0; i < userProjects.count; i++) { 
-
-                    userData.projectList.push(userProjects.rows[i].projectId);
-                }
-
-                res.status(200).send(JSON.stringify(userData));
 
             }).catch(e => {
     
@@ -78,7 +92,7 @@ exports.loadUserData = (req, res) => {
                 res.status(500).send({ message: "Error loading user data" });
     
             });
-
+            
         }).catch(e => { 
 
             console.log("Error loading user data: " + e.message);

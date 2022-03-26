@@ -62,8 +62,8 @@ const ProjectRightSidebar = () => {
             >
               {[...elements].map((item, idx) => (
                 <Draggable
-                  key={item.id.toString()}
-                  draggableId={item.id.toString()}
+                  key={item.id?.toString()}
+                  draggableId={item.id?.toString()}
                   index={idx}
                 >
                   {(provided, snapshot) => (
@@ -84,7 +84,7 @@ const ProjectRightSidebar = () => {
                         selectedElement?.id == item.id ? "1" : "-1"
                       }`}
                     >
-                      [{item.elType}] {item.text.slice(0, 10)}
+                      [{item.elType}] {item.text?.slice(0, 10)}
                     </li>
                   )}
                 </Draggable>
@@ -107,7 +107,7 @@ const ProjectRightSidebar = () => {
                 <label>Width</label>
                 <input
                   type="number"
-                  value={selectedElement?.width.toFixed(2)}
+                  value={selectedElement?.width?.toFixed(2)}
                   onChange={(e) => {
                     dispatch(
                       updateElement(selectedElement?.id, {

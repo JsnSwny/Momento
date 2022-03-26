@@ -1,3 +1,5 @@
+import { canvasFunctions } from "../../components/project/CanvasFunctions";
+
 import {
     PAGE_ADD_SUCCESS,
     PAGE_ADD_FAILURE,
@@ -15,6 +17,10 @@ import {
     PROJECT_LOAD_FAILURE,
     PROJECT_EDIT_SUCCESS,
     PROJECT_EDIT_FAILURE,
+    PROJECT_INITCANVASCONNECTION_SUCCESS,
+    PROJECT_INITCANVASCONNECTION_FAILURE,
+    PROJECT_EDITINGSTATUSUPDATE_SUCCESS,
+    PROJECT_EDITINGSTATUSUPDATE_FAILURE,
 } from "../actions/types";
 
 const initialState = {
@@ -103,11 +109,37 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 operationSuccess: false,
-        };
+            };
+        
+            case PROJECT_EDITINGSTATUSUPDATE_SUCCESS:
+                return {
+                    ...state,
+                    operationSuccess: true,
+            };
+        
+        case PROJECT_EDITINGSTATUSUPDATE_FAILURE:
+            
+                return {
+                    ...state,
+                    operationSuccess: false,
+            };
+        
+            case PROJECT_INITCANVASCONNECTION_SUCCESS:
+                return {
+                    ...state,
+                    operationSuccess: true,
+            };
+        
+            case PROJECT_INITCANVASCONNECTION_FAILURE:
+                return {
+                    ...state,
+                    operationSuccess: false,
+            };
     
         case PAGE_ADD_SUCCESS:
             state.currentProjectData.pageCount++;
             state.pages.push({ pageNumber: state.pages.length + 1, pageTitle: payload.newPageData.pageTitle, pageDescription: payload.newPageData.pageDescription });
+            
             return {
                 ...state,
                 operationSuccess: true,

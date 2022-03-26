@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector, Provider } from "react-redux";
-import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject } from "../../store/actions/project";
-import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import { Stage, Layer, Rect, Circle, Line } from "react-konva";
 import Konva from "konva";
@@ -10,6 +7,7 @@ import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
+const socketio = require("socket.io-client");
 
 const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
@@ -24,8 +22,6 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     height: window.innerHeight,
   });
 
-    var canvasHasBeenChanged = false;
-    
   const insertText = (x, y) => {
     let obj = {
       text: "",
@@ -74,28 +70,58 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
-
+    const autoSaveInterval = 500;
+    const editingStatusUpdateInterval = 25000;
+    var intervalCounter = editingStatusUpdateInterval;
+    var canvasConnection = false;
+    
     const autoSave = () => { 
-        //Currently this just runs every time, but in future it should only run if a change has been made
-        if (canvasHasBeenChanged || true) {
-
-            if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
+        try {
+            if (store.getState().canvas.changes.length > 0) {
             
-                dispatch(canvasFunctions.savePage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+                if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
+
+                    canvasFunctions.savePage();
+                
+                    store.getState().canvas.changes = [];
+                }
+            }
+        }
+        catch (e) { 
+            console.log("Error saving page: " + e);
+        }
+
+        if (intervalCounter >= editingStatusUpdateInterval) {
+
+            if (canvasConnection) {
+                try {
+                    canvasFunctions.updateEditingStatus();
+                }
+                catch (e) { 
+                    console.log("Error updating canvas editing status: " + e);
+                }
             }
 
-            canvasHasBeenChanged = false;
+            intervalCounter -= editingStatusUpdateInterval;
+        }
+
+        intervalCounter += autoSaveInterval;
+
+        if (!canvasConnection && store.getState().user.currentUserData.userId !== -1) { 
+
+            canvasFunctions.startCanvasConnection();
+
+            canvasConnection = true;
         }
     };
     
-    //I dont know if this is the best way to do this, but it works for now
     window.onpageshow = function () {
         
-        //localStorage.removeItem("user");
-
         dispatch(canvasFunctions.loadUser(stageRef));
         
-        setInterval(autoSave, 5000);
+        store.getState().canvas.changes = [];
+
+        setInterval(autoSave, autoSaveInterval);
     };
     
     
