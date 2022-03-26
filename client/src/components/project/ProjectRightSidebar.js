@@ -21,7 +21,17 @@ const ProjectRightSidebar = ({ selectedAction }) => {
     result.splice(endIndex, 0, removed);
 
     return result;
-  };
+    };
+
+    const alignText = (item, align) => {
+        dispatch(
+          updateElement(selectedElement?.id, {
+            ...selectedElement,
+            align,
+          })
+        );
+      };
+
 
   const onDragEnd = (result) => {
     // dropped outside the list
@@ -223,19 +233,19 @@ const ProjectRightSidebar = ({ selectedAction }) => {
             <div className="design-section__control design-section__align">
               <i
                 class={`fas fa-align-left ${
-                  selectedElement.align == "left" ? "active" : ""
+                  selectedElement?.align == "left" ? "active" : ""
                 }`}
                 onClick={() => alignText(selectedElement, "left")}
               ></i>
               <i
                 class={`fas fa-align-center ${
-                  selectedElement.align == "center" ? "active" : ""
+                  selectedElement?.align == "center" ? "active" : ""
                 }`}
                 onClick={() => alignText(selectedElement, "center")}
               ></i>
               <i
                 class={`fas fa-align-right ${
-                  selectedElement.align == "right" ? "active" : ""
+                  selectedElement?.align == "right" ? "active" : ""
                 }`}
                 onClick={() => alignText(selectedElement, "right")}
               ></i>

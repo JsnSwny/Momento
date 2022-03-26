@@ -22,8 +22,9 @@ var stageRef;
               dispatch(createProject("New Project", "Project Description"));
           }
           else { 
-
+                console.log(store.getState().user.currentUserData.projectList)
               dispatch(loadProjectData(store.getState().user.currentUserData.projectList[0].projectId));
+              //dispatch(loadProjectData(store.getState().user.currentUserData.projectList.reduce((a, b) => a.projectId < b.projectId ? a.projectId : b.projectId)));
           }
           
       })
@@ -169,7 +170,6 @@ var configureNode = (currentNode, loadNodes) => {
     if (currentNode.getType() === "Shape") {
 
       if (currentNode.getAttrs()?.name === undefined) {
-          
           if (loadNodes) {
               store.dispatch({ type: "LOAD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
           } else {
@@ -198,49 +198,48 @@ const loadPage = (pageNumber) => (dispatch) => {
 
     dispatch(
         canvasLoadPage(store.getState().project.currentProjectData.projectId, pageNumber)
-      )
-      .then(() => {
+    )
+        .then(() => {
           
-        var nodesToRemove = stageRef.current.getChildren()[0].getChildren();
+            var nodesToRemove = stageRef.current.getChildren()[0].getChildren();
 
-        for (let i = 0; i < nodesToRemove.length; i++){
-            nodesToRemove[i].destroy();
-        }
+            for (let i = 0; i < nodesToRemove.length; i++) {
+                nodesToRemove[i].destroy();
+            }
           
-        dispatch({ type: "CLEAR_ELEMENTS"});
+            dispatch({ type: "CLEAR_ELEMENTS" });
           
-          if (store.getState().project.currentPageData.pageData != null && store.getState().project.currentPageData.pageData !== "") {
+            if (store.getState().project.currentPageData.pageData != null && store.getState().project.currentPageData.pageData !== "") {
           
                 try {
 
-                  var data = JSON.parse(store.getState().project.currentPageData.pageData);
+                var data = JSON.parse(store.getState().project.currentPageData.pageData);
               
-                  stageRef.current.setAttrs(JSON.parse(data[0]));
+                stageRef.current.setAttrs(JSON.parse(data[0]));
 
                   
 
-                  for (let i = 0; i < data[1].length; i++) {
+                for (let i = 0; i < data[1].length; i++) {
 
-                      var newNode = Konva.Node.create((data[1][i].data));
+                    var newNode = Konva.Node.create((data[1][i].data));
 
-                      newNode.id(data[1][i].ID);
+                    newNode.id(data[1][i].ID);
 
-                      configureNode(newNode, true);
-                    }
+                    configureNode(newNode, true);
+                }
                     
-                    stageRef.current.draw();
+                stageRef.current.draw();
 
-                } catch (e) {
+                  } catch (e) {
 
-                  console.log("Failed to load page from JSON: " + e + "\n" + store.getState().project.currentPageData.pageData);
-              }
-          }
+                   console.log("Failed to load page from JSON: " + e + "\n" + store.getState().project.currentPageData.pageData);
+                }
+            }
           
-      })
-      .catch(() => {
+        }).catch(() => {
         
-        console.log("Error loading page");
-      })
+            console.log("Error loading page");
+        });
 };
 
 const loadCanvasUpdate = (stringData, dispatch) => {

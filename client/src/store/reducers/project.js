@@ -53,7 +53,8 @@ const initialState = {
     title: "",
     pageData: "",
   },
-  pages: [],
+    pages: [],
+    canvasRealtimeConnection: false,
 };
 
 export default (state = initialState, action) => {
@@ -146,6 +147,7 @@ export default (state = initialState, action) => {
         return {
             ...state,
             operationSuccess: true,
+            canvasRealtimeConnection: true,
     };
 
     case PROJECT_INITCANVASCONNECTION_FAILURE:

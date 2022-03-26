@@ -4,7 +4,7 @@ const initialState = {
   elements: [],
   selectedElement: null,
   drawingOptions: { colour: "#000000", thickness: 0.5 },
-  changes: [],
+    changes: [],
 };
 
 export default (state = initialState, action) => {

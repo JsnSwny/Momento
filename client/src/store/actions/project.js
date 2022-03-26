@@ -210,8 +210,6 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     payload: error,
                 });
 
-                canvasFunctions.startCanvasConnection();
-
                 return Promise.reject();
             }
         )

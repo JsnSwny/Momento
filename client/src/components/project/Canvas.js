@@ -19,7 +19,6 @@ import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
-const socketio = require("socket.io-client");
 
 const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
@@ -129,8 +128,10 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
 
     const autoSaveInterval = 500;
     const editingStatusUpdateInterval = 25000;
-    var intervalCounter = editingStatusUpdateInterval;
-    var canvasConnection = false;
+    const canvasConnectionAttemptInterval = 10000;
+    var editingStatusCounter = editingStatusUpdateInterval;
+    var canvasConnectionAttemptCounter = canvasConnectionAttemptInterval;
+    //var canvasConnection = false;
     
     const autoSave = () => { 
         try {
@@ -148,9 +149,9 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             console.log("Error saving page: " + e);
         }
 
-        if (intervalCounter >= editingStatusUpdateInterval) {
+        if (editingStatusCounter >= editingStatusUpdateInterval) {
 
-            if (canvasConnection) {
+            if (store.getState().project.canvasRealtimeConnection) {
                 try {
                     canvasFunctions.updateEditingStatus();
                 }
@@ -159,17 +160,18 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                 }
             }
 
-            intervalCounter -= editingStatusUpdateInterval;
+            editingStatusCounter -= editingStatusUpdateInterval;
         }
 
-        intervalCounter += autoSaveInterval;
-
-        if (!canvasConnection && store.getState().user.currentUserData.userId !== -1) { 
-
+        if (canvasConnectionAttemptCounter >= canvasConnectionAttemptInterval && !store.getState().project.canvasRealtimeConnection && store.getState().user.currentUserData.userId !== -1) { 
+            
             canvasFunctions.startCanvasConnection();
 
-            canvasConnection = true;
+            canvasConnectionAttemptCounter-= canvasConnectionAttemptInterval;
         }
+
+        editingStatusCounter += autoSaveInterval;
+        canvasConnectionAttemptCounter += autoSaveInterval;
     };
     
     window.onpageshow = function () {
