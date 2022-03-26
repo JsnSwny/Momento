@@ -56,27 +56,31 @@ const ProjectPage = () => {
   const addImage = (imageUrl) => {
     var imageObj = new Image();
     imageObj.onload = function() {
-      var image = new Konva.Image({
+      let res = {
+        width: this.width,
+        height: this.height,
+        scale: 1
+      }
+      if (res.width > 600 || res.height > 600) {
+        // get scale factor
+        res.scale = (res.width > res.height
+          ? 600 / res.width
+          : 600 / res.height
+        );
+      }
+      let obj = {
         x: 50,
         y:50,
-        image: imageObj,
-        width: 400,
-        height: 200,
-        src: imageUrl
-      });
+        width: res.width * res.scale,
+        height: res.height * res.scale,
+        elType: "Image",
+        rotation: 0,
+        imgObj: imageObj,
+        text: "image"
+      }
+      dispatch({ type: "ADD_ELEMENT", payload: obj });
     }
     imageObj.src = imageUrl;
-    let obj = {
-      x: 50,
-      y:50,
-      width: 400,
-      height: 200,
-      elType: "Image",
-      rotation: 0,
-      imgObj: imageObj,
-      text: "image"
-    }
-    dispatch({ type: "ADD_ELEMENT", payload: obj });
   }
 
   return (
