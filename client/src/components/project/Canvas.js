@@ -19,6 +19,7 @@ import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
+const socketio = require("socket.io-client");
 
 const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
@@ -126,33 +127,61 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
-  const autoSave = () => {
-    //Currently this just runs every time, but in future it should only run if a change has been made
-    if (canvasHasBeenChanged || true) {
-      if (
-        store.getState().project.currentProjectData.projectId !== -1 &&
-        store.getState().project.currentPageData.pageNumber !== -1
-      ) {
-        dispatch(
-          canvasFunctions.savePage(
-            store.getState().project.currentProjectData.projectId,
-            store.getState().project.currentPageData.pageNumber
-          )
-        );
-      }
+    const autoSaveInterval = 500;
+    const editingStatusUpdateInterval = 25000;
+    var intervalCounter = editingStatusUpdateInterval;
+    var canvasConnection = false;
+    
+    const autoSave = () => { 
+        try {
+            if (store.getState().canvas.changes.length > 0) {
+            
+                if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
 
-      canvasHasBeenChanged = false;
-    }
-  };
+                    canvasFunctions.savePage();
+                
+                    store.getState().canvas.changes = [];
+                }
+            }
+        }
+        catch (e) { 
+            console.log("Error saving page: " + e);
+        }
 
-  //I dont know if this is the best way to do this, but it works for now
-  window.onpageshow = function () {
-    //localStorage.removeItem("user");
+        if (intervalCounter >= editingStatusUpdateInterval) {
 
-    dispatch(canvasFunctions.loadUser(stageRef));
+            if (canvasConnection) {
+                try {
+                    canvasFunctions.updateEditingStatus();
+                }
+                catch (e) { 
+                    console.log("Error updating canvas editing status: " + e);
+                }
+            }
 
-    setInterval(autoSave, 5000);
-  };
+            intervalCounter -= editingStatusUpdateInterval;
+        }
+
+        intervalCounter += autoSaveInterval;
+
+        if (!canvasConnection && store.getState().user.currentUserData.userId !== -1) { 
+
+            canvasFunctions.startCanvasConnection();
+
+            canvasConnection = true;
+        }
+    };
+    
+    window.onpageshow = function () {
+        
+        dispatch(canvasFunctions.loadUser(stageRef));
+        
+        store.getState().canvas.changes = [];
+
+        setInterval(autoSave, autoSaveInterval);
+    };
+    
+    
 
   return (
     <div className={`konva-container ${selectedAction}`}>

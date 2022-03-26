@@ -1,4 +1,5 @@
 const db = require("../models");
+const projectController = require("./project.controller");
 const Op = db.Sequelize.Op;
 const project = db.project;
 const page = db.page;
@@ -19,7 +20,7 @@ exports.createPage = (req, res) => {
             }
 
             //Ensure that the user has permission
-            if (foundProject.ownerId != req.userId) { 
+            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
 
                 return res.status(403).send({ message: "Access denied" });
             }
@@ -36,7 +37,7 @@ exports.createPage = (req, res) => {
                 })
                     .then(newPage => {
 
-                        res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
+                        return res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
             
                     })
                     .catch(e => { 
@@ -90,7 +91,7 @@ exports.deletePage = (req, res) => {
         }
 
         //Ensure that the user has permission
-        if (foundProject.ownerId != req.userId) { 
+        if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
 
             return res.status(403).send({ message: "Access denied" });
         }
@@ -158,7 +159,7 @@ exports.loadPage = (req, res) => {
             }
 
             //Ensure that the user has permission
-            if (foundProject.ownerId != req.userId) { 
+            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
 
                 return res.status(403).send({ message: "Access denied" });
             }
@@ -190,6 +191,7 @@ exports.loadPage = (req, res) => {
 };
 
 exports.editPage = (req, res) => {
+    pageLock.acquire(req.body.projectId, function (done) { 
 
     //Find the project that the page is a part of
     project.findOne({ where: { projectId: req.body.projectId } })
@@ -201,7 +203,7 @@ exports.editPage = (req, res) => {
             }
 
             //Ensure that the user has permission
-            if (foundProject.ownerId != req.userId) { 
+            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
 
                 return res.status(403).send({ message: "Access denied" });
             }
@@ -217,18 +219,67 @@ exports.editPage = (req, res) => {
 
                     //Update page data
                     try { 
-                        foundPage.pageData = req.body.newPageData;
+                        foundPage.pageTitle = req.body.newPageData.pageTitle;
+                        foundPage.pageDescription = req.body.newPageData.pageDescription;
 
-                        foundPage.save();
+                        pageInfo = JSON.parse(foundPage.pageData);
 
+                        for (let i = 0; i < req.body.newPageData.length; i++) {
+
+                            switch (req.body.newPageData[i].changeType) {
+                                //Initialise page
+                                case 0:
+                                    pageInfo = [req.body.newPageData[i].elementData, []];
+                                    break;
+
+                                //Add new element
+                                case 1:
+                                    pageInfo[1].push({ ID: req.body.newPageData[i].ID, data: req.body.newPageData[i].elementData });
+                                    break;
+                            
+                                //Edit existing element
+                                case 2:
+                                    var element = pageInfo[1].find(x => x.ID == req.body.newPageData[i].ID);
+
+                                    if(element !== undefined)
+                                        element.data = req.body.newPageData[i].elementData;
+                                    break;
+                        
+                                //Delete element
+                                case 3:
+                                    pageInfo[1] = pageInfo[1].filter(x => x.ID != req.body.newPageData[i].ID);
+                                    break;
+                            
+                                default:
+                                    return res.status(400).send({ message: "Bad request" });
+                            }
+                            
+                        }
+
+                        for (let i = 0; i < pageInfo[1].length; i++) { 
+                            if (pageInfo[1][i].data !== undefined && pageInfo[1][i].data !== null && typeof pageInfo[1][i].data === 'string') {
+                                pageInfo[1][i].data = JSON.parse(pageInfo[1][i].data);
+                            }
+                        }
+
+                        var newPageData = JSON.stringify(pageInfo);
+
+                        if (foundPage.pageData == null || foundPage.pageData == undefined || foundPage.pageData !== newPageData) {
+
+                            foundPage.pageData = newPageData;
+                        
+                            foundPage.save();
+                        }
+
+                        projectController.updateEditingUsers(req.body, req.userId);
+
+                        return res.status(200).send({ message: "success" });
                     }
                     catch (e) {
                         console.log("Error writing page data to database: " + e.message);
 
-                        res.status(500).send({ message: "Internal server error when editing page" });
+                        return res.status(500).send({ message: "Internal server error when editing page" });
                     }
-
-                    res.status(200).send({ message: "success" });
 
                 })
                 .catch(e => { 
@@ -243,6 +294,15 @@ exports.editPage = (req, res) => {
 
                 res.status(500).send({ message: "Internal server error when editing page" });
             });
+        
+            setTimeout(function () {
+            
+                done(); 
+              }, 200);
+        
+            }, function(err, ret) {
+                
+            }, {});
 };
 
 //Reorders pages in a project
