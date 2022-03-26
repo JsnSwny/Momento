@@ -63,7 +63,7 @@ exports.loadUserData = (req, res) => {
             projectRole.findAndCountAll({ where: { userId: req.params.userId } }).then(userProjectRoles => { 
 
                 for (let i = 0; i < userProjectRoles.count; i++) { 
-                    console.log(2);
+
                     project.findOne({ where: { projectId: userProjectRoles.rows[i].projectId } })
                         .then(foundProject => { 
                             
