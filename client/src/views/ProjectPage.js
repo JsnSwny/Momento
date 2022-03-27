@@ -5,6 +5,7 @@ import ProjectRightSidebar from "../components/project/ProjectRightSidebar";
 import CanvasTop from "../components/project/CanvasTop";
 import { useParams } from "react-router-dom";
 import { loadProject } from "../store/actions/project";
+import { canvasFunctions } from "../components/project/CanvasFunctions";
 import { useDispatch } from "react-redux";
 import axios from 'axios';
 import { awsService } from '../store/services/aws.service';
@@ -18,7 +19,7 @@ const ProjectPage = () => {
   const { id } = useParams();
 
   useEffect(() => {
-    dispatch(loadProject(id));
+    dispatch(canvasFunctions.projectPageLoaded(id, stageRef));
   }, []);
 
   const inputFile = useRef(null);
@@ -76,6 +77,7 @@ const ProjectPage = () => {
         elType: "Image",
         rotation: 0,
         imgObj: imageObj,
+        src: imageUrl,
         text: "image"
       }
       dispatch({ type: "ADD_ELEMENT", payload: obj });

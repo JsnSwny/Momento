@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector, Provider } from "react-redux";
 import { loadUserData } from "../../store/actions/user";
-import {
-  newProject,
-  loadProject,
-  editProject,
-} from "../../store/actions/project";
-import {
-  canvasAddPage,
-  canvasDeletePage,
-  canvasLoadPage,
-  canvasEditPage,
-} from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import { Stage, Layer, Rect, Circle, Line, Image } from "react-konva";
 import Konva from "konva";
@@ -33,8 +22,6 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
-  var canvasHasBeenChanged = false;
 
   const [tool, setTool] = useState("pen");
   const isDrawing = useRef(false);
@@ -130,8 +117,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     const editingStatusUpdateInterval = 25000;
     const canvasConnectionAttemptInterval = 10000;
     var editingStatusCounter = editingStatusUpdateInterval;
-    var canvasConnectionAttemptCounter = canvasConnectionAttemptInterval;
-    //var canvasConnection = false;
+    var canvasConnectionAttemptCounter = 0;
     
     const autoSave = () => { 
         try {
@@ -163,8 +149,11 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
             editingStatusCounter -= editingStatusUpdateInterval;
         }
 
-        if (canvasConnectionAttemptCounter >= canvasConnectionAttemptInterval && !store.getState().project.canvasRealtimeConnection && store.getState().user.currentUserData.userId !== -1) { 
-            
+        if (canvasConnectionAttemptCounter >= canvasConnectionAttemptInterval &&
+            !store.getState().project.canvasRealtimeConnection &&
+            store.getState().user.currentUserData.userId !== -1 &&
+            store.getState().project.currentPageData.pageId !== -1) { 
+
             canvasFunctions.startCanvasConnection();
 
             canvasConnectionAttemptCounter-= canvasConnectionAttemptInterval;
@@ -176,7 +165,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     
     window.onpageshow = function () {
         
-        dispatch(canvasFunctions.loadUser(stageRef));
+        //dispatch(canvasFunctions.loadUser(stageRef));
         
         store.getState().canvas.changes = [];
 
@@ -198,7 +187,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
       >
         <Provider store={store}>
           <Layer>
-            {elements.map((item, i) => {
+                      {elements.map((item, i) => {
               switch (item.elType) {
                 case "Text":
                   return (
@@ -224,7 +213,8 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                       setSelectedAction={setSelectedAction}
                     />
                   );
-                case "Line":
+                  case "Line":
+                    
                   return (
                     <Line
                       key={i}
@@ -239,7 +229,8 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                           : "source-over"
                       }
                     />
-                  );
+                      );
+                    
                 case "Image":
                   return (
                     <Image

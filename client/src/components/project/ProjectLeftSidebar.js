@@ -91,11 +91,10 @@ const ProjectLeftSidebar = () => {
             Page ${pages.length + 1},
             ""`);
             dispatch(
-              canvasAddPage(
-                id,
-                pages.length + 1,
+                canvasFunctions.addPage(
+                    pages.length + 1,
                 `Page ${pages.length + 1}`,
-                ""
+                `Page ${pages.length + 1}`
               )
             );
           }}

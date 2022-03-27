@@ -25,11 +25,6 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
             onClick={() => dispatch(clearElements())}
           ></i>
         )}
-
-        <i
-          class="fas fa-save"
-          onClick={() => dispatch(canvasFunctions.savePage(stageRef))}
-        ></i>
         <CanvasPublish />
       </div>
     </div>

@@ -12,7 +12,7 @@ import {
 } from "./types";
 
 export const canvasAddPage =
-  (projectId, pageNumber, title, description) => (dispatch) => {
+    (projectId, pageNumber, title, description) => (dispatch) => {
     return canvasService
       .addPage(
         projectId,
@@ -24,7 +24,6 @@ export const canvasAddPage =
       .then(
         (response) => {
           console.log("Page added");
-          console.log(response);
           dispatch({
             type: PAGE_ADD_SUCCESS,
             payload: {

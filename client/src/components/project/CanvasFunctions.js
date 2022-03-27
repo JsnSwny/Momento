@@ -3,26 +3,48 @@ import store from "../../store/store";
 import { loadUserData } from "../../store/actions/user";
 import { newProject, loadProject, editProject, initCanvasConnection, stillHere } from "../../store/actions/project";
 import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
-
 var stageRef;
+
+const projectPageLoaded = (id, stage) => (dispatch) => { 
+
+    stageRef = stage;
+
+    dispatch(
+        loadProject(id)
+    )
+    .then(() => { 
+
+        if (store.getState().project.currentProjectData.pageCount === 0) {
+            dispatch(addPage(1, "Page 1", ""));
+        } else {
+            dispatch(loadPage(1));
+        }
+    }).catch(() => { 
+        console.log("Error");
+    });
+
+    
+};
 
  //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
  const loadUser = (stage) => (dispatch) => {
 
-     stageRef = stage;
+    stageRef = stage;
 
     dispatch(
         loadUserData(JSON.parse(localStorage.getItem("user")).id)
       )
       .then(() => {
         
+          console.log(store.getState().user.currentUserData.projectList);
+          
           //If the user has no projects, create a new one
           if (store.getState().user.currentUserData.projectList.length === 0) {
               
-              dispatch(createProject("New Project", "Project Description"));
+              dispatch(createProject("New Project", "Project Description", false));
           }
           else { 
-                console.log(store.getState().user.currentUserData.projectList)
+
               dispatch(loadProjectData(store.getState().user.currentUserData.projectList[0].projectId));
               //dispatch(loadProjectData(store.getState().user.currentUserData.projectList.reduce((a, b) => a.projectId < b.projectId ? a.projectId : b.projectId)));
           }
@@ -35,36 +57,39 @@ var stageRef;
 };
 
 //Creates a new project
-const createProject = (title, description) => (dispatch) => {
+const createProject = (title, description, navigateToProject) => (dispatch) => {
 
     dispatch(
         newProject(title, description)
     )
-    .then(() => {
+        .then(() => {
+        
+            if (navigateToProject) {
+                window.location.href = `/project/${store.getState().project.currentProjectData.projectId}`;
+            } else {
 
-        //Add a new page to the project
-        dispatch(addPage(1, "Page 1", "Description"));
+                //Add a new page to the project
+                dispatch(addPage(1, "Page 1", "Description"));
+                store.getState().user.userData.projectList.push(store.getState().project.currentProjectData.projectId);
+            }
+        })
+        .catch(() => {
 
-        store.getState().user.userData.projectList.push(store.getState().project.currentProjectData.projectId);
-    })
-    .catch(() => {
-
-        console.log("Error creeating project");
-    })
+           console.log("Error creeating project");
+        });
 
 };
 //Add a new page to the project
 const addPage = (pageNumber, title, description) => (dispatch) => {
     
     dispatch(
-        
         canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
       .then(() => {
-          
-          dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
-
-            dispatch(savePage());
+        
+            dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
+            
+            //dispatch(savePage());
       })
       .catch(() => {
         
@@ -72,7 +97,7 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
       })
 };
 
-// //Returns information about the project (Title, Description, Page count)
+//Returns information about the project (Title, Description, Page count)
  const loadProjectData = (projectId) => (dispatch) => {
 
      dispatch(
@@ -81,12 +106,6 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
        .then(() => {
 
          store.getState().project.currentProjectData.projectId = projectId;
-
-         if (store.getState().project.currentProjectData.pageCount > 0) {
-             dispatch(loadPage(1));
-         } else {
-             createProject("Project Name", "Description");
-         }
 
        })
        .catch(() => {
@@ -124,69 +143,24 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
        })
  };
 
-// //save page to the server
-const savePage2 = (stage) => (dispatch) => {
-
-    stageRef = stage;
-    try {
-        var pageData = [JSON.stringify({ height: stageRef.current.getAttrs().height, width: stageRef.current.getAttrs().width }), []];
-        var children = stageRef.current.getChildren()[0].getChildren();
-
-        for (let i = 0; i < children.length; i++) {
-            if (children[i].getClassName() === "Image") {
-                //Save image
-                let image = {
-                    attrs: {
-                        width: children[i].attrs.width,
-                        height: children[i].attrs.height,
-                        src: children[i].attrs.image.src
-                    },
-                    className: "Image"
-                }
-                pageData[1].push(JSON.stringify(image));
-            } else {
-                pageData[1].push(children[i].toJSON());
-            }
-        }
-
-        dispatch(
-            canvasEditPage(
-                store.getState().project.currentProjectData.projectId,
-                store.getState().project.currentPage,
-                JSON.stringify(pageData))
-        )
-            .then(() => {
-                console.log("Page saved successfully");
-            })
-            .catch(() => {
-                console.log("Error saving page");
-            })
-    } catch (e) { 
-
-    }
-}
 var configureNode = (currentNode, loadNodes) => {
 
     if (currentNode.getType() === "Shape") {
 
-      if (currentNode.getAttrs()?.name === undefined) {
-          if (loadNodes) {
-              store.dispatch({ type: "LOAD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
-          } else {
-            store.dispatch({ type: "LOAD_ADD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
-          }
-      }
+        if (currentNode.getAttrs()?.name === undefined) {
+            if (loadNodes) {
 
-        if (currentNode.getClassName() === "Image") {
-      
-            //Load image
-            
-        }
+                //console.log(currentNode);
+
+                store.dispatch({ type: "LOAD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
+            } else {
+                store.dispatch({ type: "LOAD_ADD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
+            }
+      }
   
     } else {
 
         for (let i = 0; i < currentNode.children.length; i++) {
-
 
             configureNode(currentNode.children[i], loadNodes);
         }
@@ -201,41 +175,13 @@ const loadPage = (pageNumber) => (dispatch) => {
     )
         .then(() => {
           
-            var nodesToRemove = stageRef.current.getChildren()[0].getChildren();
+            if(store.getState().project.canvasConnection)
+                store.getState().project.canvasConnection.close();
 
-            for (let i = 0; i < nodesToRemove.length; i++) {
-                nodesToRemove[i].destroy();
-            }
-          
             dispatch({ type: "CLEAR_ELEMENTS" });
-          
-            if (store.getState().project.currentPageData.pageData != null && store.getState().project.currentPageData.pageData !== "") {
-          
-                try {
 
-                var data = JSON.parse(store.getState().project.currentPageData.pageData);
-              
-                stageRef.current.setAttrs(JSON.parse(data[0]));
+            startCanvasConnection();
 
-                  
-
-                for (let i = 0; i < data[1].length; i++) {
-
-                    var newNode = Konva.Node.create((data[1][i].data));
-
-                    newNode.id(data[1][i].ID);
-
-                    configureNode(newNode, true);
-                }
-                    
-                stageRef.current.draw();
-
-                  } catch (e) {
-
-                   console.log("Failed to load page from JSON: " + e + "\n" + store.getState().project.currentPageData.pageData);
-                }
-            }
-          
         }).catch(() => {
         
             console.log("Error loading page");
@@ -246,23 +192,37 @@ const loadCanvasUpdate = (stringData, dispatch) => {
 
     var canvasData = JSON.parse(stringData.data);
 
-    try{
-        for (let i = 0; i < canvasData.length; i++) {
+    for (let i = 0; i < canvasData.length; i++) {
+        try {
             switch (canvasData[i].changeType) {
+
+                //Canvas data is null
+                case -1:
+                    savePage();
+                    break;
+
+                //Initialise canvas data
                 case 0:
                     stageRef.current.setAttrs(canvasData[i].elementData);
                     break;
             
+                //Add element
                 case 1:
-                    
-                    var newNode = Konva.Node.create(canvasData[i].elementData);
+                    //var newNode = Konva.Node.create(canvasData[i].elementData);
 
-                    newNode.id(canvasData[i].ID);
+                    //newNode.id(canvasData[i].ID);
 
-                    configureNode(newNode, false);
+                    if (canvasData[i].elementData.src) {
+
+                        canvasData[i].elementData.imgObj = new Image();
+                        canvasData[i].elementData.imgObj.src = canvasData[i].elementData.src;
+                    }
+
+                    store.dispatch({ type: "LOAD_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
                     break;
             
+                //Update element
                 case 2:
                     var changedElement = stageRef.current.findOne(n => { return n.id() === canvasData[i].ID });
                 
@@ -274,26 +234,42 @@ const loadCanvasUpdate = (stringData, dispatch) => {
 
                     break;
             
+                //Delete element
                 case 3:
 
-                    stageRef.current.findOne(n => { return n.id() === canvasData[i].ID }).destroy();
+                    //stageRef.current.findOne(n => { return n.id() === canvasData[i].ID }).destroy();
                 
                     store.dispatch({ type: "LOAD_DELETE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
                     break;
             
+                //Reorder elements
+                case 4:
+
+                    var newElements = [];
+
+                    for (let j = 0; j < canvasData[i].elementData.length; j++){
+
+                        newElements.push(store.getState().canvas.elements.filter(x => x.id == canvasData[i].elementData[j])[0]);
+                    }
+                    
+                    store.getState().canvas.elements = newElements();
+
+                    break;
+                
                 default:
                     console.log("Invalid change type: " + canvasData[i].changeType);
                     break;
+                
+                
             }
+
+        } catch (e) {
+            console.log("Error reading canvas instruction: " + JSON.stringify(canvasData[i]) + "\n\n" + e);
         }
-
-        stageRef.current.draw();
-
-    } catch (e) {
-
-        console.log("Error parsing canvas changes: " + e);  
     }
+
+    stageRef.current.draw();
 };
 
 const savePage = (dispatch) => {
@@ -322,42 +298,73 @@ const savePage = (dispatch) => {
             return;
         }
 
-        for (let i = 0; i < changes.length; i++){
-                var elementData = stageRef.current.findOne(n => { return n.id() === changes[i].id});
+        for (let i = 0; i < changes.length; i++) {
 
-        
-                //let image = {
-                //    attrs: {
-                //        width: children[i].attrs.width,
-                //        height: children[i].attrs.height,
-                //        src: children[i].attrs.image.src
-                //    },
-                //    className: "Image"
-                //}
-        
-            var attributes = elementData.getAttrs();
-            
-            var attributesString;
+            if (changes[i].type === 4) {
+                
+                var order = [];
 
-            if (attributes[0]) {
-
-                attributesString = "";
-
-                var j = 0;
-
-                while (attributes[j]) {
-                    attributesString+= attributes[j]
-                    j++;
+                for (let j = 0; j < store.getState().canvas.elements.length; j++){
+                    order.push(store.getState().canvas.elements[j].id);
                 }
 
-                console.log(attributesString);
-            }
-            else {
-                attributesString = elementData.toJSON();
-            }
+                pageData.push({ changeType: changes[i].type, elementData: order });
+
+            } else {
+
+                var currentElement = store.getState().canvas.elements.filter(el => el.id === changes[i].id)[0];
             
-            pageData.push({ changeType: changes[i].type, ID: changes[i].id, elementData: attributesString });
-        }
+                if (currentElement) {
+
+                    var attributesString;
+                
+                    if (currentElement?.tool === "pen" || currentElement?.tool === "eraser") {
+
+                        var elementCopy = Object.assign({}, currentElement);
+
+                        var points = [];
+
+                        for (let k = 0; k < currentElement.points.length; k++) {
+                        
+                            points.push(Math.round(currentElement.points[k] * 100) / 100);
+                        }
+                    
+                        elementCopy.points = points;
+
+                        attributesString = JSON.stringify(elementCopy);
+
+                    }
+                    else {
+
+                        var elementData;
+
+                        if (changes[i].object) {
+                            elementData = changes[i].object;
+                        
+                        } else {
+                            elementData = stageRef.current.findOne(n => { return n.id() === changes[i].id }).getAttrs();
+                        }
+
+                        if (elementData[0]) {
+
+                            attributesString = "";
+
+                            var j = 0;
+
+                            while (elementData[j]) {
+                                attributesString += elementData[j];
+                                j++;
+                            }
+                        }
+                        else {
+                            attributesString = JSON.stringify(elementData);
+                        }
+                    }
+                
+                    pageData.push({ changeType: changes[i].type, ID: changes[i].id, elementData: attributesString });
+                }
+            }
+    }
         
         store.dispatch(
             canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, pageData)
@@ -378,6 +385,7 @@ const savePage = (dispatch) => {
 };
 
 const startCanvasConnection = (dispatch) => {
+    
     store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
 };
 
@@ -386,6 +394,7 @@ const updateEditingStatus = (dispatch) => {
 };
 
 export const canvasFunctions = {
+    projectPageLoaded,
     loadUser,
     createProject,
     loadProjectData,
@@ -397,4 +406,9 @@ export const canvasFunctions = {
     savePage,
     startCanvasConnection,
     updateEditingStatus
+};
+
+const loadLine = (lineData) => {
+
+    
 };

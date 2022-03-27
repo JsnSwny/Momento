@@ -195,8 +195,6 @@ wss.on("connection", (ws) => {
     ws.on("message", (msg) => { 
         var data = JSON.parse(msg);
     
-        
-
         if (!data.token) { 
             return;
         }
@@ -214,14 +212,52 @@ wss.on("connection", (ws) => {
         if (userProjectEditingMap.has(data.userId)) { 
             
             userProjectEditingMap.get(data.userId).connection = ws;
-    
+            
+            sendInitialCanvasData(ws, userProjectEditingMap.get(data.userId).projectId, userProjectEditingMap.get(data.userId).pageNumber);
+
         } else {
             return;
         }
     })
 })
 
+const sendInitialCanvasData = (client, projectId, pageNumber) => {
 
+    //Find the page
+    page.findOne({ where: { projectId: projectId, pageNumber: pageNumber } })
+        .then(foundPage => {
+        
+        //Ensure that the page exists
+        if (!foundPage) {
+             console.log("Page " + pageNumber + " of project " + projectId + " not found when attemping to send initial canvas data");
+        }
+
+        if (foundPage.pageData) {
+        
+            pageInfo = JSON.parse(foundPage.pageData);
+
+            var outgoingData = [{ changeType: 0, ID: -1, elementData: pageInfo[0] }];
+
+            
+            for (let i = 0; i < pageInfo[1].length; i++) {
+                
+                var currentElement = pageInfo[1].filter(x => x.order === i)[0];
+
+                var currentInstruction = { changeType: 1, ID: currentElement.ID, elementData: currentElement.data };
+
+                outgoingData.push(currentInstruction);
+            }
+    
+            client.send(JSON.stringify(outgoingData));
+        } else {
+            console.log("SENDING EMPTY DATA====================================");
+            client.send(JSON.stringify([{changeType: -1}]));
+        }
+    })
+    .catch(e => { 
+        console.log("Error finding page to be loaded: " + e.message);
+    });
+};
 
 
 exports.initialiseCanvasConnection = (req, res) => {

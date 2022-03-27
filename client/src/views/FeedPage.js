@@ -5,6 +5,8 @@ import ScrapCard from "../components/feed/ScrapCard";
 import { getPosts } from "../store/actions/posts";
 import { newProject } from "../store/actions/project";
 import { Navigate, useNavigate } from "react-router-dom";
+import { canvasFunctions } from "../components/project/CanvasFunctions";
+import store from "../store/store";
 
 const FeedPage = () => {
   const dispatch = useDispatch();
@@ -18,11 +20,11 @@ const FeedPage = () => {
     dispatch(getPosts());
   }, []);
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    dispatch(newProject(projectTitle, "Test")).then((res) => {
-      navigate(`/project/${res.projectId}`);
-    });
+    const onSubmit = (e) => {
+        e.preventDefault();
+        
+        dispatch(canvasFunctions.createProject(projectTitle, "", true));
+
   };
   return (
     <div className="wrapper--md">

@@ -4,7 +4,7 @@ const initialState = {
   elements: [],
   selectedElement: null,
   drawingOptions: { colour: "#000000", thickness: 0.5 },
-    changes: [],
+  changes: [],
 };
 
 export default (state = initialState, action) => {
@@ -12,12 +12,12 @@ export default (state = initialState, action) => {
     case "ADD_ELEMENT":
       let id = state.elements.length > 0 ? state.elements.at(-1).id + 1 : 1;
           let obj = { ...action.payload, id };
-          
+
       return {
         ...state,
         elements: [...state.elements, obj],
         selectedElement: obj.elType != "Line" && obj,
-          changes: [...state.changes, {type: 1, id: id}],
+          changes: [...state.changes, {type: 1, id: id, object: obj}],
       };
       case "UPDATE_ELEMENT":
 
@@ -76,7 +76,8 @@ export default (state = initialState, action) => {
     case "REORDER_ELEMENTS":
       return {
         ...state,
-        elements: action.payload,
+          elements: action.payload,
+          changes: [...state.changes, {type: 4}],
       };
     case "CLEAR_ELEMENTS":
       return {
@@ -103,12 +104,10 @@ export default (state = initialState, action) => {
     return {
         ...state,
         elements: [...state.elements, obj2],
-        selectedElement: obj2,
           };
       
     case "LOAD_ADD_ELEMENT":
-        let id3 = state.elements.length > 0 ? state.elements.at(-1).id + 1 : 1;
-        let obj3 = { ...action.payload, id3 };
+        let obj3 = { ...action.payload, id: action.payload.id };
         
     return {
         ...state,
@@ -127,8 +126,7 @@ export default (state = initialState, action) => {
     return {
         ...state,
         elements: state.elements.filter((item) => item.id != action.payload),
-    };
-      
+          };
     default:
       return state;
   }

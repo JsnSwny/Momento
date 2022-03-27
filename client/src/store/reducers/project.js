@@ -55,6 +55,7 @@ const initialState = {
   },
     pages: [],
     canvasRealtimeConnection: false,
+    canvasConnection: null
 };
 
 export default (state = initialState, action) => {
@@ -91,7 +92,6 @@ export default (state = initialState, action) => {
       };
 
     case PROJECT_LOAD_SUCCESS:
-      console.log(action.payload);
       for (let i = 0; i < action.payload.projectData.pageCount; i++) {
         state.pages.push({
           pageNumber: i + 1,
@@ -159,11 +159,6 @@ export default (state = initialState, action) => {
     case PAGE_ADD_SUCCESS:
       state.currentProjectData.pageCount++;
       state.pages.push({
-        pageNumber: state.pages.length + 1,
-        pageTitle: action.payload.newPageData.pageTitle,
-        pageDescription: action.payload.newPageData.pageDescription,
-      });
-      console.log({
         pageNumber: state.pages.length + 1,
         pageTitle: action.payload.newPageData.pageTitle,
         pageDescription: action.payload.newPageData.pageDescription,

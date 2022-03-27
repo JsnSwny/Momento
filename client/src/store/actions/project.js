@@ -178,7 +178,6 @@ export const editProject = (projectId, newTitle, newDescription) => (dispatch) =
 };
 
 export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
-
     return projectService.initCanvasConnection(projectId, pageNumber, JSON.parse(localStorage.getItem("user")).accessToken)
         .then(
             (response) => {
@@ -186,16 +185,20 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     type: PROJECT_INITCANVASCONNECTION_SUCCESS,
                     payload: {  },
                 });
-
+                
                 var socket = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
 
                 socket.addEventListener("open", () => {
-                    socket.send(JSON.stringify({ userId: store.getState().user.currentUserData.userId, token: JSON.parse(localStorage.getItem("user")).accessToken }));
+                    
+                    socket.send(JSON.stringify({ userId: JSON.parse(localStorage.getItem("user")).id, token: JSON.parse(localStorage.getItem("user")).accessToken }));
                 });
 
                 socket.addEventListener("message", (msg) => {
+                    
                     canvasFunctions.loadCanvasUpdate(msg);
                 });
+
+                store.getState().project.canvasConnection = socket;
 
                 return Promise.resolve();
             },

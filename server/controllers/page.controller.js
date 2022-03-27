@@ -9,7 +9,7 @@ var pageLock = new AsyncLock();
 exports.createPage = (req, res) => {
     //Lock this function so that it can only be called once every 200ms per project
     pageLock.acquire(req.body.projectId, function (done) { 
-
+    
     //Find the project that the page is getting added to
     project.findOne({ where: { projectId: req.body.projectId } })
         .then(foundProject => {
@@ -24,9 +24,11 @@ exports.createPage = (req, res) => {
 
                 return res.status(403).send({ message: "Access denied" });
             }
-
+            
             //Find the last page
             page.findAndCountAll({ where: { projectId: req.body.projectId } }).then(projectPages => { 
+
+                
 
                 //Create new page object
                 page.create({
@@ -36,7 +38,7 @@ exports.createPage = (req, res) => {
                     pageDescription: req.body.pageDescription
                 })
                     .then(newPage => {
-
+                        
                         return res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
             
                     })
@@ -207,7 +209,7 @@ exports.editPage = (req, res) => {
 
                 return res.status(403).send({ message: "Access denied" });
             }
-
+            
             //Find the page
             page.findOne({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber } })
                 .then(foundPage => {
@@ -222,8 +224,9 @@ exports.editPage = (req, res) => {
                         foundPage.pageTitle = req.body.newPageData.pageTitle;
                         foundPage.pageDescription = req.body.newPageData.pageDescription;
 
-                        pageInfo = JSON.parse(foundPage.pageData);
-
+                        if(foundPage.pageData)
+                            pageInfo = JSON.parse(foundPage.pageData);
+                        
                         for (let i = 0; i < req.body.newPageData.length; i++) {
 
                             switch (req.body.newPageData[i].changeType) {
@@ -234,7 +237,7 @@ exports.editPage = (req, res) => {
 
                                 //Add new element
                                 case 1:
-                                    pageInfo[1].push({ ID: req.body.newPageData[i].ID, data: req.body.newPageData[i].elementData });
+                                    pageInfo[1].push({ ID: req.body.newPageData[i].ID, data: req.body.newPageData[i].elementData, order: pageInfo[1].length });
                                     break;
                             
                                 //Edit existing element
@@ -247,9 +250,31 @@ exports.editPage = (req, res) => {
                         
                                 //Delete element
                                 case 3:
+
+                                    var removedElementPosition = pageInfo[1].filter(x => x.ID == req.body.newPageData[i].ID).order;
+                                    
+                                    for (let j = 0; j < pageInfo[1].length; j++){
+
+                                        if (pageInfo[1][j].order > removedElementPosition) {
+                                            pageInfo[1][j].order--;
+                                        }
+                                    }
+
                                     pageInfo[1] = pageInfo[1].filter(x => x.ID != req.body.newPageData[i].ID);
                                     break;
                             
+                                //Reorder elements
+                                case 4:
+
+                                    console.log(req.body.newPageData[i].elementData);
+                                    for (let j = 0; j < req.body.newPageData[i].elementData.length; j++){
+                                        
+                                        var current = pageInfo[1].findIndex(x => x.ID == req.body.newPageData[i].elementData[j]);
+                                        pageInfo[1][current].order = j
+                                    }
+
+                                    break;
+                                
                                 default:
                                     return res.status(400).send({ message: "Bad request" });
                             }
