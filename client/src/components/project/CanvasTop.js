@@ -7,7 +7,7 @@ import { canvasEditPage } from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import { clearElements } from "../../store/reducers/canvas";
 
-const CanvasTop = ({ selectedAction, setSelectedAction, stageRef }) => {
+const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
   return (
@@ -15,6 +15,7 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef }) => {
       <CanvasActions
         selectedAction={selectedAction}
         setSelectedAction={setSelectedAction}
+        inputFile={inputFile}
       />
       <div className="flex-container--align-center canvas-top__right">
         <CanvasCurrentlyViewing />
@@ -24,11 +25,6 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef }) => {
             onClick={() => dispatch(clearElements())}
           ></i>
         )}
-
-        <i
-          class="fas fa-save"
-          onClick={() => dispatch(canvasFunctions.savePage())}
-        ></i>
         <CanvasPublish />
       </div>
     </div>

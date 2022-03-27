@@ -31,6 +31,7 @@ exports.loadUserData = (req, res) => {
             if (!foundUser) { 
                 return res.status(404).send({ message: "User not found" });
             }
+
             Project.findAndCountAll({ where: { ownerId: req.params.userId } }).then(userProjects => {
 
                 var userData = { userId: foundUser.userId, username: foundUser.username, projectList: [] };

@@ -1,19 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector, Provider } from "react-redux";
 import { loadUserData } from "../../store/actions/user";
-import {
-  newProject,
-  loadProject,
-  editProject,
-} from "../../store/actions/project";
-import {
-  canvasAddPage,
-  canvasDeletePage,
-  canvasLoadPage,
-  canvasEditPage,
-} from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
-import { Stage, Layer, Rect, Circle, Line } from "react-konva";
+import { Stage, Layer, Rect, Circle, Line, Image } from "react-konva";
 import Konva from "konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
@@ -33,8 +22,6 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
-  var canvasHasBeenChanged = false;
 
   const [tool, setTool] = useState("pen");
   const isDrawing = useRef(false);
@@ -126,33 +113,66 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     });
   }, []);
 
-  const autoSave = () => {
-    //Currently this just runs every time, but in future it should only run if a change has been made
-    if (canvasHasBeenChanged || true) {
-      if (
-        store.getState().project.currentProjectData.projectId !== -1 &&
-        store.getState().project.currentPageData.pageNumber !== -1
-      ) {
-        dispatch(
-          canvasFunctions.savePage(
-            store.getState().project.currentProjectData.projectId,
-            store.getState().project.currentPageData.pageNumber
-          )
-        );
-      }
+    const autoSaveInterval = 500;
+    const editingStatusUpdateInterval = 25000;
+    const canvasConnectionAttemptInterval = 10000;
+    var editingStatusCounter = editingStatusUpdateInterval;
+    var canvasConnectionAttemptCounter = 0;
+    
+    const autoSave = () => { 
+        try {
+            if (store.getState().canvas.changes.length > 0) {
+            
+                if (store.getState().project.currentProjectData.projectId !== -1 && store.getState().project.currentPageData.pageNumber !== -1) {
 
-      canvasHasBeenChanged = false;
-    }
-  };
+                    canvasFunctions.savePage();
+                
+                    store.getState().canvas.changes = [];
+                }
+            }
+        }
+        catch (e) { 
+            console.log("Error saving page: " + e);
+        }
 
-  //I dont know if this is the best way to do this, but it works for now
-  window.onpageshow = function () {
-    //localStorage.removeItem("user");
+        if (editingStatusCounter >= editingStatusUpdateInterval) {
 
-    dispatch(canvasFunctions.loadUser(stageRef));
+            if (store.getState().project.canvasRealtimeConnection) {
+                try {
+                    canvasFunctions.updateEditingStatus();
+                }
+                catch (e) { 
+                    console.log("Error updating canvas editing status: " + e);
+                }
+            }
 
-    setInterval(autoSave, 5000);
-  };
+            editingStatusCounter -= editingStatusUpdateInterval;
+        }
+
+        if (canvasConnectionAttemptCounter >= canvasConnectionAttemptInterval &&
+            !store.getState().project.canvasRealtimeConnection &&
+            store.getState().user.currentUserData.userId !== -1 &&
+            store.getState().project.currentPageData.pageId !== -1) { 
+
+            canvasFunctions.startCanvasConnection();
+
+            canvasConnectionAttemptCounter-= canvasConnectionAttemptInterval;
+        }
+
+        editingStatusCounter += autoSaveInterval;
+        canvasConnectionAttemptCounter += autoSaveInterval;
+    };
+    
+    window.onpageshow = function () {
+        
+        //dispatch(canvasFunctions.loadUser(stageRef));
+        
+        store.getState().canvas.changes = [];
+
+        setInterval(autoSave, autoSaveInterval);
+    };
+    
+    
 
   return (
     <div className={`konva-container ${selectedAction}`}>
@@ -167,7 +187,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
       >
         <Provider store={store}>
           <Layer>
-            {elements.map((item, i) => {
+                      {elements.map((item, i) => {
               switch (item.elType) {
                 case "Text":
                   return (
@@ -193,7 +213,8 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                       setSelectedAction={setSelectedAction}
                     />
                   );
-                case "Line":
+                  case "Line":
+                    
                   return (
                     <Line
                       key={i}
@@ -208,7 +229,27 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                           : "source-over"
                       }
                     />
-                  );
+                      );
+                    
+                case "Image":
+                  return (
+                    <Image
+                      key={i}
+                      width={item.width}
+                      height={item.height}
+                      image={item.imgObj}
+                      isSelected={
+                        selectedElement && item.id === selectedElement.id
+                      }
+                      onSelect={() => {
+                        selectedAction == "select" &&
+                          dispatch(setSelectedElement(item.id));
+                      }}
+                      stageRef={stageRef}
+                      setSelectedId={setSelectedElement}
+                      setSelectedAction={setSelectedAction}
+                    />
+                  )
                 default:
                   return false;
               }

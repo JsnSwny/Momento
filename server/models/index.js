@@ -32,6 +32,7 @@ db.role = require("./role.model")(sequelize, Sequelize);
 db.refreshToken = require("./refreshToken.model")(sequelize, Sequelize);
 db.project = require("./project.model")(sequelize, Sequelize);
 db.page = require("./page.model")(sequelize, Sequelize);
+db.projectRole = require("./projectRole.model")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -59,6 +60,14 @@ db.project.belongsTo(db.user, { foreignKey: "projectId" });
 //Connect the project table to the pages table (one to many)
 db.project.hasMany(db.page, { foreignKey: "pageId" });
 db.page.belongsTo(db.project, { foreignKey: "pageId" });
+
+//Connect the project table to the projectRoles table (one to many)
+db.project.hasMany(db.projectRole, { foreignKey: "projectId" });
+db.projectRole.belongsTo(db.project, { foreignKey: "projectId" });
+
+//Connect the user table to the projectRoles table (one to many)
+db.user.hasMany(db.projectRole, { foreignKey: "userId" });
+db.projectRole.belongsTo(db.user, { foreignKey: "userId" });
 
 db.ROLES = ["user", "mod", "admin"];
 

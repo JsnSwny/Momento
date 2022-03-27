@@ -8,7 +8,7 @@ import {
   faEraser,
 } from "@fortawesome/free-solid-svg-icons";
 
-const CanvasActions = ({ selectedAction, setSelectedAction }) => {
+const CanvasActions = ({ selectedAction, setSelectedAction, inputFile }) => {
   return (
     <div className="canvas-actions">
       <FontAwesomeIcon
@@ -41,8 +41,10 @@ const CanvasActions = ({ selectedAction, setSelectedAction }) => {
       />
       {/* <input type="file" onChange={(e) => console.log(e.target.value)} /> */}
       <FontAwesomeIcon
-        onClick={() => setSelectedAction("image")}
-        onChange={(e) => console.log(e.target.value)}
+        onClick={() => {
+          setSelectedAction("image");
+          inputFile.current.click();
+        }}
         className={`canvas-actions__icon ${
           selectedAction == "image" ? "active" : ""
         }`}
