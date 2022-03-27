@@ -56,14 +56,6 @@ export const uploadImage = (url) => (dispatch) => {
             });
 
             return Promise.resolve();
-        },
-        (error) => {
-            dispatch({
-                type: AWS_UPLOAD_FAILURE,
-                payload: error
-            });
-
-            return Promise.reject();
         }
     )
 }
