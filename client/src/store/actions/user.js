@@ -1,14 +1,12 @@
 import { userService } from "../services/user.service";
 import {
-    SET_MESSAGE,
     USER_LOAD_SUCCESS,
-    USER_LOAD_FAILURE,
-
+    USER_FOLLOWED
 } from "./types";
 
 export const loadUserData = (userId, username = -1) => (dispatch) => { 
 
-    return userService.loadUserData(userId, username, JSON.parse(localStorage.getItem("user")).accessToken)
+    return userService.loadUserData(userId, username)
     .then(
         (response) => {
             dispatch({
@@ -17,18 +15,21 @@ export const loadUserData = (userId, username = -1) => (dispatch) => {
             });
             
             return Promise.resolve();
-        },
-        (error) => {
-            dispatch({
-                type: USER_LOAD_FAILURE,
-            });
-
-            dispatch({
-                type: SET_MESSAGE,
-                payload: error,
-            });
-
-            return Promise.reject();
         }
-    )
+    );
+};
+
+export const followUser = (id) => (dispatch) => {
+
+    return userService.followUser(id)
+    .then(
+        (response) => {
+            dispatch({
+                type: USER_FOLLOWED,
+                payload: response
+            });
+
+            return Promise.resolve();
+        }
+    );
 };

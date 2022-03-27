@@ -2,18 +2,59 @@ const db = require("../models");
 const User = db.user;
 const Post = db.post;
 const Comment = db.comment;
+const Followers = db.followers;
+const Like = db.like;
 
-exports.getPosts = (req, res) => {
+exports.getPosts = async (req, res) => {
     try {
         var postsResponse = {
-            posts: []
+            posts: [],
+            likedPosts: []
         };
 
+        var followArray = [];
+
+        if (!req.body.username) {
+            var following = await Followers.findAndCountAll({
+                where: {
+                    userId1: req.userId
+                },
+                attributes: ['userId2']
+            });
+
+            for (let i = 0; i < following.count; i++) {
+                followArray.push(following.rows[i].userId2);
+            }
+
+            followArray.push(req.userId)
+        } else {
+            var user = await User.findOne({
+                where: {
+                    username: req.body.username
+                }
+            });
+            followArray.push(user.id);
+        }
+
         // get all posts
-        Post.findAndCountAll()
+        Post.findAndCountAll({
+            where: {
+                userId: followArray
+            },
+            include: Like
+        })
         .then(async (posts) => {
 
-            for (let i = 0; i < posts.count; i++) {
+            for (let i = 0; i < posts.rows.length; i++) {
+                for (let j = 0; j < posts.rows[i].likes.length; j++) {
+                    if (posts.rows[i].likes[j].userId === req.userId) {
+                        postsResponse.likedPosts.push(posts.rows[i].id);
+                    }
+                }
+
+                // update views
+                posts.rows[i].views = posts.rows[i].views + 1;
+                await posts.rows[i].save();
 
                 // structure single post response
                 var postData = {
@@ -21,7 +62,7 @@ exports.getPosts = (req, res) => {
                     title: posts.rows[i].title,
                     description: posts.rows[i].description,
                     imageURL: posts.rows[i].imageURL,
-                    likes: 200, // no likes table yet - to be implemented
+                    likes: posts.rows[i].likes.length,
                     views: posts.rows[i].views,
                     collaborators: posts.rows[i].collaborators,
                     comments: []
@@ -85,3 +126,50 @@ exports.addComment = (req, res) => {
         res.status(500).send({ message: "Internal server error when adding a new comment" });
     }
 };
+
+exports.likePost = async (req, res) => {
+    try {
+        Like.findOne({
+            where: {
+                postId: req.body.postId,
+                userId: req.userId
+            }
+        })
+        .then((like) => {
+            if (like) {
+                return res.status(400).send('Post already liked');
+            } else {
+                Like.create({
+                    postId: req.body.postId,
+                    userId: req.userId
+                })
+                .then((like) => {
+                    return res.status(200).send('Post liked successfully');
+                })
+            }
+        })
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+};
+
+exports.unlikePost = async (req, res) => {
+    try {
+        Like.findOne({
+            where: {
+                postId: req.body.postId,
+                userId: req.userId
+            }
+        })
+        .then((like) => {
+            if (like) {
+                like.destroy();
+                return res.status(200).send('Post unliked successfully');
+            } else {
+                return res.status(400).send('Post not liked');
+            }
+        })
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+}

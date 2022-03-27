@@ -1,10 +1,8 @@
 import { authService } from "../services/auth.service";
 import {
     LOGIN_SUCCESS,
-    LOGIN_FAILURE,
     LOGOUT,
     REGISTER_SUCCESS,
-    REGISTER_FAILURE,
     SET_MESSAGE,
     PWD_REQUEST_SUCCESS,
     REFRESH_TOKEN
@@ -24,18 +22,6 @@ export const registerAuth = (username, firstName, lastName, email, password) => 
                 });
 
                 return Promise.resolve();
-            },
-            (error) => {
-                dispatch({
-                    type: REGISTER_FAILURE,
-                });
-
-                dispatch({
-                    type: SET_MESSAGE,
-                    payload: error,
-                });
-
-                return Promise.reject();
             }
         )
 }
@@ -47,12 +33,6 @@ export const verifyUser = (token) => (dispatch) => {
                 dispatch({
                     type: SET_MESSAGE,
                     payload: response.message,
-                });
-            },
-            (error) => {
-                dispatch({
-                    type: SET_MESSAGE,
-                    payload:error.message,
                 });
             }
         )
@@ -70,12 +50,6 @@ export const requestPwdChange = (email) => (dispatch) => {
                 type: SET_MESSAGE,
                 payload: response.message,
             });
-        },
-        (error) => {
-            dispatch({
-                type: SET_MESSAGE,
-                payload:error,
-            });
         }
     )
 }
@@ -88,12 +62,6 @@ export const verifyPwdReset = (token) => (dispatch) => {
                 type: SET_MESSAGE,
                 payload: response.message,
             });
-        },
-        (error) => {
-            dispatch({
-                type: SET_MESSAGE,
-                payload:error,
-            });
         }
     )
 }
@@ -105,12 +73,6 @@ export const changePassword = (token, password) => (dispatch) => {
                 dispatch({
                     type: SET_MESSAGE,
                     payload: response.message,
-                });
-            },
-            (error) => {
-                dispatch({
-                    type: SET_MESSAGE,
-                    payload:error.message,
                 });
             }
         )
@@ -126,18 +88,6 @@ export const login = (username, password) => (dispatch) => {
                 });
 
                 return Promise.resolve();
-            },
-            (error) => {
-                dispatch({
-                    type: LOGIN_FAILURE,
-                });
-
-                dispatch({
-                    type: SET_MESSAGE,
-                    payload: error,
-                });
-
-                return Promise.reject();
             }
         )
 }

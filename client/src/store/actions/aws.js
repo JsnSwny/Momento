@@ -1,9 +1,7 @@
 import { awsService } from "../services/aws.service";
 import {
     AWS_SIGNEDURL_SUCCESS,
-    AWS_SIGNEDURL_FAILURE,
-    AWS_UPLOAD_SUCCESS,
-    AWS_UPLOAD_FAILURE
+    AWS_UPLOAD_SUCCESS
 } from "./types";
 
 export const getSignedUrl = (fileType) => (dispatch) => {
@@ -16,14 +14,6 @@ export const getSignedUrl = (fileType) => (dispatch) => {
                 });
 
                 return Promise.resolve();
-            },
-            (error) => {
-                dispatch({
-                    type: AWS_SIGNEDURL_FAILURE,
-                    payload: error
-                });
-
-                return Promise.reject();
             }
         )
 }
@@ -38,14 +28,6 @@ export const updateProfilePic = (url) => (dispatch) => {
             });
 
             return Promise.resolve();
-        },
-        (error) => {
-            dispatch({
-                type: AWS_UPLOAD_FAILURE,
-                payload: error
-            });
-
-            return Promise.reject();
         }
     )
 }
@@ -60,14 +42,6 @@ export const deleteProfilePic = () => (dispatch) => {
             });
 
             return Promise.resolve();
-        },
-        (error) => {
-            dispatch({
-                type: AWS_UPLOAD_FAILURE,
-                payload: error
-            });
-
-            return Promise.reject();
         }
     )
 }

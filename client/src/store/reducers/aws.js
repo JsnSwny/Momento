@@ -1,6 +1,5 @@
 import {
-    AWS_SIGNEDURL_SUCCESS,
-    AWS_SIGNEDURL_FAILURE
+    AWS_SIGNEDURL_SUCCESS
 } from "./types";
 
 const initialState = {
@@ -16,11 +15,6 @@ export default function (state = initialState, action) {
                 ...state,
                 signedUrl: payload
             };
-        case AWS_SIGNEDURL_FAILURE:
-            return {
-                ...state,
-                signedUrl: undefined
-            }
         default:
             return state;
     }

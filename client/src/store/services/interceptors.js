@@ -1,6 +1,7 @@
 import axiosInstance from "./api.axios";
 import { tokenService } from "./token.service";
 import { refreshToken } from "../actions/auth";
+import { SET_MESSAGE } from "../actions/types";
 
 const setup = (store) => {
     axiosInstance.interceptors.request.use(
@@ -22,6 +23,12 @@ const setup = (store) => {
             return res.data;
         },
         async (err) => {
+
+            store.dispatch({
+                type: SET_MESSAGE,
+                payload: err.response.data.message
+            })
+
             const originalConfig = err.config;
             if (originalConfig.url !== "/auth/login" && err.response) {
                 // If access token is expired

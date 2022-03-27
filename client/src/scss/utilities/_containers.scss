@@ -1,5 +1,6 @@
 .flex-container {
   display: flex;
+  text-align: left;
   &--between {
     @extend .flex-container;
     justify-content: space-between;

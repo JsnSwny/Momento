@@ -2,11 +2,15 @@ import api from "./api.axios";
 
 export const postsService = {
     getPosts,
-    addComment
+    addComment,
+    likePost,
+    unlikePost
 };
 
-function getPosts() {
-    return api.post(`/getPosts`);
+function getPosts(username) {
+    return api.post(`/getPosts`, {
+        username
+    });
 };
 
 function addComment(postId, text) {
@@ -14,4 +18,16 @@ function addComment(postId, text) {
         postId,
         text
     });
+};
+
+function likePost(postId) {
+    return api.post(`likePost`, {
+        postId
+    })
+};
+
+function unlikePost(postId) {
+    return api.post(`unlikePost`, {
+        postId
+    })
 };

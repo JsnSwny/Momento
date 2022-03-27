@@ -110,10 +110,25 @@ db.like.belongsTo(db.post, {
 
 //Define likes <-> users relationship
 db.user.hasMany(db.like, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
 });
 db.like.belongsTo(db.user, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
+});
+
+// Followers table
+db.followers = require("./followers.model")(sequelize, Sequelize);
+db.user.hasMany(db.followers, {
+  foreignKey: 'userId1', targetKey: 'id'
+});
+db.user.hasMany(db.followers, {
+  foreignKey: 'userId2', targetKey: 'id'
+});
+db.followers.belongsTo(db.user, {
+  foreignKey: 'userId1', targetKey: 'id'
+});
+db.followers.belongsTo(db.user, {
+  foreignKey: 'userId2', targetKey: 'id'
 });
 
 module.exports = db;

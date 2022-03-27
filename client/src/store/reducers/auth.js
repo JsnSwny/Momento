@@ -1,11 +1,10 @@
 import { 
     REGISTER_SUCCESS,
-    REGISTER_FAILURE,
     LOGIN_SUCCESS,
-    LOGIN_FAILURE, 
     LOGOUT,
     PWD_REQUEST_SUCCESS,
-    REFRESH_TOKEN
+    REFRESH_TOKEN,
+    USER_FOLLOWED
  } from "../actions/types";
 
 const user = JSON.parse(localStorage.getItem("user"));
@@ -24,23 +23,11 @@ export default function (state = initialState, action) {
                 isLoggedIn: false,
                 successful: true,
             };
-        case REGISTER_FAILURE:
-            return {
-                ...state,
-                isLoggedIn: false,
-                successful: false,
-            }
         case LOGIN_SUCCESS:
             return {
                 ...state,
                 isLoggedIn: true,
                 user: payload.user,
-            };
-        case LOGIN_FAILURE:
-            return {
-                ...state,
-                isLoggedIn: false,
-                user: null,
             };
         case LOGOUT:
             return {
@@ -58,6 +45,16 @@ export default function (state = initialState, action) {
                 ...state,
                 user: { ...user, accessToken: payload }
             };
+        case USER_FOLLOWED:
+            return {
+                ...state,
+                user: {
+                    ...user,
+                    following: state.user.following.includes(payload.id)
+                        ? state.user.following.filter((item) => item !== payload.id)
+                        : [...state.user.following, payload.id]
+                }
+            }
         default:
             return state;
     }

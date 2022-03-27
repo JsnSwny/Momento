@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadUserData } from "../store/actions/user";
+import { followUser, loadUserData } from "../store/actions/user";
 import { Link } from "react-router-dom";
 import Modal from 'react-modal';
 import axios from 'axios';
 import { awsService } from '../store/services/aws.service';
 import { deleteProfilePic, updateProfilePic } from "../store/actions/aws";
+import { getUserPosts } from '../store/actions/posts';
+import Post from "../components/feed/Post";
 
 const UserPage = () => {
   const dispatch = useDispatch();
@@ -13,37 +15,15 @@ const UserPage = () => {
   useEffect(() => {
     const user = window.location.pathname.split('/')[2]
     let id = JSON.parse(localStorage.getItem("user")).id;
-    dispatch(
-      loadUserData(id, user)
-    )
-  });
+    dispatch(loadUserData(id, user));
+    dispatch(getUserPosts(user));
+  }, []);
 
+  const userData = useSelector((state) => state.user.userData);
   const operationSuccess = useSelector((state) => state.user.operationSuccess);
-  const username = useSelector((state) => {
-    if(operationSuccess){
-      return state.user.userData.username;
-    } return null;
-  });
-
-  const ownProfile = username === JSON.parse(localStorage.getItem("user")).username;
-
-  const name = useSelector((state) => {
-    if (operationSuccess && ownProfile) {
-      return state.user.userData.firstName + " " + state.user.userData.lastName;
-    } return null;
-  })
-
-  const postCount = useSelector((state) => {
-    if (operationSuccess) {
-      return state.user.userData.posts.length;
-    } return null;
-  })
-
-  const profilePicture = useSelector((state) => {
-    if (operationSuccess) {
-      return state.user.userData.profilePicture;
-    }
-  })
+  const ownProfile = userData.username === JSON.parse(localStorage.getItem("user")).username;
+  const following = useSelector((state) => state.auth.user.following.includes(userData.id));
+  const posts = useSelector((state) => state.posts.posts);
 
   const [modalIsOpen, setIsOpen] = useState(false);
   const openModal = () => {
@@ -95,9 +75,9 @@ const UserPage = () => {
       presignedUrl,
       file
     )
-    .then(async (response) => {
+    .then((response) => {
       let photoUrl = presignedUrl.split("?")[0]
-      await dispatch(updateProfilePic(photoUrl));
+      dispatch(updateProfilePic(photoUrl));
       window.location.reload();
     })
 			.catch((error) => {
@@ -105,8 +85,8 @@ const UserPage = () => {
 			});
   }
 
-  const deleteCurrentProfilePic = async () => {
-    await dispatch(deleteProfilePic());
+  const deleteCurrentProfilePic = () => {
+    dispatch(deleteProfilePic());
     window.location.reload();
   }
 
@@ -135,37 +115,42 @@ const UserPage = () => {
               {ownProfile && (
                 <div>
                   <button onClick={openModal} className="profPicBtn" title="Change Profile Picture">
-                    <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
+                    <img className="profilePic" src={userData.profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : userData.profilePicture} />
                   </button>
                 </div>
               )}
               {!ownProfile && (
                 <div>
-                  <img className="profilePic" src={profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : profilePicture} />
+                  <img className="profilePic" src={userData.profilePicture === null ? "https://www.w3schools.com/howto/img_avatar2.png" : userData.profilePicture} />
                 </div>
               )}
             </div>
             <section className="UserInfo">
               <div className="headerTop">
                 <div className="username">
-                  <h1>{username}</h1>
+                  <h1>{userData.username}</h1>
                 </div>
                 {ownProfile && (
                   <div className="editProfile">
                     <h2>Edit profile</h2>
                   </div>
                 )}
-                {!ownProfile && (
+                {!ownProfile && !following && (
                   <div className="followBtnDiv">
-                    <button className="followButton">Follow</button>
+                    <button className="followButton" onClick={() => dispatch(followUser(userData.id))}>Follow</button>
                   </div>
+                )}
+                {!ownProfile && following && (
+                  <div className="followBtnDiv">
+                    <button className="unfollowButton" onClick={() => dispatch(followUser(userData.id))}>Unfollow</button>
+                </div>
                 )}
               </div>
               <ul className="userStats">
-              {postCount} posts    94 followers    29 following
+               94 followers    29 following
               </ul>
               <div className="userName-Bio">
-                <h2 className="name">{name}</h2>
+                <h2 className="name">{userData.firstName + " " + userData.lastName}</h2>
                 <br/>
                 <span className="userBio">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -182,8 +167,17 @@ const UserPage = () => {
         )}
       </div>
     <div className="category">
-      <Link className="profileLink" to={`/user/${username}`}>Posts</Link>
-      <Link className="profileLink" to={`/user/${username}/projects`}>Projects</Link>
+      <Link className="profileLink" to={`/user/${userData.username}`}>Posts</Link>
+      <Link className="profileLink" to={`/user/${userData.username}/projects`}>Projects</Link>
+    </div>
+    <div className="wrapper--md">
+      <div className="feed">
+        <ul>
+          {posts.map((post) => (
+            <Post post={post} />
+          ))}
+        </ul>
+      </div>
     </div>
   </div>
   );
