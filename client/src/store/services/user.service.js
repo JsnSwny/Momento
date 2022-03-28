@@ -21,9 +21,11 @@ function followUser(id) {
         ? following.filter((item) => item !== id)
         : [...following, id];
     userData.following = newArray;
-    localStorage.setItem('user', JSON.stringify(userData));
-
+    
     return api.post(`/followUser`, {
         id
-    });
+    })
+    .then(
+        localStorage.setItem('user', JSON.stringify(userData))
+    );
 };

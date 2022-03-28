@@ -107,6 +107,15 @@
         text-decoration: none;
         font-size: 1.5rem;
         color: grey;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    #active.profileLink  {
+        color: black;
+        font-size: 1.7rem;
+        cursor: default;
     }
 
 }
