@@ -25,5 +25,5 @@ function followUser(id) {
 
     return api.post(`/followUser`, {
         id
-    })
+    });
 };

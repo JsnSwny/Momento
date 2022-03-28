@@ -20,7 +20,7 @@ export const loadUserData = (userId, username = -1) => (dispatch) => {
 };
 
 export const followUser = (id) => (dispatch) => {
-
+    
     return userService.followUser(id)
     .then(
         (response) => {
