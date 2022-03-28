@@ -25,6 +25,7 @@ const UserPage = () => {
   const following = useSelector((state) => state.auth.user.following.includes(userData.id));
   const posts = useSelector((state) => state.posts.posts);
 
+
   const [modalIsOpen, setIsOpen] = useState(false);
   const openModal = () => {
     setIsOpen(true);
@@ -89,6 +90,8 @@ const UserPage = () => {
     dispatch(deleteProfilePic());
     window.location.reload();
   }
+
+  const [currentMode, setCurrentMode] = useState('posts');
 
   return (
     <div className="User" id="user">
@@ -166,19 +169,43 @@ const UserPage = () => {
           </div>
         )}
       </div>
-    <div className="category">
-      <Link className="profileLink" to={`/user/${userData.username}`}>Posts</Link>
-      <Link className="profileLink" to={`/user/${userData.username}/projects`}>Projects</Link>
-    </div>
-    <div className="wrapper--md">
-      <div className="feed">
-        <ul>
-          {posts.map((post) => (
-            <Post post={post} />
+    {ownProfile && (
+      <div className="category">
+        <button 
+          className="profileLink"
+          id={currentMode === 'posts' ? 'active' : ''}
+          onClick={() => setCurrentMode('posts')}
+        >Posts</button>
+        <button 
+          className="profileLink" 
+          id={currentMode === 'projects' ? 'active' : ''} 
+          onClick={() => setCurrentMode('projects')}
+        >Projects</button>
+      </div>
+    )}
+    {currentMode === 'posts' && (
+      <div className="wrapper--md">
+        <div className="feed">
+          <ul>
+            {posts.map((post) => (
+              <Post post={post} />
+            ))}
+          </ul>
+        </div>
+      </div>
+    )}
+    {currentMode === 'projects' && (
+      <>
+        <ul style={{marginTop: '4rem'}}>
+          {userData.projectList.map((project) => (
+            <li style={{marginTop: '2rem', marginBottom: '2rem'}}><a 
+              href={`/project/${project.projectId}`}
+              className='projectLink'
+            >{project.title}</a></li>
           ))}
         </ul>
-      </div>
-    </div>
+      </>
+    )}
   </div>
   );
 };
