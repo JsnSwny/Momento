@@ -196,9 +196,12 @@ const UserPage = () => {
     )}
     {currentMode === 'projects' && (
       <>
-        <ul>
+        <ul style={{marginTop: '4rem'}}>
           {userData.projectList.map((project) => (
-            <li><a href={`/project/${project}`}>{project}</a></li>
+            <li style={{marginTop: '2rem', marginBottom: '2rem'}}><a 
+              href={`/project/${project.projectId}`}
+              className='projectLink'
+            >{project.title}</a></li>
           ))}
         </ul>
       </>

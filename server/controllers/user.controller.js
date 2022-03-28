@@ -28,7 +28,7 @@ exports.loadUserData = (req, res) => {
                 } 
                 // If user requesting their own data
                 else {
-                    Project.findAndCountAll({ 
+                    Project.findAll({ 
                         where: { 
                             ownerId: req.userId 
                         } 
@@ -42,12 +42,9 @@ exports.loadUserData = (req, res) => {
                             emailAddress: user.emailAddress,
                             profilePicture: user.profilePicture,
                             roles: user.roles,
-                            projectList: []
+                            projectList: userProjects
                         }
         
-                        for (let i = 0; i < userProjects.count; i++) { 
-                            userData.projectList.push(userProjects.rows[i].projectId);
-                        }
                         res.status(200).send(JSON.stringify(userData));
                     }).catch(e => {
                         console.log("Error loading user data: " + e.message);
