@@ -5,7 +5,8 @@ export const projectService = {
     loadProject,
     editProject,
     initCanvasConnection,
-    stillHere
+    stillHere,
+    exportProject
 };
 
 function createProject(title, description) { 
@@ -38,5 +39,11 @@ function stillHere(projectId, pageNumber) {
     return api.post(`/project/${projectId}`, {
         projectId,
         pageNumber
+    })
+}
+
+function exportProject(projectId, pageNumber) { 
+    return api.get(`/project/export/${projectId}`, {
+        projectId
     })
 }

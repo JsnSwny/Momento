@@ -1,4 +1,8 @@
-const { projectRole } = require("../models");
+const Imports = require("../Imports");
+const Canvas = require("canvas");
+const fs = require("fs");
+const awsController = require("./aws.controller");
+const { projectRole, post, postImage } = require("../models");
 const db = require("../models");
 const user = db.user;
 const project = db.project;
@@ -197,6 +201,7 @@ setInterval(CheckWhoIsEditing, editingTimeoutTime);
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const WebSocket = require("ws");
+
 const wss = new WebSocket.Server({ port: 3002 });
 
 wss.on("connection", (ws) => { 
@@ -412,11 +417,6 @@ exports.updateEditingUsers = (changeData, user) => {
     }
 };
 
-exports.exportProject = (req, res) => {
-
-
-};
-
 exports.repairCanvasDataCorruption = (pageInfo) => {
 
     pageInfo[1].sort((x, y) => (x.order === y.order ? 0 : ((x.order > y.order) ? 1 : -1)));
@@ -441,4 +441,247 @@ exports.repairCanvasDataCorruption = (pageInfo) => {
     }
 
     return pageInfo;
+};
+
+const axios = require("axios");
+const S3 = require("aws-sdk/clients/s3");
+const aws_sdk = require("aws-sdk");
+const uuid = require("uuid");
+
+const access = new aws_sdk.Credentials({
+    accessKeyId: config.AWS_ACCESS_KEY,
+    secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
+});
+
+const s3 = new S3({
+    credentials: access,
+    region: "eu-west-2",
+    signatureVersion: "v4",
+});
+
+exports.exportProject = (req, res) => {
+
+    //Find the project to load
+    project.findOne({ where: { projectId: req.params.projectId } })
+        .then(foundProject => {
+
+            //Ensure that the project exists
+            if (!foundProject) {
+                return res.status(404).send({ message: "Project not found" });
+            }
+
+            //Check permissions
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
+
+                if (permissions === "none") {
+
+                    return res.status(403).send({ message: "Access denied" });
+                }
+
+                projectRole.findAndCountAll({ where: { projectId: req.params.projectId } })
+                .then(roles => {
+                    
+                    var creator = roles.rows.filter(x => x.dataValues.roleName === "creator")[0];
+                    
+                    if (!creator)
+                        return res.status(404).send({ message: "Could not find project creator" });
+                    
+                    post.create({
+                        userId: creator.userId,
+                        title: foundProject.title,
+                        description: foundProject.description,
+                        imageURL: "",
+                        views: 0,
+                        collaborators: roles.count,
+                        datePosted: Date.now(),
+                    })
+                    .then(newPost => {
+                        
+                        //Export each page to an image
+                        pageTitles = page.findAndCountAll({ where: { projectId: req.params.projectId } })
+                        .then(pages => {
+
+                            if (!pages.rows[0]) {
+                        
+                                return res.status(400).send({ message: "The project is empty" });
+                            }
+
+                            var initialCanvasSize = JSON.parse(JSON.parse(pages.rows[0].pageData)[0]);
+
+                            var canvas = Canvas.createCanvas(initialCanvasSize.width, initialCanvasSize.height);
+
+                            Imports.then(async ([{ default: Konva }, { default: fetch }]) => {
+
+                                var stage = new Konva.Stage(
+                                    {
+                                        container: canvas,
+                                        width: initialCanvasSize.width,
+                                        height: initialCanvasSize.height
+                                    });
+
+                                var stageLayer = new Konva.Layer();
+                                
+                                stage.add(stageLayer);
+
+                                var imageURLs = [];
+                                
+                                //Export each page
+                                for (let i = 0; i < pages.count; i++) {
+
+                                    var currentPageData = JSON.parse(pages.rows[i].pageData);
+
+                                    var nodes = [];
+
+                                    //Add each element to the konva stage
+                                    for (let j = 0; j < currentPageData[1].length; j++) {
+
+                                        currentPageData[1][j].data.id = String(currentPageData[1][j].data.id);
+
+                                        //Round any coordinates
+                                        if (currentPageData[1][j].data.x) {
+                                            
+                                            currentPageData[1][j].data.x = Math.round(currentPageData[1][j].data.x);
+                                        }
+
+                                        if (currentPageData[1][j].data.y) {
+                                            
+                                            currentPageData[1][j].data.y = Math.round(currentPageData[1][j].data.y);
+                                        }
+
+                                        var currentNode;
+                                        
+                                        switch (currentPageData[1][j].data.elType) {
+                                            
+                                            case "Text":
+                                                currentNode = new Konva.Text(currentPageData[1][j].data);
+                                                break;
+                                            
+                                            case "Line":
+                                                currentNode = new Konva.Line(currentPageData[1][j].data);
+                                                currentNode.setAttr("x", 0);
+                                                currentNode.setAttr("y", 0);
+                                                currentNode.setAttr("stroke", currentPageData[1][j].data.colour);
+                                                currentNode.setAttr("strokeWidth", parseInt(currentPageData[1][j].data.thickness));
+                                                currentNode.setAttr("lineCap", "round");
+                                                currentNode.setAttr("tension", 0);
+                                                break;
+                                            
+                                            case "Image":
+                                                currentNode = new Konva.Image(currentPageData[1][j].data);
+
+                                                await Canvas.loadImage(currentPageData[1][j].data.src).then(image => {
+                                                    currentNode.setAttr("image", image);
+                                                });
+                                                
+                                                break;
+                                            
+                                            default:
+                                                currentNode = new Konva.Node(currentPageData[1][j].data);
+                                                break;
+                                        }
+
+                                        stageLayer.add(currentNode);
+
+                                        currentNode.zIndex(currentPageData[1][j].order);
+
+                                        nodes.push(currentNode);
+                                    }
+
+                                    //Convert the konva layer to data URL
+                                    stageLayer.toDataURL({
+                                        width: initialCanvasSize.width,
+                                        height: initialCanvasSize.height,
+                                        mimetype: "image/png",
+                                        pixelRatio: 2,
+                                        callback(currentImage) {
+
+                                            //Create the post image entry in the database
+                                            postImage.create({
+                                                postId: newPost.id,
+                                                imageNumber: i
+                                            })
+                                            .then(newPostImage => {
+                                                
+                                                var imageName = uuid.v4() + ".png";
+                                                
+                                                try {
+                                                    
+                                                    var fileBuffer = Buffer.from(currentImage.split(",")[1], "base64");
+                                                    
+                                                    //upload image to aws
+                                                    s3.getSignedUrlPromise("putObject", {
+                                                        Bucket: "momento-s3",
+                                                        Key: imageName,
+                                                        ContentType: "image/png",
+                                                        Expires: (60 * 15),
+                                                    }).then(imageURL => {
+                                                        
+                                                        axios.put(imageURL, fileBuffer)
+                                                            .then((response) => {
+                                                                imageURL = imageURL.split("?")[0];
+                                                                newPostImage.imageURL = imageURL;
+                                                                newPostImage.save();
+                                                                
+                                                                imageURLs.push({ URL: imageURL, pageNumber: i + 1 });
+                
+                                                                if (i == 0) {
+                                                                    newPost.imageURL = imageURL;
+                                                                    newPost.save();
+                                                                }
+
+                                                                //If this is the last image, send the image urls to the canvas
+                                                                if (imageURLs.length == pages.count) {
+                                                                    
+                                                                    return res.status(200).send({ message: "success", images: imageURLs });
+                                                                }
+                                                            })
+                                                            .catch((e) => {
+                                                                console.log("Error uploading image to aws: ", e);
+                                                            });
+                                        
+                                                    }).catch((e) => {
+                                        
+                                                        console.log("Error generating image URL: " + e);
+                                                    });
+                                                
+                                                } catch (e) {
+                                                    console.log(e);
+                                                }
+                                            })
+                                            .catch(() => {
+                
+                                                console.log("Error when creating new post image");
+                                            });
+                                        }
+                                    });
+
+                                    for (let j = 0; j < nodes.length; j++) {
+                                        nodes[j].destroy();
+                                    }
+                                }
+                            });
+
+                        }).catch(e => { 
+
+                            console.log("Internal server error when exporting project: " + e.message);
+
+                            return res.status(500).send({ message: "Internal server error when exporting project" });
+                        });
+                    })
+                    .catch(() => {
+                            
+                        console.log("Error when creating new post");
+                    });
+                })
+                .catch(() => {
+                    console.log("Error when finding collaborators in the exported project");
+                });
+            });
+
+        }).catch(e => {
+
+            console.log("Internal server error when exporting project: " + e.message);
+
+            return res.status(500).send({ message: "Internal server error when exporting project" });
+        });
 };

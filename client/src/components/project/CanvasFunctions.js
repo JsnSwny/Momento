@@ -1,7 +1,7 @@
 import Konva from "konva";
 import store from "../../store/store";
 import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject, initCanvasConnection, stillHere } from "../../store/actions/project";
+import { newProject, loadProject, editProject, initCanvasConnection, stillHere, requestProjectExport } from "../../store/actions/project";
 import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
 var stageRef;
 
@@ -374,6 +374,21 @@ const updateEditingStatus = (dispatch) => {
     store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
 };
 
+const publishProject = (dispatch) => {
+
+    store.dispatch(
+        requestProjectExport(store.getState().project.currentProjectData.projectId)
+    )
+    .then(() => {
+    
+        console.log("Project published successfully");
+        //console.log(store.getState().project.images[0]);
+    })
+    .catch(() => { 
+        console.log("Error publishing project");
+    });
+};
+
 export const canvasFunctions = {
     projectPageLoaded,
     loadUser,
@@ -386,10 +401,6 @@ export const canvasFunctions = {
     loadCanvasUpdate,
     savePage,
     startCanvasConnection,
-    updateEditingStatus
-};
-
-const loadLine = (lineData) => {
-
-    
+    updateEditingStatus,
+    publishProject
 };

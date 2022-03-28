@@ -20,6 +20,8 @@ import {
   PROJECT_INITCANVASCONNECTION_FAILURE,
   PROJECT_EDITINGSTATUSUPDATE_SUCCESS,
   PROJECT_EDITINGSTATUSUPDATE_FAILURE,
+  PROJECT_EXPORT_SUCCESS,
+  PROJECT_EXPORT_FAILURE,
 } from "./types";
 
 export const newProject = (projectTitle, projectDescription) => (dispatch) => {
@@ -86,41 +88,6 @@ export const loadProject = (projectId) => (dispatch) => {
       }
     );
 };
-
-// export const editProject = (projectId, newTitle, newDescription) => (dispatch) => {
-
-//     return projectService.editProject(projectId, newTitle, newDescription, JSON.parse(localStorage.getItem("user")).accessToken)
-//         .then(
-//             (response) => {
-//                 console.log("Project edited");
-//                 dispatch({
-//                     type: PROJECT_EDIT_SUCCESS,
-//                 });
-
-//                 return Promise.resolve();
-//             },
-//             (error) => {
-//                 console.log("Error editing project: " + error);
-//                 dispatch({
-//                     type: PROJECT_EDIT_FAILURE,
-//                 });
-
-//                 dispatch({
-//                     type: SET_MESSAGE,
-//                     payload: error,
-//                 });
-
-//                 return Promise.reject();
-//             }
-//         )
-// };
-
-// export const addPage = (title) => (dispatch) => {
-//   dispatch({
-//     type: ADD_PAGE,
-//     payload: { id: Math.floor(Math.random() * 10000 + 1), title },
-//   });
-// };
 
 export const updatePage = (id, title) => (dispatch) => {
   dispatch({
@@ -241,7 +208,34 @@ export const stillHere = (projectId, pageNumber) => (dispatch) => {
                     payload: error,
                 });
 
-                canvasFunctions.startCanvasConnection();
+                return Promise.reject();
+            }
+        )
+};
+
+export const requestProjectExport = (projectId) => (dispatch) => {
+
+    return projectService.exportProject(projectId, JSON.parse(localStorage.getItem("user")).accessToken)
+        .then(
+            (response) => {
+                
+                dispatch({
+                    type: PROJECT_EXPORT_SUCCESS,
+                    payload: { images: response.images },
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("Error exporting project: " + error);
+                dispatch({
+                    type: PROJECT_EXPORT_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error,
+                });
 
                 return Promise.reject();
             }

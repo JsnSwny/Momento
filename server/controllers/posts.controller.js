@@ -1,6 +1,7 @@
 const db = require("../models");
 const User = db.user;
 const Post = db.post;
+const PostImage = db.postImage;
 const Comment = db.comment;
 const Followers = db.followers;
 const Like = db.like;
@@ -173,3 +174,46 @@ exports.unlikePost = async (req, res) => {
         return res.status(500).send(err);
     }
 }
+
+//This is untested, but should be able to retrieve all of the imageURLs in a post
+exports.getPostImages = (req, res) => {
+
+    //Find the project to load
+    Post.findOne({ where: { id: req.params.postId } })
+        .then(foundPost => {
+
+            //Ensure that the project exists
+            if (!foundPost) {
+                return res.status(404).send({ message: "Post not found" });
+            }
+
+            //Compile post images
+            postImage.findAndCountAll({ where: { postId: req.params.postId } })
+            .then(postImages => { 
+
+                images = [];
+
+                for (let i = 0; i < postImages.count; i++) { 
+
+                    pageInfo.push(postImages.rows[i].imageURL);
+                }
+
+                images.sort((x, y) => x.imageNumber > y.imageNumber ? 1 : -1);
+
+                res.status(200).send({ postId: req.params.postId, URLs: images });
+
+            }).catch(e => { 
+
+                console.log("Internal server error when loading post images: " + e.message);
+
+                res.status(500).send({ message: "Internal server error when loading post images" });
+
+            });
+
+        }).catch(e => {
+
+            console.log("Internal server error when loading post images: " + e.message);
+
+            res.status(500).send({ message: "Internal server error when loading post images" });
+        });
+};

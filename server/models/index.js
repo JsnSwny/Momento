@@ -75,6 +75,11 @@ db.ROLES = ["user", "mod", "admin"];
 db.post = require("./posts.model")(sequelize, Sequelize);
 db.comment = require("./comments.model")(sequelize, Sequelize);
 db.like = require("./likes.model")(sequelize, Sequelize);
+db.postImage = require("./postImages.model")(sequelize, Sequelize);
+
+//Connect the post table to the postImages table (one to many)
+db.post.hasMany(db.postImage, { foreignKey: "postId" });
+db.postImage.belongsTo(db.post, { foreignKey: "postId" });
 
 //Define posts <-> users relationship
 db.user.hasMany(db.post, {

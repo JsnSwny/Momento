@@ -26,6 +26,8 @@ import {
   SET_ACTIVE_PAGE,
   SET_EDITING_PAGE,
   DELETE_PAGE,
+  PROJECT_EXPORT_SUCCESS,
+  PROJECT_EXPORT_FAILURE,
 } from "../actions/types";
 
 const initialState = {
@@ -55,7 +57,8 @@ const initialState = {
   },
     pages: [],
     canvasRealtimeConnection: false,
-    canvasConnection: null
+    canvasConnection: null,
+    images: []
 };
 
 export default (state = initialState, action) => {
@@ -154,8 +157,21 @@ export default (state = initialState, action) => {
         return {
             ...state,
             operationSuccess: false,
+          };
+      
+    case PROJECT_EXPORT_SUCCESS:
+        return {
+            ...state,
+            operationSuccess: true,
+            images: action.payload.images
     };
 
+    case PROJECT_EXPORT_FAILURE:
+        return {
+            ...state,
+            operationSuccess: false,
+    };
+      
     case PAGE_ADD_SUCCESS:
       state.currentProjectData.pageCount++;
       state.pages.push({
