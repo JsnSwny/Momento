@@ -143,30 +143,6 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
        })
  };
 
-var configureNode = (currentNode, loadNodes) => {
-
-    if (currentNode.getType() === "Shape") {
-
-        if (currentNode.getAttrs()?.name === undefined) {
-            if (loadNodes) {
-
-                //console.log(currentNode);
-
-                store.dispatch({ type: "LOAD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
-            } else {
-                store.dispatch({ type: "LOAD_ADD_ELEMENT", payload: { id: currentNode.id(), attributes: currentNode.getAttrs() } });
-            }
-      }
-  
-    } else {
-
-        for (let i = 0; i < currentNode.children.length; i++) {
-
-            configureNode(currentNode.children[i], loadNodes);
-        }
-    }
-};
-
 //Load a page from the project
 const loadPage = (pageNumber) => (dispatch) => { 
 
@@ -208,9 +184,6 @@ const loadCanvasUpdate = (stringData, dispatch) => {
             
                 //Add element
                 case 1:
-                    //var newNode = Konva.Node.create(canvasData[i].elementData);
-
-                    //newNode.id(canvasData[i].ID);
 
                     if (canvasData[i].elementData.src) {
 
@@ -218,7 +191,8 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                         canvasData[i].elementData.imgObj.src = canvasData[i].elementData.src;
                     }
 
-                    store.dispatch({ type: "LOAD_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
+                    if(store.getState().canvas.elements.findIndex(x => x.id == canvasData[i].ID) < 0)
+                        store.dispatch({ type: "LOAD_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
                     break;
             
@@ -237,8 +211,6 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                 //Delete element
                 case 3:
 
-                    //stageRef.current.findOne(n => { return n.id() === canvasData[i].ID }).destroy();
-                
                     store.dispatch({ type: "LOAD_DELETE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
                     break;
@@ -253,8 +225,17 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                         newElements.push(store.getState().canvas.elements.filter(x => x.id == canvasData[i].elementData[j])[0]);
                     }
                     
-                    store.getState().canvas.elements = newElements();
+                    store.getState().canvas.elements = newElements;
 
+                    break;
+                
+                //ReSync
+                case 5:
+                    store.getState().canvas.elements = [];
+
+                    stageRef.current.setAttrs(canvasData[i].elementData);
+
+                    
                     break;
                 
                 default:

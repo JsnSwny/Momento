@@ -42,13 +42,15 @@ exports.loadProject = (req, res) => {
             }
 
             //Check permissions
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") {
 
-            //Compile page data
-            pageTitles = page.findAndCountAll({ where: { projectId: req.params.projectId } })
+                    return res.status(403).send({ message: "Access denied" });
+                }
+
+                //Compile page data
+                pageTitles = page.findAndCountAll({ where: { projectId: req.params.projectId } })
                 .then(pages => { 
 
                     pageInfo = [];
@@ -65,10 +67,11 @@ exports.loadProject = (req, res) => {
                 }).catch(e => { 
 
                     console.log("Internal server error when loading project: " + e.message);
-    
+
                     res.status(500).send({ message: "Internal server error when loading project" });
-    
+
                 });
+            });
 
         }).catch(e => {
 
@@ -90,37 +93,40 @@ exports.editProject = (req, res) => {
             }
 
             //Check if the user has permission to edit the project
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") { 
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") {
 
-            try { 
+                    return res.status(403).send({ message: "Access denied" });
+                }
+
+                try { 
                 
-                foundProject.title = req.body.newTitle;
-                foundProject.description = req.body.newDescription;
+                    foundProject.title = req.body.newTitle;
+                    foundProject.description = req.body.newDescription;
+    
+                    foundProject.save();
+    
+                }
+                catch (e) { 
+                    console.log("Error updating project: " + e.message);
+    
+                    return res.status(500).send("Error updating project");
+                }
+            });
 
-                foundProject.save();
-
-            }
-            catch (e) { 
-                console.log("Error updating project: " + e.message);
-
-                return res.status(500).send("Error updating project");
-            }
-
-            
             res.status(200).send({ message: "success" });
     });
 };
 
 checkProjectPermissions = (projectId, userId) => {
-    projectRole.findOne({ where: { projectId: projectId, userId: userId } })
-    .then(role => {
-        if (role) {
+    return projectRole.findOne({ where: { projectId: projectId, userId: userId } })
+        .then(role => {
+        if (role !== undefined && role !== null) {
 
             return role.roleName;
-        }else{
+        } else {
+
             return "none";
         }
         
@@ -130,8 +136,6 @@ checkProjectPermissions = (projectId, userId) => {
 
         return "none";
     });
-
-    return "none";
 };
 
 exports.changeProjectPermissions = (req, res) => {
@@ -145,25 +149,29 @@ exports.changeProjectPermissions = (req, res) => {
                 return res.status(404).send({ message: "Project not found" });
             }
 
-            if (checkProjectPermissions(foundProject.projectId, req.userId) === "creator") {
-                projectRole.create({
-                    projectId: foundProject.projectId,
-                    userId: req.body.newUserId,
-                    roleName: "editor"
-                }).then(newRole => { 
-                    return res.status(200).send({ message: "success" });
-                }).catch(e => {
+            //Check permissions
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                    console.log("Internal server error when changing project permissions: " + e.message);
-        
-                    res.status(500).send({ message: "Internal server error when changing project permissions" });
-                });
-            }
-            else { 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "creator") {
 
+                    projectRole.create({
+                        projectId: foundProject.projectId,
+                        userId: req.body.newUserId,
+                        roleName: "editor"
+                    }).then(newRole => { 
+                        return res.status(200).send({ message: "success" });
+                    }).catch(e => {
+    
+                        console.log("Internal server error when changing project permissions: " + e.message);
             
+                        res.status(500).send({ message: "Internal server error when changing project permissions" });
+                    });
+
+                } else {
+
+                    return res.status(403).send({ message: "Access denied" });
+                }
+            });     
     });
 };
 
@@ -229,34 +237,76 @@ const sendInitialCanvasData = (client, projectId, pageNumber) => {
         
         //Ensure that the page exists
         if (!foundPage) {
-             console.log("Page " + pageNumber + " of project " + projectId + " not found when attemping to send initial canvas data");
-        }
-
-        if (foundPage.pageData) {
-        
-            pageInfo = JSON.parse(foundPage.pageData);
-
-            var outgoingData = [{ changeType: 0, ID: -1, elementData: pageInfo[0] }];
-
-            
-            for (let i = 0; i < pageInfo[1].length; i++) {
-                
-                var currentElement = pageInfo[1].filter(x => x.order === i)[0];
-
-                var currentInstruction = { changeType: 1, ID: currentElement.ID, elementData: currentElement.data };
-
-                outgoingData.push(currentInstruction);
-            }
-    
-            client.send(JSON.stringify(outgoingData));
+            console.log("Page " + pageNumber + " of project " + projectId + " not found when attemping to send initial canvas data");
         } else {
-            console.log("SENDING EMPTY DATA====================================");
-            client.send(JSON.stringify([{changeType: -1}]));
+
+            if (foundPage.pageData) {
+    
+                pageInfo = JSON.parse(foundPage.pageData);
+
+                var outgoingData = [{ changeType: 0, ID: -1, elementData: pageInfo[0] }];
+
+                for (let i = 0; i < pageInfo[1].length; i++) {
+                    try {
+                        var currentElement = pageInfo[1].filter(x => x.order === i)[0];
+
+                        if (!currentElement) {
+
+                            foundPage.pageData = JSON.stringify(this.repairCanvasDataCorruption(pageInfo));
+
+                            foundPage.save().then(() => { 
+
+                                sendInitialCanvasData(client, projectId, pageNumber);
+                            });
+
+                            break;
+                        }
+
+                        var currentInstruction = { changeType: 1, ID: currentElement.ID, elementData: currentElement.data };
+
+                        outgoingData.push(currentInstruction);
+                    } catch (e) {
+                        console.log("Error formatting initial canvas data: " + e);
+                    }
+                }
+
+                client.send(JSON.stringify(outgoingData));
+            } else {
+
+                client.send(JSON.stringify([{ changeType: -1 }]));
+            }
         }
     })
     .catch(e => { 
-        console.log("Error finding page to be loaded: " + e.message);
+        console.log("Error sending initial canvas data: " + e.message);
     });
+};
+
+exports.reSyncCanvas = (projectId, pageNumber, pageInfo) => {
+
+    try {
+        var outgoingData = [{ changeType: 5, ID: -1, elementData: pageInfo[0] }];
+
+        for (let i = 0; i < pageInfo[1].length; i++) {
+        
+            var currentElement = pageInfo[1].filter(x => x.order === i)[0];
+
+            var currentInstruction = { changeType: 1, ID: currentElement.ID, elementData: currentElement.data };
+
+            outgoingData.push(currentInstruction);
+        }
+
+        var updateUsersData = {};
+
+        updateUsersData.newPageData = outgoingData;
+        updateUsersData.projectId = projectId;
+        updateUsersData.pageNumber = pageNumber;
+
+        this.updateEditingUsers(updateUsersData, -1);
+    } catch (e) {
+
+        console.log("Error resyncing canvas: " + e);
+    }
 };
 
 
@@ -271,14 +321,17 @@ exports.initialiseCanvasConnection = (req, res) => {
             }
 
             //Check permissions
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") { 
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => { 
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") { 
 
-            userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: res, authToken: req.headers["x-access-token"] });
+                    return res.status(403).send({ message: "Access denied" });
+                }
+
+                userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: res, authToken: req.headers["x-access-token"] });
             
-            return res.status(200).send({ message: "success" }); 
+                return res.status(200).send({ message: "success" }); 
+            });
 
     }).catch(e => {
 
@@ -300,22 +353,23 @@ exports.stillHere = (req, res) => {
             }
 
             //Check permissions
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") { 
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") {
 
-            if (userProjectEditingMap.has(req.userId)) { 
+                    return res.status(403).send({ message: "Access denied" });
+                }
 
-                userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: userProjectEditingMap.get(req.userId).connection });
-            
-                return res.status(200).send({ message: "success" });
+                if (userProjectEditingMap.has(req.userId)) {
 
-            } else {
-                return res.status(400).send({ message: "Connection must be initialised first" });
-            }
-
-            
+                    userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: userProjectEditingMap.get(req.userId).connection });
+                
+                    return res.status(200).send({ message: "success" });
+    
+                } else {
+                    return res.status(400).send({ message: "Connection must be initialised first" });
+                }
+            });
     }).catch(e => {
 
         console.log("Internal server error when updating editing status: " + e.message);
@@ -341,13 +395,50 @@ exports.updateEditingUsers = (changeData, user) => {
 
         userProjectEditingMap.forEach((project, userId) => {
 
-            if (project.projectId === changeData.projectId && userId !== user && checkProjectPermissions(project.projectId, userId)) {
+            if (project.projectId == changeData.projectId && project.pageNumber == changeData.pageNumber && userId != user) {
 
-                project.connection.send(outgoingData);
+                checkProjectPermissions(project.projectId, userId).then(permissions => {
+
+                    if (permissions !== "none") {
+    
+                        project.connection.send(outgoingData);
+                    }
+                });
             }
         });
 
     }catch (e) { 
         console.log("Error updating editing users: " + e.message);
     }
+};
+
+exports.exportProject = (req, res) => {
+
+
+};
+
+exports.repairCanvasDataCorruption = (pageInfo) => {
+
+    pageInfo[1].sort((x, y) => (x.order === y.order ? 0 : ((x.order > y.order) ? 1 : -1)));
+
+    for (let i = 0; i < pageInfo[1].length; i++) {
+        pageInfo[1][i].ID = (i + 1);
+        pageInfo[1][i].order = i;
+
+        try {
+            
+            if (pageInfo[1][i].data.id) {
+                pageInfo[1][i].data.id = (i + 1);
+            } else {
+                pageInfo[1][i].data = JSON.parse(pageInfo[1][i].data);
+                pageInfo[1][i].data.id = (i + 1);
+            }
+            
+        } catch (e)
+        {
+            console.log("Error repairing canvas data corruption: " + e);
+        }
+    }
+
+    return pageInfo;
 };

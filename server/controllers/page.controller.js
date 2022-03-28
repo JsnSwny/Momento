@@ -19,16 +19,16 @@ exports.createPage = (req, res) => {
                 return res.status(404).send({ message: "Project not found" });
             }
 
-            //Ensure that the user has permission
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
+            //Check permissions
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
-            
-            //Find the last page
-            page.findAndCountAll({ where: { projectId: req.body.projectId } }).then(projectPages => { 
+                if (permissions === "none") {
 
-                
+                    return res.status(403).send({ message: "Access denied" });
+                }
+
+                //Find the last page
+                page.findAndCountAll({ where: { projectId: req.body.projectId } }).then(projectPages => { 
 
                 //Create new page object
                 page.create({
@@ -48,16 +48,16 @@ exports.createPage = (req, res) => {
             
                         res.status(500).send({ message: "Error creating new page" });
                 });
-
-            }).catch(e => { 
-
-                console.log("Error creating new page: " + e.message);
-        
-                res.status(500).send({ message: "Error creating new page" });
-
+    
+                }).catch(e => { 
+    
+                    console.log("Error creating new page: " + e.message);
+            
+                    res.status(500).send({ message: "Error creating new page" });
+    
+                });
             });
 
-            
         }).catch(e => { 
 
             console.log("Error finding project when creating new page: " + e.message);
@@ -92,45 +92,46 @@ exports.deletePage = (req, res) => {
             return res.status(404).send({ message: "Project not found" });
         }
 
-        //Ensure that the user has permission
-        if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
+        //Check permissions
+        checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-            return res.status(403).send({ message: "Access denied" });
-        }
+            if (permissions === "none") {
 
-        //Find the page
-        page.findOne({ where: { projectId: foundProject.projectId, pageNumber: req.body.pageNumber } })
-        .then(foundPage => {
-
-            //Ensure that the page exists
-            if (!foundPage) {
-                return res.status(404).send({ message: "Page not found" });
+                return res.status(403).send({ message: "Access denied" });
             }
 
-            
-            //Delete record
-            try {
-                page.destroy({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber }});
+            //Find the page
+            page.findOne({ where: { projectId: foundProject.projectId, pageNumber: req.body.pageNumber } })
+            .then(foundPage => {
 
-            }
-            catch (e) { 
+                //Ensure that the page exists
+                if (!foundPage) {
+                    return res.status(404).send({ message: "Page not found" });
+                }
 
-                console.log("Error deleting page: " + e.message);
+                //Delete record
+                try {
+                    page.destroy({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber }});
+
+                }
+                catch (e) { 
+
+                    console.log("Error deleting page: " + e.message);
+
+                    res.status(500).send({ message: "Internal server error when deleting page" });
+                }
+
+                reorderProjectPages(foundProject.projectId);
+
+                res.status(200).send({ message: "success" });
+
+            })
+            .catch(e => { 
+                console.log("Error finding page to be deleted: " + e.message);
 
                 res.status(500).send({ message: "Internal server error when deleting page" });
-            }
-
-            reorderProjectPages(foundProject.projectId);
-
-            res.status(200).send({ message: "success" });
-
-        })
-        .catch(e => { 
-            console.log("Error finding page to be deleted: " + e.message);
-
-            res.status(500).send({ message: "Internal server error when deleting page" });
-        });
-            
+            });
+        }); 
     }).catch(e => { 
 
         console.log("Error finding project when deleting page: " + e.message);
@@ -160,36 +161,39 @@ exports.loadPage = (req, res) => {
                 return res.status(404).send({ message: "Project not found" });
             }
 
-            //Ensure that the user has permission
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
+            //Check permissions
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") {
 
-            //Find the page
-            page.findOne({ where: { projectId: req.params.projectId, pageNumber: req.params.pageNumber } })
-                .then(foundPage => { 
+                    return res.status(403).send({ message: "Access denied" });
+                }
 
-                    //Ensure that the page exists
-                    if (!foundPage) {
-                        return res.status(404).send({ message: "Page not found" });
-                    }
+                //Find the page
+                page.findOne({ where: { projectId: req.params.projectId, pageNumber: req.params.pageNumber } })
+                    .then(foundPage => { 
 
-                    res.status(200).send(JSON.stringify(foundPage));
+                        //Ensure that the page exists
+                        if (!foundPage) {
+                            return res.status(404).send({ message: "Page not found" });
+                        }
+
+                        res.status(200).send(JSON.stringify(foundPage));
+
+                    })
+                    .catch(e => { 
+                        console.log("Error finding page to be loaded: " + e.message);
+
+                        res.status(500).send({ message: "Internal server error when loading page" });
+                    });
 
                 })
                 .catch(e => { 
-                    console.log("Error finding page to be loaded: " + e.message);
+                    console.log("Error finding project when loading page: " + e.message);
 
                     res.status(500).send({ message: "Internal server error when loading page" });
                 });
- 
             })
-            .catch(e => { 
-                console.log("Error finding project when loading page: " + e.message);
-
-                res.status(500).send({ message: "Internal server error when loading page" });
-            });
 };
 
 exports.editPage = (req, res) => {
@@ -204,15 +208,18 @@ exports.editPage = (req, res) => {
                 return res.status(404).send({ message: "Project not found" });
             }
 
-            //Ensure that the user has permission
-            if (checkProjectPermissions(foundProject.projectId, req.userId) !== "none") {
+            //Check permissions
+            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                return res.status(403).send({ message: "Access denied" });
-            }
+                if (permissions === "none") {
+
+                    return res.status(403).send({ message: "Access denied" });
+                }
             
-            //Find the page
-            page.findOne({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber } })
-                .then(foundPage => {
+            
+                //Find the page
+                page.findOne({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber } })
+                    .then(foundPage => {
 
                     //Ensure that the page exists
                     if (!foundPage) {
@@ -281,7 +288,30 @@ exports.editPage = (req, res) => {
                             
                         }
 
-                        for (let i = 0; i < pageInfo[1].length; i++) { 
+                        var dataCorrupt = false;
+
+                        //Detect if the canvas data is corrupt
+                        for (let i = 0; i < pageInfo[1].length; i++) {
+                            for (let j = 0; j < pageInfo[1].length; j++) { 
+                                if (i != j && (pageInfo[1][i].ID === pageInfo[1][j].ID || pageInfo[1][i].order === pageInfo[1][j].order)) {
+                                    dataCorrupt = true;
+                                }
+                            }
+                        }
+
+                        //Attempt repair and resync canvas
+                        if (dataCorrupt) {
+                            
+                            pageInfo = projectController.repairCanvasDataCorruption(pageInfo);
+
+                            projectController.reSyncCanvas(foundProject.projectId, foundPage.pageNumber, pageInfo);
+
+                        } else {
+
+                            projectController.updateEditingUsers(req.body, req.userId);
+                        }
+
+                        for (let i = 0; i < pageInfo[1].length; i++) {
                             if (pageInfo[1][i].data !== undefined && pageInfo[1][i].data !== null && typeof pageInfo[1][i].data === 'string') {
                                 pageInfo[1][i].data = JSON.parse(pageInfo[1][i].data);
                             }
@@ -292,11 +322,9 @@ exports.editPage = (req, res) => {
                         if (foundPage.pageData == null || foundPage.pageData == undefined || foundPage.pageData !== newPageData) {
 
                             foundPage.pageData = newPageData;
-                        
+                    
                             foundPage.save();
                         }
-
-                        projectController.updateEditingUsers(req.body, req.userId);
 
                         return res.status(200).send({ message: "success" });
                     }
@@ -312,6 +340,7 @@ exports.editPage = (req, res) => {
 
                     res.status(500).send({ message: "Internal server error when editing page" });
                 });
+            });
  
             })
             .catch(e => { 
