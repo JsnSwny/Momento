@@ -42,7 +42,13 @@ exports.getPosts = async (req, res) => {
             where: {
                 userId: followArray
             },
-            include: Like
+            include: [
+                Like, 
+                PostImage
+            ],
+            order: [
+                ['datePosted', 'DESC']
+            ]
         })
         .then(async (posts) => {
 
@@ -62,7 +68,7 @@ exports.getPosts = async (req, res) => {
                     id: posts.rows[i].id,
                     title: posts.rows[i].title,
                     description: posts.rows[i].description,
-                    imageURL: posts.rows[i].imageURL,
+                    images: posts.rows[i].postImages,
                     likes: posts.rows[i].likes.length,
                     views: posts.rows[i].views,
                     collaborators: posts.rows[i].collaborators,

@@ -14,7 +14,6 @@ app.use(
 // parse application/json requests
 app.use(express.json());
 
-console.log(process.env);
 // parse application/x-www-form-urlencoded requests
 app.use(express.urlencoded({ extended: true }));
 

@@ -22,7 +22,7 @@ const Post = ({ post }) => {
     <li className="feed-post">
       <div className="flex-container">
         <div className="feed-post__image">
-          <img src={post.imageURL} />
+          <img src={post.images[0].imageURL} />
         </div>
         <ul className="feed-post__comments">
           {post.comments.map((item) => (
