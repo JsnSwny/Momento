@@ -1,13 +1,22 @@
 import React from "react";
-import Canvas from "../Canvas";
+import store from "../../../store/store";
 
 const CanvasCurrentlyViewing = () => {
-  return (
-    <ul className="currently-viewing">
-      <li>JS</li>
-      <li>JS</li>
-      <li>JS</li>
-    </ul>
+    return (
+      <layer key={store.getState().canvas.reloadViewingList}>
+        <ul className="currently-viewing"> 
+            {store.getState().canvas.currentlyViewingList.map((viewer) => (
+                    <li
+                        
+                    onClick={() => window.location.href = `/user/${viewer.userId}`}
+                    key={viewer.userId}
+                    >
+                        {viewer?.username?.slice(0, 5)}
+                    </li>
+                )
+            )}
+        </ul>
+    </layer>
   );
 };
 

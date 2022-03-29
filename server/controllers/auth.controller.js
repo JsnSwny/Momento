@@ -3,6 +3,7 @@ const config = require("../config");
 const User = db.user;
 const Role = db.role;
 const RefreshToken = db.refreshToken;
+const Follower = db.followers;
 
 const Op = db.Sequelize.Op;
 
@@ -102,6 +103,18 @@ exports.login = (req, res) => {
 
         var refreshToken = await RefreshToken.createToken(user);
   
+        var followingRes = await Follower.findAndCountAll({
+          where: {
+            userId1: user.id
+          }
+        });
+
+        var following = [];
+
+        for (let i = 0; i < followingRes.count; i++) {
+          following.push(followingRes.rows[i].userId2)
+        }
+
         var authorities = [];
         user.getRoles().then(roles => {
           for (let i = 0; i < roles.length; i++) {
@@ -115,7 +128,8 @@ exports.login = (req, res) => {
             emailAddress: user.emailAddress,
             roles: authorities,
             accessToken: token,
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            following: following
           });
         });
       })

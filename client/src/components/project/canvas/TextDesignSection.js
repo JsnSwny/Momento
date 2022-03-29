@@ -22,7 +22,7 @@ const TextDesignSection = () => {
             <label>Width</label>
             <input
               type="number"
-              value={selectedElement?.width.toFixed(2)}
+              value={selectedElement?.width?.toFixed(2)}
               onChange={(e) => {
                 dispatch(
                   updateElement(selectedElement?.id, {

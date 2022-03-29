@@ -9,4 +9,9 @@ module.exports = function (app) {
 
     app.put("/api/project", [authJWT.verifyToken], controller.editProject);
 
+    app.post("/api/projectCanvasConnection", [authJWT.verifyToken], controller.initialiseCanvasConnection);
+
+    app.post("/api/project/:projectId", [authJWT.verifyToken], controller.stillHere);
+
+    app.get("/api/project/export/:projectId", [authJWT.verifyToken], controller.exportProject);
 };

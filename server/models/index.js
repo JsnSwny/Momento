@@ -32,6 +32,7 @@ db.role = require("./role.model")(sequelize, Sequelize);
 db.refreshToken = require("./refreshToken.model")(sequelize, Sequelize);
 db.project = require("./project.model")(sequelize, Sequelize);
 db.page = require("./page.model")(sequelize, Sequelize);
+db.projectRole = require("./projectRole.model")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -60,12 +61,25 @@ db.project.belongsTo(db.user, { foreignKey: "projectId" });
 db.project.hasMany(db.page, { foreignKey: "pageId" });
 db.page.belongsTo(db.project, { foreignKey: "pageId" });
 
+//Connect the project table to the projectRoles table (one to many)
+db.project.hasMany(db.projectRole, { foreignKey: "projectId" });
+db.projectRole.belongsTo(db.project, { foreignKey: "projectId" });
+
+//Connect the user table to the projectRoles table (one to many)
+db.user.hasMany(db.projectRole, { foreignKey: "userId" });
+db.projectRole.belongsTo(db.user, { foreignKey: "userId" });
+
 db.ROLES = ["user", "mod", "admin"];
 
 //Posts, comments and likes
 db.post = require("./posts.model")(sequelize, Sequelize);
 db.comment = require("./comments.model")(sequelize, Sequelize);
 db.like = require("./likes.model")(sequelize, Sequelize);
+db.postImage = require("./postImages.model")(sequelize, Sequelize);
+
+//Connect the post table to the postImages table (one to many)
+db.post.hasMany(db.postImage, { foreignKey: "postId" });
+db.postImage.belongsTo(db.post, { foreignKey: "postId" });
 
 //Define posts <-> users relationship
 db.user.hasMany(db.post, {
@@ -101,10 +115,25 @@ db.like.belongsTo(db.post, {
 
 //Define likes <-> users relationship
 db.user.hasMany(db.like, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
 });
 db.like.belongsTo(db.user, {
-  foreignKey: 'authorId', targetKey: 'id'
+  foreignKey: 'userId', targetKey: 'id'
+});
+
+// Followers table
+db.followers = require("./followers.model")(sequelize, Sequelize);
+db.user.hasMany(db.followers, {
+  foreignKey: 'userId1', targetKey: 'id'
+});
+db.user.hasMany(db.followers, {
+  foreignKey: 'userId2', targetKey: 'id'
+});
+db.followers.belongsTo(db.user, {
+  foreignKey: 'userId1', targetKey: 'id'
+});
+db.followers.belongsTo(db.user, {
+  foreignKey: 'userId2', targetKey: 'id'
 });
 
 module.exports = db;

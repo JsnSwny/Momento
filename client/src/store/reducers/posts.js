@@ -37,7 +37,8 @@ export default (state = initialState, action) => {
     case POSTS_LOADED:
       return {
         ...state,
-        posts: payload.posts
+        posts: payload.posts,
+        likedPosts: payload.likedPosts
       };
     default:
       return state;

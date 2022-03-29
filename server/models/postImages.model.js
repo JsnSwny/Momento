@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-    const Like = sequelize.define("likes", {
-        id: {
+    const postImage = sequelize.define("postImages", {
+        imageId: {
             type: Sequelize.INTEGER,
             primaryKey: true,
             autoIncrement: true
@@ -8,10 +8,13 @@ module.exports = (sequelize, Sequelize) => {
         postId: {
             type: Sequelize.INTEGER
         },
-        userId: {
+        imageNumber: {
             type: Sequelize.INTEGER
+        },
+        imageURL: {
+            type: Sequelize.STRING
         }
     });
   
-    return Like;
+    return postImage;
 };

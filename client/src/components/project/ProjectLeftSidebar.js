@@ -2,17 +2,21 @@ import React, { useState, Fragment, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Modal from "../layout/Modal";
 import { canvasFunctions } from "../project/CanvasFunctions";
+import store from "../../store/store";
 import {
-  addPage,
   updatePage,
   setActivePage,
   setEditingPage,
   deletePage,
 } from "../../store/actions/project";
+import { canvasAddPage } from "../../store/actions/canvas";
 import { useOnClickOutside } from "../../utils/useOnClickOutside";
+import { useParams } from "react-router-dom";
 
 const ProjectLeftSidebar = () => {
   const project = useSelector((state) => state.project);
+
+  const { id } = useParams();
 
   const [open, setOpen] = useState(false);
   const pages = useSelector((state) => state.project.pages);
@@ -49,6 +53,7 @@ const ProjectLeftSidebar = () => {
             <li
               onClick={() => {
                 currentPage != page.id && dispatch(setActivePage(page.id));
+                store.getState().project.movingPage = true;
                 dispatch(canvasFunctions.loadPage(page.pageNumber));
               }}
               onDoubleClick={() => {
@@ -65,7 +70,7 @@ const ProjectLeftSidebar = () => {
               tabIndex={`${currentPage == page.id ? "1" : "-1"}`}
               className={`${currentPage == page.id ? "active" : ""}`}
             >
-              {editingPage == page.id ? (
+              {editingPage != page.id ? (
                 <form onSubmit={onSubmit}>
                   <input
                     type="text"
@@ -80,7 +85,22 @@ const ProjectLeftSidebar = () => {
             </li>
           ))}
         </ul>
-        <button onClick={() => dispatch(addPage(`Page ${pages.length + 1}`))}>
+        <button
+          onClick={() => {
+            console.log(project);
+            console.log(`${project.currentProjectData.projectId},
+            ${pages.length + 1},
+            Page ${pages.length + 1},
+            ""`);
+            dispatch(
+                canvasFunctions.addPage(
+                    pages.length + 1,
+                `Page ${pages.length + 1}`,
+                `Page ${pages.length + 1}`
+              )
+            );
+          }}
+        >
           + Add New Page
         </button>
       </div>
