@@ -19,7 +19,7 @@ app.use(express.json());
 // parse application/x-www-form-urlencoded requests
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.resolve(__dirname, "./client/build")));
+app.use(express.static(path.resolve(__dirname, "./client/publlic")));
 
 const db = require("./models");
 
