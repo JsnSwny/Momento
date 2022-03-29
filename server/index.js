@@ -1,23 +1,24 @@
 const cors = require("cors");
 const express = require("express");
-require('dotenv').config()
+require("dotenv").config();
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:3000"
+  origin: "http://localhost:3000",
 };
 
 app.use(cors(corsOptions));
-
 
 // parse application/json requests
 app.use(express.json());
 
 // parse application/x-www-form-urlencoded requests
 app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static(path.resolve(__dirname, "./client/build")));
 
 const db = require("./models");
 
