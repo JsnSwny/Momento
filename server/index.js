@@ -1,25 +1,35 @@
 const cors = require("cors");
 const express = require("express");
 require("dotenv").config();
-const path = require("path");
-
 const PORT = process.env.PORT || 3001;
+
+console.log("TEST");
 
 const app = express();
 
-var corsOptions = {
-  origin: "http://localhost:3000",
-};
+// var corsOptions = {
+//   origin: "http://localhost:3000",
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 // parse application/json requests
 app.use(express.json());
 
+console.log(process.env);
 // parse application/x-www-form-urlencoded requests
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.resolve(__dirname, "./client/publlic")));
+if (process.env.NODE_ENV === "production") {
+  // Exprees will serve up production assets
+  app.use(express.static("client/build"));
+
+  // Express serve up index.html file if it doesn't recognize route
+  const path = require("path");
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
+}
 
 const db = require("./models");
 
