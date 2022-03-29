@@ -42,7 +42,10 @@ exports.getPosts = async (req, res) => {
             where: {
                 userId: followArray
             },
-            include: Like
+            include: Like,
+            order: [
+                ['datePosted', 'DESC']
+            ]
         })
         .then(async (posts) => {
 
