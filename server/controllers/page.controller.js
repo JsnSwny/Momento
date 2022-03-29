@@ -39,6 +39,7 @@ exports.createPage = (req, res) => {
                 })
                     .then(newPage => {
                         
+                        projectController.updateProjectInformation(req.body.projectId);
                         return res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
             
                     })
@@ -122,6 +123,8 @@ exports.deletePage = (req, res) => {
                 }
 
                 reorderProjectPages(foundProject.projectId);
+
+                projectController.updateProjectInformation(req.body.projectId);
 
                 res.status(200).send({ message: "success" });
 
@@ -273,7 +276,6 @@ exports.editPage = (req, res) => {
                                 //Reorder elements
                                 case 4:
 
-                                    console.log(req.body.newPageData[i].elementData);
                                     for (let j = 0; j < req.body.newPageData[i].elementData.length; j++){
                                         
                                         var current = pageInfo[1].findIndex(x => x.ID == req.body.newPageData[i].elementData[j]);

@@ -12,6 +12,7 @@ import { setSelectedElement } from "../../store/reducers/canvas";
 const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
+  const needsRerender = useSelector((state) => state.canvas.needsRerender);
   const selectedElement = useSelector((state) => state.canvas.selectedElement);
 
   const drawingOptions = useSelector((state) => state.canvas.drawingOptions);
@@ -30,10 +31,11 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     if (selectedAction == "draw" || selectedAction == "eraser") {
       isDrawing.current = true;
       const pos = e.target.getStage().getPointerPosition();
+      var colour = selectedAction == "draw" ? drawingOptions.colour : "#ffffff";
       setCurrentLine({
         tool: selectedAction == "draw" ? "pen" : "eraser",
         points: [pos.x, pos.y],
-        colour: drawingOptions.colour,
+        colour: colour,
         thickness: drawingOptions.thickness,
         elType: "Line",
         text: "Line",
@@ -114,7 +116,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   }, []);
 
     const autoSaveInterval = 500;
-    const editingStatusUpdateInterval = 25000;
+    const editingStatusUpdateInterval = 5000;
     const canvasConnectionAttemptInterval = 10000;
     var editingStatusCounter = editingStatusUpdateInterval;
     var canvasConnectionAttemptCounter = 0;
@@ -165,8 +167,11 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
     
     window.onpageshow = function () {
         
-        //dispatch(canvasFunctions.loadUser(stageRef));
-        
+        window.addEventListener('focus', () => {
+
+            store.dispatch({ type: "RERENDER" });
+        });
+
         store.getState().canvas.changes = [];
 
         setInterval(autoSave, autoSaveInterval);
@@ -186,7 +191,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
         onMouseup={handleMouseUp}
       >
         <Provider store={store}>
-          <Layer>
+          <Layer key={needsRerender}>
                       {elements.map((item, i) => {
               switch (item.elType) {
                 case "Text":

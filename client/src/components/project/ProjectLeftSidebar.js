@@ -2,6 +2,7 @@ import React, { useState, Fragment, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Modal from "../layout/Modal";
 import { canvasFunctions } from "../project/CanvasFunctions";
+import store from "../../store/store";
 import {
   updatePage,
   setActivePage,
@@ -52,6 +53,7 @@ const ProjectLeftSidebar = () => {
             <li
               onClick={() => {
                 currentPage != page.id && dispatch(setActivePage(page.id));
+                store.getState().project.movingPage = true;
                 dispatch(canvasFunctions.loadPage(page.pageNumber));
               }}
               onDoubleClick={() => {

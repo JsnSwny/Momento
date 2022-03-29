@@ -86,7 +86,7 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
         canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
       .then(() => {
-        
+            store.getState().project.movingPage = true;
             dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
             
             //dispatch(savePage());
@@ -150,11 +150,13 @@ const loadPage = (pageNumber) => (dispatch) => {
         canvasLoadPage(store.getState().project.currentProjectData.projectId, pageNumber)
     )
         .then(() => {
-          
+            
             if(store.getState().project.canvasConnection)
                 store.getState().project.canvasConnection.close();
 
-            dispatch({ type: "CLEAR_ELEMENTS" });
+            dispatch({ type: "RESET_CANVAS" });
+            dispatch({ type: "RESET_VIEWING_LIST" });
+            store.dispatch({ type: "RELOAD_VIEWING_LIST" });
 
             startCanvasConnection();
 
@@ -167,7 +169,7 @@ const loadPage = (pageNumber) => (dispatch) => {
 const loadCanvasUpdate = (stringData, dispatch) => {
 
     var canvasData = JSON.parse(stringData.data);
-
+    
     for (let i = 0; i < canvasData.length; i++) {
         try {
             switch (canvasData[i].changeType) {
@@ -190,7 +192,7 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                         canvasData[i].elementData.imgObj = new Image();
                         canvasData[i].elementData.imgObj.src = canvasData[i].elementData.src;
                     }
-
+                    
                     if(store.getState().canvas.elements.findIndex(x => x.id == canvasData[i].ID) < 0)
                         store.dispatch({ type: "LOAD_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
@@ -198,13 +200,10 @@ const loadCanvasUpdate = (stringData, dispatch) => {
             
                 //Update element
                 case 2:
-                    var changedElement = stageRef.current.findOne(n => { return n.id() === canvasData[i].ID });
-                
-                    changedElement.setAttrs(canvasData[i].elementData);
 
                     store.dispatch({ type: "LOAD_UPDATE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
-                    changedElement.show();
+                    console.log(store.getState().canvas.elements);
 
                     break;
             
@@ -234,8 +233,17 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                     store.getState().canvas.elements = [];
 
                     stageRef.current.setAttrs(canvasData[i].elementData);
-
-                    
+                    break;
+                
+                //Who is editing update
+                case 6:
+                    store.dispatch({ type: "UPDATE_VIEWING_LIST", payload: canvasData[i].elementData });
+                    store.dispatch({ type: "RELOAD_VIEWING_LIST" });
+                    break;
+                
+                //Update project information
+                case 7:
+                    store.dispatch({ type: "PROJECT_LOAD_SUCCESS", payload: canvasData[i].elementData });
                     break;
                 
                 default:
@@ -249,6 +257,8 @@ const loadCanvasUpdate = (stringData, dispatch) => {
             console.log("Error reading canvas instruction: " + JSON.stringify(canvasData[i]) + "\n\n" + e);
         }
     }
+
+    store.dispatch({ type: "RERENDER" });
 
     stageRef.current.draw();
 };
@@ -285,7 +295,7 @@ const savePage = (dispatch) => {
                 
                 var order = [];
 
-                for (let j = 0; j < store.getState().canvas.elements.length; j++){
+                for (let j = 0; j < store.getState().canvas.elements.length; j++) {
                     order.push(store.getState().canvas.elements[j].id);
                 }
 
@@ -293,59 +303,68 @@ const savePage = (dispatch) => {
 
             } else {
 
-                var currentElement = store.getState().canvas.elements.filter(el => el.id === changes[i].id)[0];
-            
-                if (currentElement) {
-
-                    var attributesString;
-                
-                    if (currentElement?.tool === "pen" || currentElement?.tool === "eraser") {
-
-                        var elementCopy = Object.assign({}, currentElement);
-
-                        var points = [];
-
-                        for (let k = 0; k < currentElement.points.length; k++) {
-                        
-                            points.push(Math.round(currentElement.points[k] * 100) / 100);
-                        }
+                if (changes[i].type === 3) {
                     
-                        elementCopy.points = points;
+                    pageData.push({ changeType: changes[i].type, ID: changes[i].id });
 
-                        attributesString = JSON.stringify(elementCopy);
+                } else {
 
-                    }
-                    else {
+                    var currentElement = store.getState().canvas.elements.filter(el => el.id === changes[i].id)[0];
+            
+                    if (currentElement) {
 
-                        var elementData;
+                        var attributesString;
+                
+                        if (currentElement?.tool === "pen" || currentElement?.tool === "eraser") {
 
-                        if (changes[i].object) {
-                            elementData = changes[i].object;
+                            var elementCopy = Object.assign({}, currentElement);
+
+                            var points = [];
+
+                            for (let k = 0; k < currentElement.points.length; k++) {
                         
-                        } else {
-                            elementData = stageRef.current.findOne(n => { return n.id() === changes[i].id }).getAttrs();
-                        }
-
-                        if (elementData[0]) {
-
-                            attributesString = "";
-
-                            var j = 0;
-
-                            while (elementData[j]) {
-                                attributesString += elementData[j];
-                                j++;
+                                points.push(Math.round(currentElement.points[k] * 100) / 100);
                             }
+                    
+                            elementCopy.points = points;
+
+                            attributesString = JSON.stringify(elementCopy);
+
                         }
                         else {
-                            attributesString = JSON.stringify(elementData);
+
+                            var elementData;
+
+                            if (changes[i].object) {
+                                elementData = changes[i].object;
+                        
+                            } else {
+                                elementData = stageRef.current.findOne(n => { return n.id() === changes[i].id }).getAttrs();
+                            }
+
+                            if (elementData[0]) {
+
+                                attributesString = "";
+
+                                var j = 0;
+
+                                while (elementData[j]) {
+                                    attributesString += elementData[j];
+                                    j++;
+                                }
+                            }
+                            else {
+                                attributesString = JSON.stringify(elementData);
+                            }
                         }
-                    }
                 
-                    pageData.push({ changeType: changes[i].type, ID: changes[i].id, elementData: attributesString });
+                        pageData.push({ changeType: changes[i].type, ID: changes[i].id, elementData: attributesString });
+                    }
                 }
             }
-    }
+        }
+
+        console.log(pageData);
         
         store.dispatch(
             canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, pageData)

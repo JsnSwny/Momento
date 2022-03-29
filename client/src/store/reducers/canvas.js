@@ -5,6 +5,9 @@ const initialState = {
   selectedElement: null,
   drawingOptions: { colour: "#000000", thickness: 0.5 },
   changes: [],
+    currentlyViewingList: [],
+    needsRerender: 0,
+    reloadViewingList: 0
 };
 
 export default (state = initialState, action) => {
@@ -79,12 +82,15 @@ export default (state = initialState, action) => {
           elements: action.payload,
           changes: [...state.changes, {type: 4}],
       };
-    case "CLEAR_ELEMENTS":
+      case "CLEAR_ELEMENTS":
+          for (let i = 0; i < state.elements.length; i++){
+              state.changes.push({ type: 3, id: state.elements[i].id });
+          }
       return {
         ...state,
         elements: [],
           selectedElement: null,
-          changes: [],
+          
       };
 
     case "SET_DRAWING_COLOUR":
@@ -105,28 +111,53 @@ export default (state = initialState, action) => {
         ...state,
         elements: [...state.elements, obj2],
           };
-      
-    case "LOAD_ADD_ELEMENT":
-        let obj3 = { ...action.payload, id: action.payload.id };
-        
-    return {
-        ...state,
-        elements: [...state.elements, obj3],
-    };
-    case "LOAD_UPDATE_ELEMENT":
+      case "LOAD_UPDATE_ELEMENT":
+          
+          var index = state.elements.findIndex(x => x.id == action.payload.id);
+          state.elements[index] = { ...action.payload.attributes, id: action.payload.id };
 
     return {
         ...state,
-        elements: state.elements.map((item) =>
-        item.id === action.id ? action.payload : item
-        )
     };
     case "LOAD_DELETE_ELEMENT":
-        
     return {
         ...state,
-        elements: state.elements.filter((item) => item.id != action.payload),
+        elements: state.elements.filter((item) => item.id != action.payload.id),
           };
+      
+      case "UPDATE_VIEWING_LIST":
+        return {
+            ...state,
+            currentlyViewingList: action.payload,
+          };
+      
+      case "RESET_VIEWING_LIST":
+        return {
+            ...state,
+            currentlyViewingList: [],
+          };
+      
+        case "RERENDER":
+        return {
+            ...state,
+            needsRerender: state.needsRerender + 1,
+        };
+      
+        case "RELOAD_VIEWING_LIST":
+        return {
+            ...state,
+            reloadViewingList: state.reloadViewingList + 1,
+          };
+      
+          case "RESET_CANVAS":
+            
+        return {
+          ...state,
+          elements: [],
+            selectedElement: null,
+            
+        };
+
     default:
       return state;
   }

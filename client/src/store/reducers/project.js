@@ -58,6 +58,7 @@ const initialState = {
     pages: [],
     canvasRealtimeConnection: false,
     canvasConnection: null,
+    movingPage: false,
     images: []
 };
 
@@ -94,7 +95,8 @@ export default (state = initialState, action) => {
         operationSuccess: false,
       };
 
-    case PROJECT_LOAD_SUCCESS:
+      case PROJECT_LOAD_SUCCESS:
+      state.pages = [];
       for (let i = 0; i < action.payload.projectData.pageCount; i++) {
         state.pages.push({
           pageNumber: i + 1,
@@ -102,7 +104,6 @@ export default (state = initialState, action) => {
           pageDescription: action.payload.projectData.pageInfo[i].description,
         });
       }
-
       return {
         ...state,
         operationSuccess: true,
@@ -272,7 +273,14 @@ export default (state = initialState, action) => {
       return {
         ...state,
         editingPage: action.payload,
-      };
+          };
+      
+          case "UPDATE_PAGES":
+            return {
+                ...state,
+                pages: action.payload,
+          };
+      
     default:
       return state;
   }

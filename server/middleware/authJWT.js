@@ -16,21 +16,26 @@ catchError = (err, res) => {
 }
 
 verifyToken = (req, res, next) => {
-    let token = req.headers["x-access-token"];
+    try {
+        let token = req.headers["x-access-token"];
 
-    if(!token) {
-        return res.status(403).send({
-            message: "No token provided!"
-        });
-    }
-
-    jwt.verify(token, config.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            catchError(err, res);
+        if (!token) {
+            return res.status(403).send({
+                message: "No token provided!"
+            });
         }
-        req.userId = decoded.id;
-        next();
-    });
+
+        jwt.verify(token, config.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                catchError(err, res);
+            }
+            req.userId = decoded.id;
+            next();
+        });
+    } catch (e) {
+        
+        console.log("Error verifying JWT: " + e);
+    }
 };
 
 isAdmin = (req, res, next) => {

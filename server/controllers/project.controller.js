@@ -118,7 +118,7 @@ exports.editProject = (req, res) => {
                     return res.status(500).send("Error updating project");
                 }
             });
-
+            updateProjectInformation(req.body.projectId);
             res.status(200).send({ message: "success" });
     });
 };
@@ -180,20 +180,40 @@ exports.changeProjectPermissions = (req, res) => {
 };
 
 const userProjectEditingMap = new Map();
+const canvasViewingList = new Map();
 
-const editingTimeoutTime = 60000;
+const editingTimeoutTime = 8000;
 
-function CheckWhoIsEditing() { 
-    console.log("Checking who is currently editing projects...");
-    var currentTime = Date.now();
+function CheckWhoIsEditing() {
+    try {
+        console.log("Counting active canvas instances...");
+        var currentTime = Date.now();
 
-    userProjectEditingMap.forEach((project, userId) => { 
-        if ((currentTime - project.time) > editingTimeoutTime) { 
-            userProjectEditingMap.delete(userId);
-        }
-    });
+        userProjectEditingMap.forEach((project, key) => {
 
-    console.log("There are currently " + userProjectEditingMap.size + " users editing projects.");
+            if ((currentTime - project.time) > editingTimeoutTime) {
+                
+                var pageId = Number(JSON.parse(key).pageId);
+
+                if (canvasViewingList.has(pageId)) {
+
+                    var viewingList = canvasViewingList.get(pageId);
+
+                    viewingList.splice(viewingList.indexOf(JSON.parse(key).userId), 1);
+                }
+
+                userProjectEditingMap.get(key).connection.close();
+
+                userProjectEditingMap.delete(key);
+
+                updateWhoIsViewing(pageId);
+            }
+        });
+
+        console.log("There are currently " + userProjectEditingMap.size + " active canvas instances.");
+    } catch (e) {
+        console.log("Error when checking editing list: " + e);
+    }
 }
 
 setInterval(CheckWhoIsEditing, editingTimeoutTime);
@@ -205,10 +225,10 @@ const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 3002 });
 
 wss.on("connection", (ws) => { 
-    ws.on("message", (msg) => { 
+    ws.on("message", (msg) => {
         var data = JSON.parse(msg);
     
-        if (!data.token) { 
+        if (!data.token) {
             return;
         }
     
@@ -222,23 +242,57 @@ wss.on("connection", (ws) => {
             }
         });
     
-        if (userProjectEditingMap.has(data.userId)) { 
-            
-            userProjectEditingMap.get(data.userId).connection = ws;
-            
-            sendInitialCanvasData(ws, userProjectEditingMap.get(data.userId).projectId, userProjectEditingMap.get(data.userId).pageNumber);
+        //Find the project to load
+        project.findOne({ where: { projectId: data.projectId } })
+            .then(foundProject => {
 
-        } else {
-            return;
-        }
-    })
+                //Ensure that the project exists
+                if (!foundProject) {
+                    return;
+                }
+
+                //Check permissions
+                checkProjectPermissions(foundProject.projectId, data.userId).then(permissions => {
+
+                    if (permissions === "none") {
+
+                        return;
+                    }
+
+                    page.findOne({ where: { projectId: data.projectId, pageNumber: data.pageNumber } })
+                        .then(foundPage => {
+
+                            //Ensure that the page exists
+                            if (!foundPage) {
+                                return;
+                            }
+
+                            var key = JSON.stringify({ userId: Number(data.userId), pageId: Number(foundPage.pageId) });
+
+                            if (userProjectEditingMap.has(key)) {
+                
+                                userProjectEditingMap.get(key).connection = ws;
+
+                                sendInitialCanvasData(ws, data.projectId, data.pageNumber, data.userId);
+                            }
+                        }).catch(() => {
+                            console.log("Error finding page when initialising WebSocket connection: " + e.message);
+                        });
+
+                });
+
+            }).catch(e => {
+
+                console.log("Error finding project when initialising WebSocket connection: " + e.message);
+            });
+    });
 })
 
-const sendInitialCanvasData = (client, projectId, pageNumber) => {
+const sendInitialCanvasData = (client, projectId, pageNumber, userId) => {
 
     //Find the page
     page.findOne({ where: { projectId: projectId, pageNumber: pageNumber } })
-        .then(foundPage => {
+        .then(async foundPage => {
         
         //Ensure that the page exists
         if (!foundPage) {
@@ -276,6 +330,8 @@ const sendInitialCanvasData = (client, projectId, pageNumber) => {
                 }
 
                 client.send(JSON.stringify(outgoingData));
+                updateWhoIsViewing(foundPage.pageId);
+
             } else {
 
                 client.send(JSON.stringify([{ changeType: -1 }]));
@@ -333,8 +389,28 @@ exports.initialiseCanvasConnection = (req, res) => {
                     return res.status(403).send({ message: "Access denied" });
                 }
 
-                userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: res, authToken: req.headers["x-access-token"] });
-            
+                page.findOne({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber } })
+                    .then(foundPage => {
+
+                        //Ensure that the page exists
+                        if (!foundPage) {
+                            return res.status(404).send({ message: "Page not found" });
+                        }
+                        
+                        userProjectEditingMap.set(JSON.stringify({ userId: Number(req.userId), pageId: Number(foundPage.pageId) }), { projectId: req.body.projectId, pageNumber: req.body.pageNumber, pageId: foundPage.pageId, time: Date.now(), connection: null, authToken: req.headers["x-access-token"] });
+
+                        if (canvasViewingList.has(Number(foundPage.pageId))) {
+                            if(canvasViewingList.get(Number(foundPage.pageId)).findIndex(x => x == req.userId) === -1)
+                                canvasViewingList.get(Number(foundPage.pageId)).push(req.userId);
+                        } else {
+                            canvasViewingList.set(Number(foundPage.pageId), [req.userId]);
+                        }
+
+                    }).catch(() => {
+
+                    });
+
+                
                 return res.status(200).send({ message: "success" }); 
             });
 
@@ -347,7 +423,7 @@ exports.initialiseCanvasConnection = (req, res) => {
 };
 
 exports.stillHere = (req, res) => {
-
+    
     //Find the project to load
     project.findOne({ where: { projectId: req.body.projectId } })
         .then(foundProject => {
@@ -365,15 +441,30 @@ exports.stillHere = (req, res) => {
                     return res.status(403).send({ message: "Access denied" });
                 }
 
-                if (userProjectEditingMap.has(req.userId)) {
+                page.findOne({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber } })
+                    .then(foundPage => {
 
-                    userProjectEditingMap.set(req.userId, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: userProjectEditingMap.get(req.userId).connection });
-                
-                    return res.status(200).send({ message: "success" });
-    
-                } else {
-                    return res.status(400).send({ message: "Connection must be initialised first" });
-                }
+                        //Ensure that the page exists
+                        if (!foundPage) {
+                            return res.status(404).send({ message: "Page not found" });
+                        }
+
+                        var key = JSON.stringify({ userId: Number(req.userId), pageId: Number(foundPage.pageId) });
+
+                        if (userProjectEditingMap.has(key)) {
+                            
+                            //userProjectEditingMap.set(key, { projectId: req.body.projectId, pageNumber: req.body.pageNumber, time: Date.now(), connection: userProjectEditingMap.get(req.userId).connection });
+                            userProjectEditingMap.get(key).time = Date.now();
+                        
+                            return res.status(200).send({ message: "success" });
+            
+                        } else {
+                            return res.status(400).send({ message: "Connection must be initialised first" });
+                        }
+
+                    }).catch(() => {
+
+                    });
             });
     }).catch(e => {
 
@@ -381,6 +472,50 @@ exports.stillHere = (req, res) => {
 
         res.status(500).send({ message: "Internal server error when updating editing status" });
     });
+};
+
+exports.updateProjectInformation = (projectId) => {
+  
+    //Find the project to load
+    project.findOne({ where: { projectId: projectId } })
+        .then(foundProject => {
+
+            //Compile page data
+            pageTitles = page.findAndCountAll({ where: { projectId: projectId } })
+            .then(pages => { 
+
+                pageInfo = [];
+
+                for (let i = 0; i < pages.count; i++) { 
+
+                    pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription });
+                }
+
+                var projectData = { projectId: projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: pageInfo.length, pageInfo: pageInfo };
+
+                var outgoingData = [{ changeType: 7, elementData: { projectData: projectData } }];
+
+                userProjectEditingMap.forEach((project, key) => {
+
+                    key = JSON.parse(key);
+        
+                    if (project.projectId == projectId) {
+        
+                        project.connection.send(JSON.stringify(outgoingData));
+                    }
+                });
+
+
+            }).catch(e => { 
+
+                console.log("Internal server error when updating page information: " + e.message);
+
+            });
+
+        }).catch(() => {
+
+            console.log("Error finding a project when updating page information");
+        });
 };
 
 exports.updateEditingUsers = (changeData, user) => {
@@ -398,11 +533,13 @@ exports.updateEditingUsers = (changeData, user) => {
 
         var outgoingData = JSON.stringify(data);
 
-        userProjectEditingMap.forEach((project, userId) => {
+        userProjectEditingMap.forEach((project, key) => {
 
-            if (project.projectId == changeData.projectId && project.pageNumber == changeData.pageNumber && userId != user) {
+            key = JSON.parse(key);
 
-                checkProjectPermissions(project.projectId, userId).then(permissions => {
+            if (project.projectId == changeData.projectId && project.pageNumber == changeData.pageNumber && key.userId != user) {
+
+                checkProjectPermissions(project.projectId, key.userId).then(permissions => {
 
                     if (permissions !== "none") {
     
@@ -414,6 +551,61 @@ exports.updateEditingUsers = (changeData, user) => {
 
     }catch (e) { 
         console.log("Error updating editing users: " + e.message);
+    }
+};
+
+const updateWhoIsViewing = (pageId) => {
+    
+    try {
+
+        var viewingList = canvasViewingList.get(Number(pageId));
+
+        var userList = [];
+        
+        if (viewingList) {
+
+            for (let i = 0; i < viewingList.length; i++) {
+
+                user.findOne({ where: { id: viewingList[i] } }).then(foundUser => {
+                
+                    if (foundUser) {
+
+                        userList.push({ userId: viewingList[i], username: foundUser.username });
+                    
+                        if (i == (viewingList.length - 1)) {
+                        
+                            for (let j = 0; j < userList.length; j++) {
+
+                                var viewers = [];
+                                
+                                for (let k = 0; k < userList.length; k++) {
+                
+                                    if (j != k) {
+                                    
+                                        viewers.push({ userId: userList[k].userId, username: userList[k].username });
+                                    
+                                    }
+                                }
+
+                                var key = JSON.stringify({ userId: Number(userList[j].userId), pageId: Number(pageId) })
+
+                                if (userProjectEditingMap.has(key)) {
+
+                                    if (userProjectEditingMap.get(key).connection)
+                                        userProjectEditingMap.get(key).connection.send(JSON.stringify([{ changeType: 6, elementData: viewers }]));
+                                }
+                            }
+                        }
+                    }
+                })
+                .catch(() => {
+                    console.log("Error finding user who is viewing canvas");
+                })
+            }
+        }
+
+    }catch (e) { 
+        console.log("Error updating who is viewing a canvas: " + e.message);
     }
 };
 

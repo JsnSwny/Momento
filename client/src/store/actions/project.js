@@ -157,7 +157,12 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
 
                 socket.addEventListener("open", () => {
                     
-                    socket.send(JSON.stringify({ userId: JSON.parse(localStorage.getItem("user")).id, token: JSON.parse(localStorage.getItem("user")).accessToken }));
+                    socket.send(JSON.stringify({
+                        userId: JSON.parse(localStorage.getItem("user")).id,
+                        projectId: projectId,
+                        pageNumber: pageNumber,
+                        token: JSON.parse(localStorage.getItem("user")).accessToken
+                    }));
                 });
 
                 socket.addEventListener("message", (msg) => {
@@ -165,22 +170,21 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     canvasFunctions.loadCanvasUpdate(msg);
                 });
 
+                socket.addEventListener("close", () => {
+
+                    if (!store.getState().project.movingPage) {
+                        console.log("RESTARTING CONNECTION...");
+                        store.getState().project.canvasRealtimeConnection = false;
+
+                        dispatch(initCanvasConnection(projectId, pageNumber));
+                    } else {
+                        store.getState().project.movingPage = false;
+                    }
+                });
+
                 store.getState().project.canvasConnection = socket;
 
                 return Promise.resolve();
-            },
-            (error) => {
-                console.log("Error initialising canvas connection: " + error);
-                dispatch({
-                    type: PROJECT_INITCANVASCONNECTION_FAILURE,
-                });
-
-                dispatch({
-                    type: SET_MESSAGE,
-                    payload: error,
-                });
-
-                return Promise.reject();
             }
         )
 };
