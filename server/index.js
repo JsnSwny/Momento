@@ -5,11 +5,11 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-// var corsOptions = {
-//   origin: "http://localhost:3000",
-// };
-
-// app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: ["https://memento-uni.herokuapp.com", "http://localhost:3000"],
+  })
+);
 
 // parse application/json requests
 app.use(express.json());
