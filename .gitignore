@@ -6,5 +6,4 @@
 /client/node_modules
 
 # production
-/client/src/dist
 .vscode/settings.json
