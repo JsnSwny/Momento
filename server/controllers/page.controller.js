@@ -80,12 +80,10 @@ exports.createPage = (req, res) => {
 
 exports.deletePage = (req, res) => { 
 //Lock this function so that it can only be called once every 200ms per project
-    pageLock.acquire(req.body.projectId, function (done) { 
-
-    console.log("DELETING...");
+    pageLock.acquire(req.params.projectId, function (done) { 
 
     //Find the project that the page is getting added to
-    project.findOne({ where: { projectId: req.body.projectId } })
+    project.findOne({ where: { projectId: req.params.projectId } })
     .then(foundProject => {
 
         //Ensure that the project exists
@@ -102,7 +100,7 @@ exports.deletePage = (req, res) => {
             }
 
             //Find the page
-            page.findOne({ where: { projectId: foundProject.projectId, pageNumber: req.body.pageNumber } })
+            page.findOne({ where: { projectId: foundProject.projectId, pageNumber: req.params.pageNumber } })
             .then(foundPage => {
 
                 //Ensure that the page exists
@@ -112,7 +110,7 @@ exports.deletePage = (req, res) => {
 
                 //Delete record
                 try {
-                    page.destroy({ where: { projectId: req.body.projectId, pageNumber: req.body.pageNumber }});
+                    page.destroy({ where: { projectId: req.params.projectId, pageNumber: req.params.pageNumber }});
 
                 }
                 catch (e) { 
@@ -124,7 +122,7 @@ exports.deletePage = (req, res) => {
 
                 reorderProjectPages(foundProject.projectId);
 
-                projectController.updateProjectInformation(req.body.projectId);
+                projectController.updateProjectInformation(foundProject.projectId);
 
                 res.status(200).send({ message: "success" });
 
@@ -154,49 +152,59 @@ exports.deletePage = (req, res) => {
 };
 
 exports.loadPage = (req, res) => {
+    //Lock this function so that it can only be called once every 200ms per project
+    pageLock.acquire(req.params.projectId, function (done) {
+        
+        //Find the project that the page is a part of
+        project.findOne({ where: { projectId: req.params.projectId } })
+            .then(foundProject => {
 
-    //Find the project that the page is a part of
-    project.findOne({ where: { projectId: req.params.projectId } })
-        .then(foundProject => {
-
-            //Ensure that the project exists
-            if (!foundProject) {
-                return res.status(404).send({ message: "Project not found" });
-            }
-
-            //Check permissions
-            checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
-
-                if (permissions === "none") {
-
-                    return res.status(403).send({ message: "Access denied" });
+                //Ensure that the project exists
+                if (!foundProject) {
+                    return res.status(404).send({ message: "Project not found" });
                 }
 
-                //Find the page
-                page.findOne({ where: { projectId: req.params.projectId, pageNumber: req.params.pageNumber } })
-                    .then(foundPage => { 
+                //Check permissions
+                checkProjectPermissions(foundProject.projectId, req.userId).then(permissions => {
 
-                        //Ensure that the page exists
-                        if (!foundPage) {
-                            return res.status(404).send({ message: "Page not found" });
-                        }
+                    if (permissions === "none") {
 
-                        res.status(200).send(JSON.stringify(foundPage));
+                        return res.status(403).send({ message: "Access denied" });
+                    }
+
+                    //Find the page
+                    page.findOne({ where: { projectId: req.params.projectId, pageNumber: req.params.pageNumber } })
+                        .then(foundPage => { 
+
+                            //Ensure that the page exists
+                            if (!foundPage) {
+                                return res.status(404).send({ message: "Page not found" });
+                            }
+
+                            res.status(200).send(JSON.stringify(foundPage));
+
+                        })
+                        .catch(e => { 
+                            console.log("Error finding page to be loaded: " + e.message);
+
+                            res.status(500).send({ message: "Internal server error when loading page" });
+                        });
 
                     })
                     .catch(e => { 
-                        console.log("Error finding page to be loaded: " + e.message);
+                        console.log("Error finding project when loading page: " + e.message);
 
                         res.status(500).send({ message: "Internal server error when loading page" });
                     });
-
-                })
-                .catch(e => { 
-                    console.log("Error finding project when loading page: " + e.message);
-
-                    res.status(500).send({ message: "Internal server error when loading page" });
-                });
             })
+            setTimeout(function () {
+                
+                done(); 
+            }, 200);
+        
+            }, function(err, ret) {
+                
+            }, {});
 };
 
 exports.editPage = (req, res) => {

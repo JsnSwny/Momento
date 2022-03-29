@@ -38,7 +38,8 @@ const ProjectLeftSidebar = () => {
 
   useEffect(() => {
     if (editingPage) {
-      setEditValue(pages.find((item) => item.id == editingPage).title);
+        setEditValue(pages.find((item) => item.pageNumber == editingPage)?.title);
+        console.log(pages[0].pageNumber);
     }
   }, [editingPage]);
 
@@ -52,25 +53,32 @@ const ProjectLeftSidebar = () => {
           {project.pages.map((page) => (
             <li
               onClick={() => {
-                currentPage != page.id && dispatch(setActivePage(page.id));
-                store.getState().project.movingPage = true;
-                dispatch(canvasFunctions.loadPage(page.pageNumber));
+                      currentPage != page.pageNumber && dispatch(setActivePage(page.pageNumber));
+                      if (currentPage != page.pageNumber) {
+                          store.getState().project.movingPage = true;
+                          dispatch(canvasFunctions.loadPage(page.pageNumber));
+                      }
               }}
               onDoubleClick={() => {
-                if (editingPage != page.id) {
-                  dispatch(setEditingPage(page.id));
+                if (editingPage != page.pageNumber) {
+                  dispatch(setEditingPage(page.pageNumber));
                   setEditValue("");
                 }
               }}
               onKeyDown={(e) => {
-                if (e.keyCode == 46) {
-                  dispatch(deletePage(page.id));
+                  if (e.keyCode == 46) {
+                    dispatch(setEditingPage(-1));
+                    dispatch(canvasFunctions.deletePage(page.pageNumber));
+                    dispatch(deletePage(page.pageNumber));
+                    dispatch({ type: "RESET_CANVAS" });
+                    dispatch({ type: "RESET_VIEWING_LIST" });
+                    store.dispatch({ type: "RELOAD_VIEWING_LIST" });
                 }
               }}
-              tabIndex={`${currentPage == page.id ? "1" : "-1"}`}
-              className={`${currentPage == page.id ? "active" : ""}`}
+              tabIndex={`${currentPage == page.pageNumber ? "1" : "-1"}`}
+              className={`${currentPage == page.pageNumber ? "active" : ""}`}
             >
-              {editingPage != page.id ? (
+              {editingPage != page.pageNumber ? (
                 <form onSubmit={onSubmit}>
                   <input
                     type="text"
@@ -92,13 +100,14 @@ const ProjectLeftSidebar = () => {
             ${pages.length + 1},
             Page ${pages.length + 1},
             ""`);
+            
             dispatch(
                 canvasFunctions.addPage(
                     pages.length + 1,
                 `Page ${pages.length + 1}`,
                 `Page ${pages.length + 1}`
               )
-            );
+            )
           }}
         >
           + Add New Page

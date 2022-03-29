@@ -18,9 +18,7 @@ function addPage(projectId, newPageNumber, pageTitle, pageDescription) {
 }
 
 function deletePage(projectId, pageNumber) { 
-    return api.delete("/page", {
-        projectId,
-        pageNumber
+    return api.delete(`/page/${projectId}/${pageNumber}`, {
     })
 }
 

@@ -557,9 +557,9 @@ exports.updateProjectInformation = (projectId) => {
 
             });
 
-        }).catch(() => {
+        }).catch(e => {
 
-            console.log("Error finding a project when updating page information");
+            console.log("Error finding a project when updating page information: " + e);
         });
 };
 

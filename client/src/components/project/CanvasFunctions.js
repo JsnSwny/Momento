@@ -79,11 +79,11 @@ const createProject = (title, description, navigateToProject) => (dispatch) => {
 
 //Add a new page to the project
 const addPage = (pageNumber, title, description) => (dispatch) => {
-    
     dispatch(
         canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
-      .then(() => {
+        .then(() => {
+            
             store.getState().project.movingPage = true;
             dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
             
@@ -124,21 +124,34 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
 
          console.log("Error editing project data");
        })
- };
+};
 
-// //delete a page from the project
- const deletePage = (pageNumber) => (dispatch) => {
-     dispatch(
-         canvasDeletePage(store.getState().project.currentProjectData.projectId, pageNumber)
-       )
-       .then(() => {
+//delete a page from the project
+const deletePage = (pageNumber) => (dispatch) => {
+    dispatch(
+        canvasDeletePage(store.getState().project.currentProjectData.projectId, pageNumber)
+    )
+    .then(() => {
+        
+        if (store.getState().project.pages.length > 1) {
+            
+            if (pageNumber === 1) {
+                dispatch(canvasFunctions.loadPage(1));
+            } else {
 
-       })
-       .catch(() => {
+            dispatch(canvasFunctions.loadPage(pageNumber - 1));
+            }
+        } else {
+            dispatch(addPage(1, "Page 1", "Description"));
+            
+        }
+        
+    })
+    .catch(() => {
 
-         console.log("Error deleting page");
-       })
- };
+      console.log("Error deleting page");
+    })
+};
 
 //Load a page from the project
 const loadPage = (pageNumber) => (dispatch) => { 
@@ -380,12 +393,19 @@ const savePage = (dispatch) => {
 };
 
 const startCanvasConnection = (dispatch) => {
-    
-    store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    try {
+        store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    } catch (e) {
+        console.log("Error starting canvas connection: " + e);
+    }
 };
 
 const updateEditingStatus = (dispatch) => {
-    store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    try {
+        store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    } catch (e) {
+        console.log("Error updating editing status: " + e);
+    }
 };
 
 const publishProject = (dispatch) => {
