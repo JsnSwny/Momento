@@ -3,8 +3,6 @@ const express = require("express");
 require("dotenv").config();
 const PORT = process.env.PORT || 3001;
 
-console.log("TEST");
-
 const app = express();
 
 // var corsOptions = {
