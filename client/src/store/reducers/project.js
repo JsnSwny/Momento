@@ -28,6 +28,8 @@ import {
   DELETE_PAGE,
   PROJECT_EXPORT_SUCCESS,
   PROJECT_EXPORT_FAILURE,
+  PROJECT_PERMISSIONCHANGE_SUCCESS,
+  PROJECT_PERMISSIONCHANGE_FAILURE
 } from "../actions/types";
 
 const initialState = {
@@ -171,6 +173,12 @@ export default (state = initialState, action) => {
         return {
             ...state,
             operationSuccess: false,
+          };
+      
+    case PROJECT_EXPORT_FAILURE:
+    return {
+        ...state,
+        operationSuccess: false,
     };
       
     case PAGE_ADD_SUCCESS:
@@ -275,11 +283,21 @@ export default (state = initialState, action) => {
         editingPage: action.payload,
           };
       
-          case "UPDATE_PAGES":
-            return {
-                ...state,
-                pages: action.payload,
-          };
+    case "UPDATE_PAGES":
+    return {
+        ...state,
+        pages: action.payload,
+    };
+    case PROJECT_PERMISSIONCHANGE_SUCCESS:
+    return {
+        ...state,
+        operationSuccess: true,
+    };
+    case PROJECT_PERMISSIONCHANGE_FAILURE:
+    return {
+        ...state,
+        operationSuccess: false,
+    };
       
     default:
       return state;

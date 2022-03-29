@@ -1,8 +1,8 @@
 import Konva from "konva";
 import store from "../../store/store";
 import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject, initCanvasConnection, stillHere, requestProjectExport } from "../../store/actions/project";
-import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
+import { newProject, loadProject, editProject, initCanvasConnection, stillHere, requestProjectExport, changePermissions } from "../../store/actions/project";
+import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage  } from "../../store/actions/canvas";
 var stageRef;
 
 const projectPageLoaded = (id, stage) => (dispatch) => { 
@@ -12,18 +12,16 @@ const projectPageLoaded = (id, stage) => (dispatch) => {
     dispatch(
         loadProject(id)
     )
-    .then(() => { 
+    .then(() => {
 
         if (store.getState().project.currentProjectData.pageCount === 0) {
             dispatch(addPage(1, "Page 1", ""));
         } else {
             dispatch(loadPage(1));
         }
-    }).catch(() => { 
+    }).catch(() => {
         console.log("Error");
     });
-
-    
 };
 
  //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
@@ -77,8 +75,8 @@ const createProject = (title, description, navigateToProject) => (dispatch) => {
 
            console.log("Error creeating project");
         });
-
 };
+
 //Add a new page to the project
 const addPage = (pageNumber, title, description) => (dispatch) => {
     
@@ -112,7 +110,6 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
 
          console.log("Error loading project data");
        })
-
  };
 
  //Edit information about the project (Title, Description, Page count)
@@ -364,8 +361,6 @@ const savePage = (dispatch) => {
             }
         }
 
-        console.log(pageData);
-        
         store.dispatch(
             canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, pageData)
         )
@@ -401,10 +396,41 @@ const publishProject = (dispatch) => {
     .then(() => {
     
         console.log("Project published successfully");
-        //console.log(store.getState().project.images[0]);
+        
+        window.location.href = "";
     })
     .catch(() => { 
         console.log("Error publishing project");
+    });
+};
+
+const addPermissions = (roleName, userId) => {
+
+    store.dispatch(
+        changePermissions(store.getState().project.currentProjectData.projectId, roleName, userId, true)
+    )
+    .then(() => {
+
+        console.log("Permissions added");
+    })
+    .catch(() => {
+
+        console.log("Error adding permissions");
+    });
+};
+
+const removePermissions = (roleName, userId) => {
+
+    store.dispatch(
+        changePermissions(store.getState().project.currentProjectData.projectId, roleName, userId, false)
+    )
+    .then(() => {
+
+        console.log("Permissions removed");
+    })
+    .catch(() => {
+
+        console.log("Error removing permissions");
     });
 };
 
@@ -421,5 +447,7 @@ export const canvasFunctions = {
     savePage,
     startCanvasConnection,
     updateEditingStatus,
-    publishProject
+    publishProject,
+    addPermissions,
+    removePermissions
 };

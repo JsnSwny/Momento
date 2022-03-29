@@ -3,8 +3,6 @@ import CanvasActions from "./canvas/CanvasActions";
 import CanvasCurrentlyViewing from "./canvas/CanvasCurrentlyViewing";
 import CanvasPublish from "./canvas/CanvasPublish";
 import { useSelector, useDispatch } from "react-redux";
-import { canvasEditPage } from "../../store/actions/canvas";
-import { canvasFunctions } from "../project/CanvasFunctions";
 import { clearElements } from "../../store/reducers/canvas";
 
 const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {

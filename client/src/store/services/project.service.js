@@ -6,7 +6,8 @@ export const projectService = {
     editProject,
     initCanvasConnection,
     stillHere,
-    exportProject
+    exportProject,
+    changeProjectPermissions
 };
 
 function createProject(title, description) { 
@@ -42,8 +43,17 @@ function stillHere(projectId, pageNumber) {
     })
 }
 
-function exportProject(projectId, pageNumber) { 
+function exportProject(projectId, pageNumber) {
     return api.get(`/project/export/${projectId}`, {
         projectId
+    })
+}
+
+function changeProjectPermissions(projectId, roleUserId, roleName, add) { 
+    return api.put(`/projectPermissions`, {
+        projectId,
+        roleUserId,
+        roleName,
+        add
     })
 }

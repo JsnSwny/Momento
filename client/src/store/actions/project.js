@@ -22,6 +22,8 @@ import {
   PROJECT_EDITINGSTATUSUPDATE_FAILURE,
   PROJECT_EXPORT_SUCCESS,
   PROJECT_EXPORT_FAILURE,
+  PROJECT_PERMISSIONCHANGE_SUCCESS,
+  PROJECT_PERMISSIONCHANGE_FAILURE
 } from "./types";
 
 export const newProject = (projectTitle, projectDescription) => (dispatch) => {
@@ -234,6 +236,39 @@ export const requestProjectExport = (projectId) => (dispatch) => {
                 console.log("Error exporting project: " + error);
                 dispatch({
                     type: PROJECT_EXPORT_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error,
+                });
+
+                return Promise.reject();
+            }
+        )
+};
+
+export const changePermissions = (projectId, roleName, userId, add) => (dispatch) => {
+
+    return projectService.changeProjectPermissions(
+        projectId,
+        userId,
+        roleName,
+        add)
+        .then(
+            (response) => {
+                
+                dispatch({
+                    type: PROJECT_PERMISSIONCHANGE_SUCCESS,
+                    payload: { images: response.images },
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("Error changing project permissions: " + error);
+                dispatch({
+                    type: PROJECT_PERMISSIONCHANGE_FAILURE,
                 });
 
                 dispatch({

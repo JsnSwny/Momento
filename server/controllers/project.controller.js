@@ -158,18 +158,63 @@ exports.changeProjectPermissions = (req, res) => {
 
                 if (permissions === "creator") {
 
-                    projectRole.create({
-                        projectId: foundProject.projectId,
-                        userId: req.body.newUserId,
-                        roleName: "editor"
-                    }).then(newRole => { 
-                        return res.status(200).send({ message: "success" });
-                    }).catch(e => {
-    
-                        console.log("Internal server error when changing project permissions: " + e.message);
-            
-                        res.status(500).send({ message: "Internal server error when changing project permissions" });
-                    });
+                    user.findOne({ where: { id: req.userId } })
+                        .then(foundUser => {
+
+                            if (!foundUser) {
+                                return res.status(404).send({ message: "User not found" });
+                            }
+
+                            projectRole.findOne({ where: { projectId: foundProject.projectId, userId: req.body.roleUserId } })
+                                .then(foundRole => {
+                                    
+                                    //Add role
+                                    if (req.body.add) {
+
+                                        if (foundRole && foundRole.roleName == req.body.roleName) {
+                                            return res.status(400).send({ message: "Role already exists" });
+                                        }
+
+                                        projectRole.create({
+                                            projectId: foundProject.projectId,
+                                            userId: req.body.roleUserId,
+                                            roleName: req.body.roleName
+                                        }).then(newRole => {
+                                            return res.status(200).send({ message: "success" });
+                                        })
+                                        .catch(e => {
+
+                                            console.log("Internal server error when changing project permissions: " + e.message);
+                    
+                                            return res.status(500).send({ message: "Internal server error when changing project permissions" });
+                                        });
+                                    } else {
+                                        //Remove role
+
+                                        if (foundRole && foundRole.roleName != req.body.roleName) {
+                                            return res.status(400).send({ message: "Role does not exist" });
+                                        }
+                                        try {
+                                            projectRole.destroy({ where: { projectId: foundProject.projectId, userId: req.body.roleUserId, roleName: req.body.roleName } });
+                                        } catch (e) {
+                                            console.log("Error deleting project role: " + e);
+
+                                            return res.status(500).send({ message: "Internal server error when deleting project role" });
+                                        }
+                                    }
+
+                                })
+                                .catch(e => {
+
+                                console.log("Internal server error when changing project permissions: " + e.message);
+
+                                return res.status(500).send({ message: "Internal server error when changing project permissions" });
+                                });
+                        })
+                        .catch(e => {
+
+                            console.log("Error finding user when changing user permissions: " + e);
+                        });
 
                 } else {
 
@@ -753,9 +798,9 @@ exports.exportProject = (req, res) => {
                                                 currentNode.setAttr("x", 0);
                                                 currentNode.setAttr("y", 0);
                                                 currentNode.setAttr("stroke", currentPageData[1][j].data.colour);
-                                                currentNode.setAttr("strokeWidth", parseInt(currentPageData[1][j].data.thickness));
+                                                currentNode.setAttr("strokeWidth", Number(currentPageData[1][j].data.thickness));
                                                 currentNode.setAttr("lineCap", "round");
-                                                currentNode.setAttr("tension", 0);
+                                                currentNode.setAttr("tension", 0.5);
                                                 break;
                                             
                                             case "Image":

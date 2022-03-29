@@ -82,7 +82,7 @@ exports.deletePage = (req, res) => {
 //Lock this function so that it can only be called once every 200ms per project
     pageLock.acquire(req.body.projectId, function (done) { 
 
-        console.log("DELETING...");
+    console.log("DELETING...");
 
     //Find the project that the page is getting added to
     project.findOne({ where: { projectId: req.body.projectId } })
