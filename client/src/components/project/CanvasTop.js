@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import CanvasActions from "./canvas/CanvasActions";
 import CanvasCurrentlyViewing from "./canvas/CanvasCurrentlyViewing";
 import CanvasPublish from "./canvas/CanvasPublish";
+import { canvasFunctions } from "./CanvasFunctions";
 import { useSelector, useDispatch } from "react-redux";
 import { clearElements } from "../../store/reducers/canvas";
 import Modal from 'react-modal';

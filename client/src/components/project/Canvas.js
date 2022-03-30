@@ -87,7 +87,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
   };
 
   const handleClick = (e) => {
-    if (selectedAction == "select" && !e.target.className) {
+    if (selectedAction === "select" && !e.target.className) {
       dispatch(setSelectedElement(null));
       return;
     }
@@ -177,9 +177,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
 
         setInterval(autoSave, autoSaveInterval);
     };
-    
-    
-
+   
   return (
     <div className={`konva-container ${selectedAction}`}>
       <Stage
@@ -204,7 +202,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                         selectedElement && item.id === selectedElement.id
                       }
                       onSelect={() => {
-                        selectedAction == "select" &&
+                        selectedAction === "select" &&
                           dispatch(setSelectedElement(item.id));
                       }}
                       onChange={(newAttrs) => {
@@ -214,6 +212,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                           payload: { ...newAttrs, elType: "Text" },
                         });
                       }}
+                      draggable={selectedAction === "select" || selectedAction === "text"}
                       stageRef={stageRef}
                       setSelectedId={setSelectedElement}
                       setSelectedAction={setSelectedAction}
@@ -246,7 +245,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                         selectedElement && item.id === selectedElement.id
                       }
                       onSelect={() => {
-                        selectedAction == "select" &&
+                        selectedAction === "select" &&
                           dispatch(setSelectedElement(item.id));
                       }}
                       onChange={(newAttrs) => {
@@ -256,6 +255,7 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                           payload: { ...newAttrs, elType: "Image" },
                         });
                       }}
+                      draggable={selectedAction === "select" || selectedAction === "image"}
                       stageRef={stageRef}
                       setSelectedId={setSelectedElement}
                       setSelectedAction={setSelectedAction}

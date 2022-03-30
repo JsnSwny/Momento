@@ -7,6 +7,7 @@ const ImageElement = ({
     isSelected,
     onSelect,
     onChange,
+    draggable
 }) => {
     const shapeRef = useRef();
     const trRef = useRef();
@@ -27,7 +28,7 @@ const ImageElement = ({
                 onTap={onSelect}
                 ref={shapeRef}
                 {...shapeProps}
-                draggable
+                draggable={draggable}
                 onDragEnd={(e) => {
                     onChange({
                         ...shapeProps,

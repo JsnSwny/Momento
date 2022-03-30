@@ -10,6 +10,7 @@ const TextElement = ({
   stageRef,
   setSelectedId,
   setSelectedAction,
+  draggable
 }) => {
   const dispatch = useDispatch();
   const shapeRef = useRef();
@@ -185,7 +186,7 @@ const TextElement = ({
         onTap={onSelect}
         ref={shapeRef}
         {...shapeProps}
-        draggable
+        draggable={draggable}
         onDragEnd={(e) => {
           onChange({
             ...shapeProps,
