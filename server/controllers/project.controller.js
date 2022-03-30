@@ -61,7 +61,7 @@ exports.loadProject = (req, res) => {
 
                     for (let i = 0; i < pages.count; i++) { 
 
-                        pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription });
+                        pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription, pageId: pages.rows[i].pageId });
                     }
 
                     var projectData = { projectId: req.params.projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: pageInfo.length, pageInfo: pageInfo };
@@ -519,7 +519,7 @@ exports.stillHere = (req, res) => {
     });
 };
 
-exports.updateProjectInformation = (projectId) => {
+exports.updateProjectInformation = (projectId, userId, pageId) => {
   
     //Find the project to load
     project.findOne({ where: { projectId: projectId } })
@@ -533,7 +533,7 @@ exports.updateProjectInformation = (projectId) => {
 
                 for (let i = 0; i < pages.count; i++) { 
 
-                    pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription });
+                    pageInfo.push({ title: pages.rows[i].pageTitle, description: pages.rows[i].pageDescription, pageId: pages.rows[i].pageId });
                 }
 
                 var projectData = { projectId: projectId, ownerId: foundProject.ownerId, title: foundProject.title, description: foundProject.description, pageCount: pageInfo.length, pageInfo: pageInfo };
@@ -543,12 +543,16 @@ exports.updateProjectInformation = (projectId) => {
                 userProjectEditingMap.forEach((project, key) => {
 
                     key = JSON.parse(key);
-        
-                    if (project.projectId == projectId) {
+                    
+                    if (project.projectId == projectId && key.userId != userId) {
         
                         project.connection.send(JSON.stringify(outgoingData));
                     }
                 });
+
+                if (pageId) {
+                    removePageFromLists(pageId);
+                }
 
 
             }).catch(e => { 
@@ -651,6 +655,31 @@ const updateWhoIsViewing = (pageId) => {
 
     }catch (e) { 
         console.log("Error updating who is viewing a canvas: " + e.message);
+    }
+};
+
+const removePageFromLists = (pageId) => {
+
+    try {
+        if (canvasViewingList.has(Number(pageId))) {
+        
+            canvasViewingList.delete(Number(pageId));
+        }
+
+        userProjectEditingMap.forEach((project, key) => {
+
+            key = JSON.parse(key);
+
+            if (pageId == key.pageId) {
+
+                project.connection.close();
+
+                userProjectEditingMap.delete(key);
+            }
+        });
+    } catch (e) {
+        
+        console.log("Error when attempting to remove a deleted page from lists: " + e);
     }
 };
 

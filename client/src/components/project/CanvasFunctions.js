@@ -167,9 +167,10 @@ const loadPage = (pageNumber) => (dispatch) => {
             dispatch({ type: "RESET_CANVAS" });
             dispatch({ type: "RESET_VIEWING_LIST" });
             store.dispatch({ type: "RELOAD_VIEWING_LIST" });
+            store.dispatch({ type: "RERENDER" });
 
             startCanvasConnection();
-
+            
         }).catch(() => {
         
             console.log("Error loading page");
@@ -213,8 +214,6 @@ const loadCanvasUpdate = (stringData, dispatch) => {
 
                     store.dispatch({ type: "LOAD_UPDATE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
-                    console.log(store.getState().canvas.elements);
-
                     break;
             
                 //Delete element
@@ -253,14 +252,31 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                 
                 //Update project information
                 case 7:
+
+                    var pageStillExists = false;
+
+
+                    for (let j = 0; j < canvasData[i].elementData.projectData.pageInfo.length; j++){
+
+                        if (canvasData[i].elementData.projectData.pageInfo[j].pageId == store.getState().project.currentPageData.pageId) {
+                            
+                            pageStillExists = true;
+                        }
+                    }
+
+                    if (!pageStillExists) {
+
+                        store.getState().project.movingPage = true;
+                        store.dispatch(canvasFunctions.loadPage(1));
+                    }
+
                     store.dispatch({ type: "PROJECT_LOAD_SUCCESS", payload: canvasData[i].elementData });
+                    
                     break;
-                
+                    
                 default:
                     console.log("Invalid change type: " + canvasData[i].changeType);
                     break;
-                
-                
             }
 
         } catch (e) {

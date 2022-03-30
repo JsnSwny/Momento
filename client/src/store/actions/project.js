@@ -155,7 +155,9 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     payload: {  },
                 });
                 
-                var socket = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+                store.getState().project.canvasConnection = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+
+                var socket = store.getState().project.canvasConnection;
 
                 socket.addEventListener("open", () => {
                     
@@ -168,23 +170,24 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                 });
 
                 socket.addEventListener("message", (msg) => {
-                    
-                    canvasFunctions.loadCanvasUpdate(msg);
+                    if (store.getState().project.canvasConnection == socket) {
+                        canvasFunctions.loadCanvasUpdate(msg);
+                    }
                 });
 
                 socket.addEventListener("close", () => {
 
-                    if (!store.getState().project.movingPage) {
-                        console.log("RESTARTING CONNECTION...");
-                        store.getState().project.canvasRealtimeConnection = false;
+                    if (store.getState().project.canvasConnection == socket) {
+                        if (!store.getState().project.movingPage) {
+                            console.log("Restarting canvas connection...");
+                            store.getState().project.canvasRealtimeConnection = false;
 
-                        dispatch(initCanvasConnection(projectId, pageNumber));
-                    } else {
-                        store.getState().project.movingPage = false;
+                            dispatch(initCanvasConnection(projectId, pageNumber));
+                        } else {
+                            store.getState().project.movingPage = false;
+                        }
                     }
                 });
-
-                store.getState().project.canvasConnection = socket;
 
                 return Promise.resolve();
             }

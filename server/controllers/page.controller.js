@@ -39,7 +39,7 @@ exports.createPage = (req, res) => {
                 })
                     .then(newPage => {
                         
-                        projectController.updateProjectInformation(req.body.projectId);
+                        projectController.updateProjectInformation(req.body.projectId, req.userId);
                         return res.status(200).send({ message: "success", pageId: newPage.pageId, pageNumber: newPage.pageNumber, pageData: newPage.pageData, pageTitle: newPage.pageTitle, pageDescription: newPage.pageDescription });
             
                     })
@@ -122,8 +122,8 @@ exports.deletePage = (req, res) => {
 
                 reorderProjectPages(foundProject.projectId);
 
-                projectController.updateProjectInformation(foundProject.projectId);
-
+                projectController.updateProjectInformation(foundProject.projectId, req.userId, foundPage.pageId);
+                    
                 res.status(200).send({ message: "success" });
 
             })
@@ -154,7 +154,7 @@ exports.deletePage = (req, res) => {
 exports.loadPage = (req, res) => {
     //Lock this function so that it can only be called once every 200ms per project
     pageLock.acquire(req.params.projectId, function (done) {
-        
+
         //Find the project that the page is a part of
         project.findOne({ where: { projectId: req.params.projectId } })
             .then(foundProject => {
@@ -242,58 +242,83 @@ exports.editPage = (req, res) => {
                         foundPage.pageTitle = req.body.newPageData.pageTitle;
                         foundPage.pageDescription = req.body.newPageData.pageDescription;
 
-                        if(foundPage.pageData)
+                        var pageInfo;
+
+                        if (foundPage.pageData) {
                             pageInfo = JSON.parse(foundPage.pageData);
-                        
+
+                            if (!pageInfo || !pageInfo[1] || !Array.isArray(pageInfo[1])) {
+                            
+                                console.log("Error reading saved page: ");
+                                console.log(pageInfo);
+                                console.log("Attempting resync");
+                            
+                                projectController.reSyncCanvas(foundProject.projectId, foundPage.pageNumber, null);
+
+                                return res.status(200).send({ message: "Resync incoming" });
+                            }
+                        }
+
                         for (let i = 0; i < req.body.newPageData.length; i++) {
+                            try {
+                                switch (req.body.newPageData[i].changeType) {
+                                    //Initialise page
+                                    case 0:
+                                        pageInfo = [req.body.newPageData[i].elementData, []];
+                                        break;
 
-                            switch (req.body.newPageData[i].changeType) {
-                                //Initialise page
-                                case 0:
-                                    pageInfo = [req.body.newPageData[i].elementData, []];
-                                    break;
-
-                                //Add new element
-                                case 1:
-                                    pageInfo[1].push({ ID: req.body.newPageData[i].ID, data: req.body.newPageData[i].elementData, order: pageInfo[1].length });
-                                    break;
+                                    //Add new element
+                                    case 1:
+                                        pageInfo[1].push({ ID: req.body.newPageData[i].ID, data: req.body.newPageData[i].elementData, order: pageInfo[1].length });
+                                        break;
                             
-                                //Edit existing element
-                                case 2:
-                                    var element = pageInfo[1].find(x => x.ID == req.body.newPageData[i].ID);
+                                    //Edit existing element
+                                    case 2:
+                                        var element = pageInfo[1].find(x => x.ID == req.body.newPageData[i].ID);
 
-                                    if(element !== undefined)
-                                        element.data = req.body.newPageData[i].elementData;
-                                    break;
+                                        if (element !== undefined)
+                                            element.data = req.body.newPageData[i].elementData;
+                                        break;
                         
-                                //Delete element
-                                case 3:
+                                    //Delete element
+                                    case 3:
 
-                                    var removedElementPosition = pageInfo[1].filter(x => x.ID == req.body.newPageData[i].ID).order;
+                                        var removedElementPosition = pageInfo[1].filter(x => x.ID == req.body.newPageData[i].ID).order;
                                     
-                                    for (let j = 0; j < pageInfo[1].length; j++){
+                                        for (let j = 0; j < pageInfo[1].length; j++) {
 
-                                        if (pageInfo[1][j].order > removedElementPosition) {
-                                            pageInfo[1][j].order--;
+                                            if (pageInfo[1][j].order > removedElementPosition) {
+                                                pageInfo[1][j].order--;
+                                            }
                                         }
-                                    }
 
-                                    pageInfo[1] = pageInfo[1].filter(x => x.ID != req.body.newPageData[i].ID);
-                                    break;
+                                        pageInfo[1] = pageInfo[1].filter(x => x.ID != req.body.newPageData[i].ID);
+                                        break;
                             
-                                //Reorder elements
-                                case 4:
+                                    //Reorder elements
+                                    case 4:
 
-                                    for (let j = 0; j < req.body.newPageData[i].elementData.length; j++){
+                                        for (let j = 0; j < req.body.newPageData[i].elementData.length; j++) {
                                         
-                                        var current = pageInfo[1].findIndex(x => x.ID == req.body.newPageData[i].elementData[j]);
-                                        pageInfo[1][current].order = j
-                                    }
+                                            var current = pageInfo[1].findIndex(x => x.ID == req.body.newPageData[i].elementData[j]);
+                                            pageInfo[1][current].order = j
+                                        }
 
-                                    break;
+                                        break;
                                 
-                                default:
-                                    return res.status(400).send({ message: "Bad request" });
+                                    default:
+                                        return res.status(400).send({ message: "Bad request" });
+                                }
+                            } catch (e) {
+                                
+                                console.log("Error reading page instruction: " + e);
+                                console.log("Attempting data repair and resync");
+                                
+                                pageInfo = projectController.repairCanvasDataCorruption(pageInfo);
+
+                                projectController.reSyncCanvas(foundProject.projectId, foundPage.pageNumber, pageInfo);
+
+                                return res.status(200).send({ message: "Resync incoming" });
                             }
                             
                         }
