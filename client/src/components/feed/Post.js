@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
 import { likePost, unlikePost, addComment, getPosts } from "../../store/actions/posts";
+import SimpleImageSlider from "react-simple-image-slider";
 
 const Post = ({ post }) => {
   const dispatch = useDispatch();
@@ -18,11 +19,29 @@ const Post = ({ post }) => {
 
     setComment("");
   };
+
+  let images = [];
+
+  post?.images.forEach(image => {
+    images.push(image.imageURL);
+  });
+
   return (
     <li className="feed-post">
       <div className="flex-container">
         <div className="feed-post__image">
-          <img src={post?.images[0]?.imageURL} />
+          {images.length > 1 ? (
+            <SimpleImageSlider
+              width={'100%'}
+              height={'100%'}
+              images={images}
+              showBullets={true}
+              showNavs={true}
+              navMargin={5}
+            />)
+            : (
+              <img src={post?.images[0]?.imageURL} />
+          )}
         </div>
         <ul className="feed-post__comments">
           {post.comments.map((item) => (
