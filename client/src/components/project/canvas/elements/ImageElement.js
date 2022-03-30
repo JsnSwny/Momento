@@ -20,6 +20,8 @@ const ImageElement = ({
         }
     }, [isSelected]);
 
+    shapeProps.image = shapeProps.imgObj;
+
     return (
         <React.Fragment>
             <Image
