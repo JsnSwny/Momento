@@ -290,50 +290,54 @@ exports.changePassword = (req, res) => {
 };
 
 exports.refreshToken = async (req, res) => {
-  const { refreshToken: requestToken } = req.body;
-  if (requestToken === null) {
-    return res.status(403).send({ 
-      message: "No refresh token received" 
-    });
-  }
-  try {
-    let refreshToken = await RefreshToken.findOne({
-      where: {
-        token: requestToken
-      }
-    });
-
-    if (!refreshToken) {
-      return res.status(403).send({ 
-        message: "Refresh token not found in the database" 
-      });
-    }
-
-    if (RefreshToken.verifyRefreshToken(refreshToken)) {
-      RefreshToken.destroy({
-        where: {
-          id: refreshToken.id
+    try {
+        const { refreshToken: requestToken } = req.body;
+        if (requestToken === null) {
+            return res.status(403).send({
+                message: "No refresh token received"
+            });
         }
-      });
+        try {
+            let refreshToken = await RefreshToken.findOne({
+                where: {
+                    token: requestToken
+                }
+            });
 
-      return res.status(403).send({ 
-        message: "Refresh token expired. Make a new login request"
-      });
-    }
+            if (!refreshToken) {
+                return res.status(403).send({
+                    message: "Refresh token not found in the database"
+                });
+            }
 
-    const user = await refreshToken.getUser();
-    let newAccessToken = jwt.sign({ id: user.id }, config.JWT_SECRET, {
-      expiresIn: config.JWT_EXPIRATION
-    });
+            if (RefreshToken.verifyRefreshToken(refreshToken)) {
+                RefreshToken.destroy({
+                    where: {
+                        id: refreshToken.id
+                    }
+                });
 
-    return res.status(200).send({
-      accessToken: newAccessToken,
-      refreshToken: refreshToken.token
-    });
+                return res.status(403).send({
+                    message: "Refresh token expired. Make a new login request"
+                });
+            }
+
+            const user = await refreshToken.getUser();
+            let newAccessToken = jwt.sign({ id: user.id }, config.JWT_SECRET, {
+                expiresIn: config.JWT_EXPIRATION
+            });
+
+            return res.status(200).send({
+                accessToken: newAccessToken,
+                refreshToken: refreshToken.token
+            });
     
-  } catch (err) {
-    return res.status(500).send({
-      message: err
-    });
-  }
+        } catch (err) {
+            return res.status(500).send({
+                message: err
+            });
+        }
+    } catch (e) {
+        console.log("Error refreshing token: " + e);
+    }
 }
