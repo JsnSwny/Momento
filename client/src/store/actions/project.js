@@ -245,3 +245,18 @@ export const requestProjectExport = (projectId) => (dispatch) => {
             }
         )
 };
+
+export const updateTitleDesc = (projectId, title, description) => (dispatch) => {
+
+  return projectService.updateTitleDesc(projectId, title, description)
+    .then(
+      (response) => {
+        dispatch({
+          type: PROJECT_EDIT_SUCCESS,
+          payload: { }
+        });
+
+        return Promise.resolve();
+      }
+    )
+}

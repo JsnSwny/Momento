@@ -6,6 +6,7 @@ import { Stage, Layer, Rect, Circle, Line, Image } from "react-konva";
 import Konva from "konva";
 import Rectangle from "./canvas/elements/Rectangle";
 import TextElement from "./canvas/elements/TextElement";
+import ImageElement from "./canvas/elements/ImageElement";
 import store from "../../store/store";
 import { setSelectedElement } from "../../store/reducers/canvas";
 
@@ -238,17 +239,22 @@ const Canvas = ({ selectedAction, setSelectedAction, stageRef }) => {
                     
                 case "Image":
                   return (
-                    <Image
+                    <ImageElement
                       key={i}
-                      width={item.width}
-                      height={item.height}
-                      image={item.imgObj}
+                      shapeProps={item}
                       isSelected={
                         selectedElement && item.id === selectedElement.id
                       }
                       onSelect={() => {
                         selectedAction == "select" &&
                           dispatch(setSelectedElement(item.id));
+                      }}
+                      onChange={(newAttrs) => {
+                        dispatch({
+                          type: "UPDATE_ELEMENT",
+                          id: item.id,
+                          payload: { ...newAttrs, elType: "Image" },
+                        });
                       }}
                       stageRef={stageRef}
                       setSelectedId={setSelectedElement}

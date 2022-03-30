@@ -126,6 +126,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         operationSuccess: true,
+        currentProjectData: {
+          ...state.currentProjectData,
+          title: action.payload.title,
+          description: action.payload.description
+        }
       };
 
     case PROJECT_EDIT_FAILURE:

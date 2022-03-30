@@ -6,7 +6,8 @@ export const projectService = {
     editProject,
     initCanvasConnection,
     stillHere,
-    exportProject
+    exportProject,
+    updateTitleDesc
 };
 
 function createProject(title, description) { 
@@ -45,5 +46,12 @@ function stillHere(projectId, pageNumber) {
 function exportProject(projectId, pageNumber) { 
     return api.get(`/project/export/${projectId}`, {
         projectId
+    })
+}
+
+function updateTitleDesc(projectId, title, description) {
+    return api.post(`/project/update/${projectId}`, {
+        title,
+        description
     })
 }

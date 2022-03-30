@@ -14,6 +14,7 @@ body {
 
 .flex-container, .flex-container--column, .flex-container--column-center, .flex-container--align-center-wrap, .flex-container--align-center, .flex-container--center-vh, .flex-container--wrap, .flex-container--between-end, .flex-container--between-start-wrap, .flex-container--between-start, .flex-container--around-center-wrap, .flex-container--between-center-wrap, .flex-container--between-center, .flex-container--center, .flex-container--between {
   display: flex;
+  text-align: left;
 }
 .flex-container--between {
   justify-content: space-between;
@@ -834,7 +835,7 @@ textarea {
   float: right;
   padding-top: 0.5rem;
 }
-.User .Profile .UserInfo .followButton {
+.User .Profile .UserInfo .followButton, .User .Profile .UserInfo .unfollowButton {
   background-color: #5bcac3;
   color: white;
   width: 6rem;
@@ -843,6 +844,9 @@ textarea {
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
+}
+.User .Profile .UserInfo .unfollowButton {
+  background-color: #838383;
 }
 .User .Profile .UserInfo .userStats {
   padding-top: 2rem;
@@ -866,6 +870,14 @@ textarea {
   text-decoration: none;
   font-size: 1.5rem;
   color: grey;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+.User #active.profileLink {
+  color: black;
+  font-size: 1.7rem;
+  cursor: default;
 }
 
 .modalTitle {
@@ -890,4 +902,10 @@ textarea {
 
 .modalButtonBlue {
   color: #5bcac3;
+}
+
+.projectLink {
+  text-decoration: none;
+  color: black;
+  font-size: 2rem;
 }

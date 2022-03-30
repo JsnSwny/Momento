@@ -682,7 +682,6 @@ exports.exportProject = (req, res) => {
                         userId: creator.userId,
                         title: foundProject.title,
                         description: foundProject.description,
-                        imageURL: "",
                         views: 0,
                         collaborators: roles.count,
                         datePosted: Date.now(),
@@ -876,4 +875,18 @@ exports.exportProject = (req, res) => {
 
             return res.status(500).send({ message: "Internal server error when exporting project" });
         });
+};
+
+exports.updateTitleDesc = (req, res) => {
+    try {
+        project.findOne({ where: { projectId: req.params.projectId } })
+        .then(async (foundProject) => {
+            foundProject.title = req.body.title;
+            foundProject.description = req.body.description;
+            await foundProject.save();
+            return res.status(200).send({ message: "success" });
+        })
+    } catch (err) {
+        return res.status(500).send(err);
+    }
 };

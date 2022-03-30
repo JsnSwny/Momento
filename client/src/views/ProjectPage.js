@@ -78,7 +78,8 @@ const ProjectPage = () => {
         rotation: 0,
         imgObj: imageObj,
         src: imageUrl,
-        text: "image"
+        text: "image",
+        draggable: true,
       }
       dispatch({ type: "ADD_ELEMENT", payload: obj });
     }

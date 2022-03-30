@@ -6,12 +6,91 @@ import { useSelector, useDispatch } from "react-redux";
 import { canvasEditPage } from "../../store/actions/canvas";
 import { canvasFunctions } from "../project/CanvasFunctions";
 import { clearElements } from "../../store/reducers/canvas";
+import Modal from 'react-modal';
+import project from "../../store/reducers/project";
+import { PROJECT_EDIT_SUCCESS } from "../../store/actions/types";
+import { updateTitleDesc } from "../../store/actions/project";
 
 const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) => {
   const dispatch = useDispatch();
   const elements = useSelector((state) => state.canvas.elements);
+
+  const projectData = useSelector((state) => state.project.currentProjectData);
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const modalStyle = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+    },
+  };
+
+  const modalInputStyle = {
+    width: '10rem',
+    height: '1.5rem',
+    fontFamily: 'Verdana, Geneva, Tahoma, sans-serif',
+    fontSize: '0.9rem',
+    marginLeft: '0.2rem'
+  };
+
+  const modalTextAreaStyle = {
+    width: '35rem', 
+    height: '15rem', 
+    resize: 'none', 
+    fontSize: '1rem', 
+    padding: '0.4rem 0.4rem 0.4rem 0.4rem'
+  }
+
+  const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  Modal.setAppElement('#root');
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    // update title and description of project locally
+    dispatch(updateTitleDesc(projectData.projectId, e.target[0].value, e.target[1].value))
+    .then(() => canvasFunctions.publishProject());
+  }
+
   return (
     <div className="canvas-top flex-container--between">
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        style={modalStyle}
+        contentLabel="Publish project"
+      >
+        <h2>Publish project</h2>
+        <button 
+          onClick={closeModal}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            position: 'absolute',
+            top: '7%',
+            left: '95%',
+            fontSize: '1rem',
+            cursor: 'pointer'
+          }}
+        >X</button>
+        <form style={{ paddingLeft: '1rem', paddingRight: '2rem' }} onSubmit={onSubmit}>
+          <label>Title</label>
+          <input style={modalInputStyle} type='text' defaultValue={projectData.title} />
+          <label>Description</label>
+          <textarea style={modalTextAreaStyle} type='text' defaultValue={projectData.description} />
+          <button className="btn" type='submit'>Publish</button>
+        </form>
+      </Modal>
       <CanvasActions
         selectedAction={selectedAction}
         setSelectedAction={setSelectedAction}
@@ -25,7 +104,11 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
             onClick={() => dispatch(clearElements())}
           ></i>
         )}
-        <CanvasPublish />
+        <button 
+          className="btn" 
+          onClick={() => openModal()}>
+            Publish
+        </button>
       </div>
     </div>
   );

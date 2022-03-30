@@ -14,4 +14,6 @@ module.exports = function (app) {
     app.post("/api/project/:projectId", [authJWT.verifyToken], controller.stillHere);
 
     app.get("/api/project/export/:projectId", [authJWT.verifyToken], controller.exportProject);
+
+    app.post("/api/project/update/:projectId", [authJWT.verifyToken], controller.updateTitleDesc);
 };
