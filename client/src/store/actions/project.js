@@ -22,6 +22,8 @@ import {
   PROJECT_EDITINGSTATUSUPDATE_FAILURE,
   PROJECT_EXPORT_SUCCESS,
   PROJECT_EXPORT_FAILURE,
+  PROJECT_PERMISSIONCHANGE_SUCCESS,
+  PROJECT_PERMISSIONCHANGE_FAILURE
 } from "./types";
 
 export const newProject = (projectTitle, projectDescription) => (dispatch) => {
@@ -153,7 +155,9 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     payload: {  },
                 });
                 
-                var socket = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+                store.getState().project.canvasConnection = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+
+                var socket = store.getState().project.canvasConnection;
 
                 socket.addEventListener("open", () => {
                     
@@ -166,23 +170,24 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                 });
 
                 socket.addEventListener("message", (msg) => {
-                    
-                    canvasFunctions.loadCanvasUpdate(msg);
+                    if (store.getState().project.canvasConnection == socket) {
+                        canvasFunctions.loadCanvasUpdate(msg);
+                    }
                 });
 
                 socket.addEventListener("close", () => {
 
-                    if (!store.getState().project.movingPage) {
-                        console.log("RESTARTING CONNECTION...");
-                        store.getState().project.canvasRealtimeConnection = false;
+                    if (store.getState().project.canvasConnection == socket) {
+                        if (!store.getState().project.movingPage) {
+                            console.log("Restarting canvas connection...");
+                            store.getState().project.canvasRealtimeConnection = false;
 
-                        dispatch(initCanvasConnection(projectId, pageNumber));
-                    } else {
-                        store.getState().project.movingPage = false;
+                            dispatch(initCanvasConnection(projectId, pageNumber));
+                        } else {
+                            store.getState().project.movingPage = false;
+                        }
                     }
                 });
-
-                store.getState().project.canvasConnection = socket;
 
                 return Promise.resolve();
             }
@@ -260,3 +265,35 @@ export const updateTitleDesc = (projectId, title, description) => (dispatch) => 
       }
     )
 }
+export const changePermissions = (projectId, roleName, userId, add) => (dispatch) => {
+
+    return projectService.changeProjectPermissions(
+        projectId,
+        userId,
+        roleName,
+        add)
+        .then(
+            (response) => {
+                
+                dispatch({
+                    type: PROJECT_PERMISSIONCHANGE_SUCCESS,
+                    payload: { images: response.images },
+                });
+
+                return Promise.resolve();
+            },
+            (error) => {
+                console.log("Error changing project permissions: " + error);
+                dispatch({
+                    type: PROJECT_PERMISSIONCHANGE_FAILURE,
+                });
+
+                dispatch({
+                    type: SET_MESSAGE,
+                    payload: error,
+                });
+
+                return Promise.reject();
+            }
+        )
+};

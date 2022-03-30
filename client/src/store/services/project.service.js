@@ -7,7 +7,8 @@ export const projectService = {
     initCanvasConnection,
     stillHere,
     exportProject,
-    updateTitleDesc
+    updateTitleDesc,
+    changeProjectPermissions
 };
 
 function createProject(title, description) { 
@@ -43,7 +44,7 @@ function stillHere(projectId, pageNumber) {
     })
 }
 
-function exportProject(projectId, pageNumber) { 
+function exportProject(projectId, pageNumber) {
     return api.get(`/project/export/${projectId}`, {
         projectId
     })
@@ -53,5 +54,14 @@ function updateTitleDesc(projectId, title, description) {
     return api.post(`/project/update/${projectId}`, {
         title,
         description
+    })
+}
+
+function changeProjectPermissions(projectId, roleUserId, roleName, add) { 
+    return api.put(`/projectPermissions`, {
+        projectId,
+        roleUserId,
+        roleName,
+        add
     })
 }

@@ -1,8 +1,8 @@
 import Konva from "konva";
 import store from "../../store/store";
 import { loadUserData } from "../../store/actions/user";
-import { newProject, loadProject, editProject, initCanvasConnection, stillHere, requestProjectExport } from "../../store/actions/project";
-import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage } from "../../store/actions/canvas";
+import { newProject, loadProject, editProject, initCanvasConnection, stillHere, requestProjectExport, changePermissions } from "../../store/actions/project";
+import { canvasAddPage, canvasDeletePage, canvasLoadPage, canvasEditPage  } from "../../store/actions/canvas";
 var stageRef;
 
 const projectPageLoaded = (id, stage) => (dispatch) => { 
@@ -12,18 +12,16 @@ const projectPageLoaded = (id, stage) => (dispatch) => {
     dispatch(
         loadProject(id)
     )
-    .then(() => { 
+    .then(() => {
 
         if (store.getState().project.currentProjectData.pageCount === 0) {
             dispatch(addPage(1, "Page 1", ""));
         } else {
             dispatch(loadPage(1));
         }
-    }).catch(() => { 
+    }).catch(() => {
         console.log("Error");
     });
-
-    
 };
 
  //Load information about a user (this is required to get a list of the project ids which are needed to load a project)
@@ -77,15 +75,15 @@ const createProject = (title, description, navigateToProject) => (dispatch) => {
 
            console.log("Error creeating project");
         });
-
 };
+
 //Add a new page to the project
 const addPage = (pageNumber, title, description) => (dispatch) => {
-    
     dispatch(
         canvasAddPage(store.getState().project.currentProjectData.projectId, pageNumber, title, description)
       )
-      .then(() => {
+        .then(() => {
+            
             store.getState().project.movingPage = true;
             dispatch(loadPage(store.getState().project.currentProjectData.pageCount));
             
@@ -112,7 +110,6 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
 
          console.log("Error loading project data");
        })
-
  };
 
  //Edit information about the project (Title, Description, Page count)
@@ -127,21 +124,34 @@ const addPage = (pageNumber, title, description) => (dispatch) => {
 
          console.log("Error editing project data");
        })
- };
+};
 
-// //delete a page from the project
- const deletePage = (pageNumber) => (dispatch) => {
-     dispatch(
-         canvasDeletePage(store.getState().project.currentProjectData.projectId, pageNumber)
-       )
-       .then(() => {
+//delete a page from the project
+const deletePage = (pageNumber) => (dispatch) => {
+    dispatch(
+        canvasDeletePage(store.getState().project.currentProjectData.projectId, pageNumber)
+    )
+    .then(() => {
+        
+        if (store.getState().project.pages.length > 1) {
+            
+            if (pageNumber === 1) {
+                dispatch(canvasFunctions.loadPage(1));
+            } else {
 
-       })
-       .catch(() => {
+            dispatch(canvasFunctions.loadPage(pageNumber - 1));
+            }
+        } else {
+            dispatch(addPage(1, "Page 1", "Description"));
+            
+        }
+        
+    })
+    .catch(() => {
 
-         console.log("Error deleting page");
-       })
- };
+      console.log("Error deleting page");
+    })
+};
 
 //Load a page from the project
 const loadPage = (pageNumber) => (dispatch) => { 
@@ -157,9 +167,10 @@ const loadPage = (pageNumber) => (dispatch) => {
             dispatch({ type: "RESET_CANVAS" });
             dispatch({ type: "RESET_VIEWING_LIST" });
             store.dispatch({ type: "RELOAD_VIEWING_LIST" });
+            store.dispatch({ type: "RERENDER" });
 
             startCanvasConnection();
-
+            
         }).catch(() => {
         
             console.log("Error loading page");
@@ -203,8 +214,6 @@ const loadCanvasUpdate = (stringData, dispatch) => {
 
                     store.dispatch({ type: "LOAD_UPDATE_ELEMENT", payload: { id: canvasData[i].ID, attributes: canvasData[i].elementData } });
 
-                    console.log(store.getState().canvas.elements);
-
                     break;
             
                 //Delete element
@@ -243,14 +252,31 @@ const loadCanvasUpdate = (stringData, dispatch) => {
                 
                 //Update project information
                 case 7:
+
+                    var pageStillExists = false;
+
+
+                    for (let j = 0; j < canvasData[i].elementData.projectData.pageInfo.length; j++){
+
+                        if (canvasData[i].elementData.projectData.pageInfo[j].pageId == store.getState().project.currentPageData.pageId) {
+                            
+                            pageStillExists = true;
+                        }
+                    }
+
+                    if (!pageStillExists) {
+
+                        store.getState().project.movingPage = true;
+                        store.dispatch(canvasFunctions.loadPage(1));
+                    }
+
                     store.dispatch({ type: "PROJECT_LOAD_SUCCESS", payload: canvasData[i].elementData });
+                    
                     break;
-                
+                    
                 default:
                     console.log("Invalid change type: " + canvasData[i].changeType);
                     break;
-                
-                
             }
 
         } catch (e) {
@@ -364,8 +390,6 @@ const savePage = (dispatch) => {
             }
         }
 
-        console.log(pageData);
-        
         store.dispatch(
             canvasEditPage(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber, pageData)
         )
@@ -385,12 +409,19 @@ const savePage = (dispatch) => {
 };
 
 const startCanvasConnection = (dispatch) => {
-    
-    store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    try {
+        store.dispatch(initCanvasConnection(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    } catch (e) {
+        console.log("Error starting canvas connection: " + e);
+    }
 };
 
 const updateEditingStatus = (dispatch) => {
-    store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    try {
+        store.dispatch(stillHere(store.getState().project.currentProjectData.projectId, store.getState().project.currentPageData.pageNumber));
+    } catch (e) {
+        console.log("Error updating editing status: " + e);
+    }
 };
 
 const publishProject = (dispatch) => {
@@ -401,10 +432,41 @@ const publishProject = (dispatch) => {
     .then(() => {
     
         console.log("Project published successfully");
-        //console.log(store.getState().project.images[0]);
+        
+        window.location.href = "";
     })
     .catch(() => { 
         console.log("Error publishing project");
+    });
+};
+
+const addPermissions = (roleName, userId) => {
+
+    store.dispatch(
+        changePermissions(store.getState().project.currentProjectData.projectId, roleName, userId, true)
+    )
+    .then(() => {
+
+        console.log("Permissions added");
+    })
+    .catch(() => {
+
+        console.log("Error adding permissions");
+    });
+};
+
+const removePermissions = (roleName, userId) => {
+
+    store.dispatch(
+        changePermissions(store.getState().project.currentProjectData.projectId, roleName, userId, false)
+    )
+    .then(() => {
+
+        console.log("Permissions removed");
+    })
+    .catch(() => {
+
+        console.log("Error removing permissions");
     });
 };
 
@@ -421,5 +483,7 @@ export const canvasFunctions = {
     savePage,
     startCanvasConnection,
     updateEditingStatus,
-    publishProject
+    publishProject,
+    addPermissions,
+    removePermissions
 };

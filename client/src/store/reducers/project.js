@@ -28,6 +28,8 @@ import {
   DELETE_PAGE,
   PROJECT_EXPORT_SUCCESS,
   PROJECT_EXPORT_FAILURE,
+  PROJECT_PERMISSIONCHANGE_SUCCESS,
+  PROJECT_PERMISSIONCHANGE_FAILURE
 } from "../actions/types";
 
 const initialState = {
@@ -100,6 +102,7 @@ export default (state = initialState, action) => {
       for (let i = 0; i < action.payload.projectData.pageCount; i++) {
         state.pages.push({
           pageNumber: i + 1,
+          pageId: action.payload.projectData.pageInfo[i].pageId,
           pageTitle: action.payload.projectData.pageInfo[i].title,
           pageDescription: action.payload.projectData.pageInfo[i].description,
         });
@@ -176,12 +179,20 @@ export default (state = initialState, action) => {
         return {
             ...state,
             operationSuccess: false,
+          };
+      
+    case PROJECT_EXPORT_FAILURE:
+    return {
+        ...state,
+        operationSuccess: false,
     };
       
     case PAGE_ADD_SUCCESS:
-      state.currentProjectData.pageCount++;
+          state.currentProjectData.pageCount++;
+          console.log(action.payload);
       state.pages.push({
         pageNumber: state.pages.length + 1,
+        pageId: action.payload.newPageData.pageId,
         pageTitle: action.payload.newPageData.pageTitle,
         pageDescription: action.payload.newPageData.pageDescription,
       });
@@ -189,10 +200,10 @@ export default (state = initialState, action) => {
         ...state,
         operationSuccess: true,
         currentPageData: {
-          pageId: action.payload.pageNumber,
-          pageNumber: action.payload.pageNumber,
-          title: action.payload.pageTitle,
-          pageData: action.payload.pageData,
+          pageId: action.payload.newPageData.pageId,
+          pageNumber: action.payload.newPageData.pageNumber,
+          title: action.payload.newPageData.pageTitle,
+          pageData: action.payload.newPageData.pageData,
         },
       };
 
@@ -214,12 +225,12 @@ export default (state = initialState, action) => {
         operationSuccess: false,
       };
 
-    case PAGE_LOAD_SUCCESS:
+      case PAGE_LOAD_SUCCESS:
       return {
         ...state,
         operationSuccess: true,
         currentPageData: {
-          pageId: action.payload.pageData.pageNumber,
+          pageId: action.payload.pageData.pageId,
           pageNumber: action.payload.pageData.pageNumber,
           pageData: action.payload.pageData.pageData,
         },
@@ -280,11 +291,21 @@ export default (state = initialState, action) => {
         editingPage: action.payload,
           };
       
-          case "UPDATE_PAGES":
-            return {
-                ...state,
-                pages: action.payload,
-          };
+    case "UPDATE_PAGES":
+    return {
+        ...state,
+        pages: action.payload,
+    };
+    case PROJECT_PERMISSIONCHANGE_SUCCESS:
+    return {
+        ...state,
+        operationSuccess: true,
+    };
+    case PROJECT_PERMISSIONCHANGE_FAILURE:
+    return {
+        ...state,
+        operationSuccess: false,
+    };
       
     default:
       return state;
