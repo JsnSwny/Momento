@@ -856,7 +856,7 @@ exports.exportProject = (req, res) => {
                                     stageLayer.toDataURL({
                                         width: initialCanvasSize.width,
                                         height: initialCanvasSize.height,
-                                        mimetype: "image/jpeg",
+                                        mimetype: "image/png",
                                         pixelRatio: 2,
                                         callback(currentImage) {
 
@@ -867,7 +867,7 @@ exports.exportProject = (req, res) => {
                                             })
                                             .then(newPostImage => {
                                                 
-                                                var imageName = uuid.v4() + ".jpeg";
+                                                var imageName = uuid.v4() + ".png";
                                                 
                                                 try {
                                                     
@@ -877,7 +877,7 @@ exports.exportProject = (req, res) => {
                                                     s3.getSignedUrlPromise("putObject", {
                                                         Bucket: "momento-s3",
                                                         Key: imageName,
-                                                        ContentType: "image/jpeg",
+                                                        ContentType: "image/png",
                                                         Expires: (60 * 15),
                                                     }).then(imageURL => {
                                                         
