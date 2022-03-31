@@ -546,7 +546,11 @@ exports.updateProjectInformation = (projectId, userId, pageId) => {
                     
                     if (project.projectId == projectId && key.userId != userId) {
         
-                        project.connection.send(JSON.stringify(outgoingData));
+                        try {
+                            project.connection.send(JSON.stringify(outgoingData));
+                        } catch (e) {
+                            console.log("Error sending page update information: " + e);
+                        }
                     }
                 });
 
