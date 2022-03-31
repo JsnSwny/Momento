@@ -155,7 +155,11 @@ export const initCanvasConnection = (projectId, pageNumber) => (dispatch) => {
                     payload: {  },
                 });
                 
-                store.getState().project.canvasConnection = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+                if (process.env.NODE_ENV === 'production') {
+                  store.getState().project.canvasConnection = new WebSocket("ws://memento-backend-prod.herokuapp.com:3002/ws");
+                } else {
+                  store.getState().project.canvasConnection = new WebSocket("ws://" + window.location.hostname + ":3002/ws");
+                }
 
                 var socket = store.getState().project.canvasConnection;
 
