@@ -8,7 +8,7 @@ const CanvasCurrentlyViewing = () => {
             {store.getState().canvas.currentlyViewingList.map((viewer) => (
                     <li
                         
-                    onClick={() => window.location.href = `/user/${viewer.userId}`}
+                    onClick={() => window.location.href = `/user/${viewer?.username}`}
                     key={viewer.userId}
                     >
                         {viewer?.username?.slice(0, 5)}
