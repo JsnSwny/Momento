@@ -771,6 +771,8 @@ exports.exportProject = (req, res) => {
                                 return res.status(400).send({ message: "The project is empty" });
                             }
 
+                            pages.rows.sort((x, y) => x.pageNumber - y.pageNumber);
+
                             var initialCanvasSize = JSON.parse(JSON.parse(pages.rows[0].pageData)[0]);
 
                             var canvas = Canvas.createCanvas(initialCanvasSize.width, initialCanvasSize.height);
@@ -897,6 +899,8 @@ exports.exportProject = (req, res) => {
                                                                 //If this is the last image, send the image urls to the canvas
                                                                 if (imageURLs.length == pages.count) {
                                                                     
+                                                                    imageURLs.sort((x, y) => x.pageNumber - y.pageNumber);
+
                                                                     return res.status(200).send({ message: "success", images: imageURLs });
                                                                 }
                                                             })
