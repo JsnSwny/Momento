@@ -208,7 +208,7 @@ exports.loadPage = (req, res) => {
 };
 
 exports.editPage = (req, res) => {
-    pageLock.acquire(req.body.projectId, function (done) { 
+    //pageLock.acquire(req.body.projectId, function (done) { 
 
     //Find the project that the page is a part of
     project.findOne({ where: { projectId: req.body.projectId } })
@@ -384,14 +384,14 @@ exports.editPage = (req, res) => {
                 res.status(500).send({ message: "Internal server error when editing page" });
             });
         
-            setTimeout(function () {
+            //setTimeout(function () {
             
-                done(); 
-              }, 200);
+              //  done(); 
+              //}, 200);
         
-            }, function(err, ret) {
+            //}, function(err, ret) {
                 
-            }, {});
+            //}, {});
 };
 
 //Reorders pages in a project
