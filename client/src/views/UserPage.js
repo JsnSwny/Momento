@@ -135,7 +135,12 @@ const UserPage = () => {
                 </div>
                 {ownProfile && (
                   <div className="editProfile">
-                    <h2>Edit profile</h2>
+                    <button onClick={() => console.log('Editing profile')} style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                    }}><h2>Edit profile</h2></button>
                   </div>
                 )}
                 {!ownProfile && !following && (
@@ -150,15 +155,13 @@ const UserPage = () => {
                 )}
               </div>
               <ul className="userStats">
-               {userData?.followers === null ? '' : userData.followers} followers    {userData?.following === null ? '' : userData.following} following
+               {userData.followers} followers    {userData.following} following
               </ul>
               <div className="userName-Bio">
                 <h2 className="name">{userData.firstName + " " + userData.lastName}</h2>
                 <br/>
                 <span className="userBio">
-                  {userData?.bio === null 
-                    ? ''
-                    : userData.bio}
+                  {userData.bio}
                 </span>
               </div>
             </section>

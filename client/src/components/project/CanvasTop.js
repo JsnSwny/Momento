@@ -29,11 +29,12 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
   };
 
   const modalInputStyle = {
-    width: '10rem',
+    width: '100%',
     height: '1.5rem',
     fontFamily: 'Verdana, Geneva, Tahoma, sans-serif',
     fontSize: '0.9rem',
-    marginLeft: '0.2rem'
+    justifyContent: 'center',
+    textAlign: 'center'
   };
 
   const modalTextAreaStyle = {
@@ -41,7 +42,8 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
     height: '15rem', 
     resize: 'none', 
     fontSize: '1rem', 
-    padding: '0.4rem 0.4rem 0.4rem 0.4rem'
+    padding: '0.4rem 0.4rem 0.4rem 0.4rem',
+    marginBottom: '1rem',
   }
 
   const openModal = () => {
@@ -59,6 +61,7 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
     // update title and description of project locally
     dispatch(updateTitleDesc(projectData.projectId, e.target[0].value, e.target[1].value))
     .then(() => canvasFunctions.publishProject());
+    window.location.href = `/`;
   }
 
   return (
@@ -69,7 +72,7 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
         style={modalStyle}
         contentLabel="Publish project"
       >
-        <h2>Publish project</h2>
+        <h2 style={{ textAlign: 'center' }}>Publish your project</h2>
         <button 
           onClick={closeModal}
           style={{
@@ -82,10 +85,10 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
             cursor: 'pointer'
           }}
         >X</button>
-        <form style={{ paddingLeft: '1rem', paddingRight: '2rem' }} onSubmit={onSubmit}>
-          <label>Title</label>
+        <form style={{ paddingLeft: '1rem', paddingRight: '2rem', display: 'grid' }} onSubmit={onSubmit}>
+          <label style={{ textAlign: 'center', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Title</label>
           <input style={modalInputStyle} type='text' defaultValue={projectData.title} />
-          <label>Description</label>
+          <label style={{ textAlign: 'center', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Description</label>
           <textarea style={modalTextAreaStyle} type='text' defaultValue={projectData.description} />
           <button className="btn" type='submit'>Publish</button>
         </form>
