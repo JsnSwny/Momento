@@ -4,7 +4,6 @@ import './Navbar.css'
 import Dropdown from './Dropdown'
 import Searchbar from './Searchbar'
 
-
 function Navbar({username}) {
     const [click, setClick] = useState(false);
     const [dropdown, setDropdown] = useState(false);
@@ -61,12 +60,11 @@ function Navbar({username}) {
                         onMouseEnter={onMouseEnter}
                         onMouseLeave={onMouseLeave}
                     >
-                        <Link 
-                            to='/' 
+                        <p 
                             className='nav-links' 
                             onClick={closeMobileMenu}>
                             <i class="fa-solid fa-plus"></i>
-                        </Link>
+                        </p>
                         {dropdown && <Dropdown />}
                     </li>
                     <li className='nav-item'>

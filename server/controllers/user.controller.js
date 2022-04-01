@@ -29,9 +29,6 @@ exports.loadUserData = (req, res) => {
                     }
                 });
 
-                console.log("followers: " + followers);
-                console.log("following: " + following);
-
                 // If user requesting somebody else's data
                 if (user.id !== req.userId) {
                     return res.status(200).send({

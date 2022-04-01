@@ -44,7 +44,7 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
     fontSize: '1rem', 
     padding: '0.4rem 0.4rem 0.4rem 0.4rem',
     marginBottom: '1rem',
-  }
+  };
 
   const openModal = () => {
     setModalOpen(true);
