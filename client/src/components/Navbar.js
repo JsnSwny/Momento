@@ -8,7 +8,6 @@ import Searchbar from './Searchbar'
 function Navbar() {
     const [click, setClick] = useState(false);
     const [dropdown, setDropdown] = useState(false);
-    const [dropdown2, setDropdown2] = useState(false)
 
     const handleClick = () => setClick(!click);
     const closeMobileMenu = () => setClick(false);
@@ -42,7 +41,7 @@ function Navbar() {
                     <i class="fa-regular fa-book-open-cover"></i>
                 </li>
                 <Link to='/' className='navbar-logo'>
-                    Momento
+                    Memento
                 </Link>
                 <div className="Search"><Searchbar placeholder="Search scraps..."/></div>
                 <Link to='/' className='search-icon'>
