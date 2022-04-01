@@ -50,7 +50,7 @@ const RegistrationPage = () => {
 
           <div>
             <div className="title">
-              <h1>Momento Registration</h1>
+              <h1>Memento Registration</h1>
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
               {!successfulRegister && (

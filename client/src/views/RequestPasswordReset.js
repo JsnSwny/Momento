@@ -33,7 +33,7 @@ const RequestPasswordReset = () => {
             </div>
           </div>
           <div className="title">
-            <h1>Momento Password Reset</h1>
+            <h1>Memento Password Reset</h1>
           </div>
           <div>
             <form onSubmit={handleSubmit(onSubmit)}>

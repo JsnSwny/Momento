@@ -42,7 +42,7 @@ const LoginPage = () => {
 
           <div>
             <div className="title">
-              <h1>Momento Login</h1>
+              <h1>Memento Login</h1>
             </div>
             <form onSubmit={onSubmit}>
               <div className="email">
