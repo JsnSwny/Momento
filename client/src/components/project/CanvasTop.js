@@ -60,8 +60,10 @@ const CanvasTop = ({ selectedAction, setSelectedAction, stageRef, inputFile }) =
     e.preventDefault();
     // update title and description of project locally
     dispatch(updateTitleDesc(projectData.projectId, e.target[0].value, e.target[1].value))
-    .then(() => canvasFunctions.publishProject());
-    window.location.href = `/`;
+    .then(() => {
+      canvasFunctions.publishProject()
+      window.location.href = `/`;
+    });
   }
 
   return (
