@@ -82,7 +82,10 @@ exports.getPosts = async (req, res) => {
                     },
                     include: {
                         model: User
-                    }
+                    },
+                    order: [
+                        ['dateCommented', 'ASC']
+                    ]
                 })
                 .then(comments => {
 
