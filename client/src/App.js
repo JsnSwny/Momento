@@ -40,7 +40,6 @@ const App = () => {
         </button>
       )}
       <Router>
-        <Navbar />
         <Routes>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
