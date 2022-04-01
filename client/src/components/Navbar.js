@@ -5,7 +5,7 @@ import Dropdown from './Dropdown'
 import Searchbar from './Searchbar'
 
 
-function Navbar() {
+function Navbar({username}) {
     const [click, setClick] = useState(false);
     const [dropdown, setDropdown] = useState(false);
 
@@ -75,7 +75,7 @@ function Navbar() {
                     </li>
                     <li className='nav-item'>
                         
-                        <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+                        <Link to={`/user/${username}`} className='nav-links' onClick={closeMobileMenu}>
                         <i class="fa-solid fa-user"></i>
                         </Link>
                 

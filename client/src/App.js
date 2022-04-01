@@ -12,6 +12,7 @@ import PasswordChange from "./views/PasswordChange";
 import RequestPasswordReset from "./views/RequestPasswordReset";
 import UserPage from "./views/UserPage";
 import { useSelector } from "react-redux";
+import Navbar from './components/Navbar';
 
 const PrivateRoute = ({ isAuthenticated, children }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -19,7 +20,7 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 
 const App = () => {
   const auth = useSelector((state) => state.auth.isLoggedIn);
-
+  const username = useSelector((state) => state.auth?.user?.username);
   const logout = () => {
     localStorage.removeItem("user");
     window.location.reload();
@@ -27,19 +28,10 @@ const App = () => {
 
   return (
     <>
-      {auth && (
-        <button
-          onClick={() => logout()}
-          style={{
-            display: "flex",
-            margin: "auto",
-            fontSize: "1.5rem",
-          }}
-        >
-          Logout
-        </button>
-      )}
       <Router>
+        {auth && (
+          <Navbar username={username} />
+        )}
         <Routes>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/registration" element={<RegistrationPage />}></Route>
