@@ -12,7 +12,6 @@ function Navbar({username}) {
     const handleClick = () => setClick(!click);
     const closeMobileMenu = () => setClick(false);
 
-
     const onMouseEnter = () => {
         if (window.innerWidth < 960) {
             setDropdown(false);
@@ -21,7 +20,6 @@ function Navbar({username}) {
             setDropdown(true);
         }
     };
-
 
     const onMouseLeave = () => {
         if (window.innerWidth < 960) {
@@ -32,7 +30,10 @@ function Navbar({username}) {
         }
     };
 
-
+    const logout = () => {
+        localStorage.removeItem("user");
+        window.location.reload();
+    };
     
     return (
         <>
@@ -74,11 +75,14 @@ function Navbar({username}) {
                         </Link>
                     </li>
                     <li className='nav-item'>
-                        
                         <Link to={`/user/${username}`} className='nav-links' onClick={closeMobileMenu}>
                         <i class="fa-solid fa-user"></i>
                         </Link>
-                
+                    </li>
+                    <li className='nav-item'>
+                        <Link to='' className='nav-links' onClick={logout}>
+                        <i class="fa-solid fa-sign-out"></i>
+                        </Link>
                     </li>
                 </ul>
             </nav>

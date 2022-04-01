@@ -21,10 +21,6 @@ const PrivateRoute = ({ isAuthenticated, children }) => {
 const App = () => {
   const auth = useSelector((state) => state.auth.isLoggedIn);
   const username = useSelector((state) => state.auth?.user?.username);
-  const logout = () => {
-    localStorage.removeItem("user");
-    window.location.reload();
-  };
 
   return (
     <>
