@@ -44,9 +44,9 @@ function Navbar({username}) {
                     Memento
                 </Link>
                 <div className="Search"><Searchbar placeholder="Search scraps..."/></div>
-                <Link to='/' className='search-icon'>
+                <p className='search-icon'>
                     <i class="fa-solid fa-magnifying-glass"></i>
-                </Link>
+                </p>
                 <div className='menu-icon' onClick={handleClick}>
                     <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
                 </div>
