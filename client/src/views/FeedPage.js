@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Post from "../components/feed/Post";
 import ScrapCard from "../components/feed/ScrapCard";
 import { getPosts } from "../store/actions/posts";
-import { newProject } from "../store/actions/project";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import store from "../store/store";
 
 const FeedPage = () => {
@@ -19,18 +18,8 @@ const FeedPage = () => {
     dispatch(getPosts());
   }, []);
 
-    const onSubmit = (e) => {
-        
-
-  };
   return (
     <div className="wrapper--md">
-      <input
-        type="text"
-        value={projectTitle}
-        onChange={(e) => setProjectTitle(e.target.value)}
-      />
-      <button onClick={onSubmit}>Create Project</button>
       <div className="feed">
         <h2>My Scraps</h2>
         <div className="flex-container post-cards">
