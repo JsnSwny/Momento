@@ -1,7 +1,8 @@
 import { userService } from "../services/user.service";
 import {
     USER_LOAD_SUCCESS,
-    USER_FOLLOWED
+    USER_FOLLOWED,
+    PROFILE_UPDATED
 } from "./types";
 
 export const loadUserData = (userId, username = -1) => (dispatch) => { 
@@ -29,6 +30,20 @@ export const followUser = (id) => (dispatch) => {
                 payload: response
             });
 
+            return Promise.resolve();
+        }
+    );
+};
+
+export const editProfile = (firstName, lastName, bio) => (dispatch) => {
+    return userService.editProfile(firstName, lastName, bio)
+    .then(
+        (response) => {
+            dispatch({
+                type: PROFILE_UPDATED,
+                payload: response,
+            });
+            
             return Promise.resolve();
         }
     );

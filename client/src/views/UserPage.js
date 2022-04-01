@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { followUser, loadUserData } from "../store/actions/user";
+import { editProfile, followUser, loadUserData } from "../store/actions/user";
 import { Link } from "react-router-dom";
 import Modal from 'react-modal';
 import axios from 'axios';
@@ -93,6 +93,59 @@ const UserPage = () => {
 
   const [currentMode, setCurrentMode] = useState('posts');
 
+  // Edit profile modal
+  const [modalIsOpen2, setIsOpen2] = useState(false);
+  const openModal2 = () => {
+    setIsOpen2(true);
+  };
+  const closeModal2 = () => {
+    setIsOpen2(false);
+  };
+
+  const modalStyles2 = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+    },
+  };
+
+  const modalInputStyle = {
+    width: '100%',
+    height: '1.5rem',
+    fontFamily: 'Verdana, Geneva, Tahoma, sans-serif',
+    fontSize: '0.9rem',
+    justifyContent: 'center',
+    textAlign: 'center'
+  };
+
+  const modalTextAreaStyle = {
+    width: '25rem', 
+    height: '10rem', 
+    resize: 'none', 
+    fontSize: '1rem', 
+    padding: '0.4rem 0.4rem 0.4rem 0.4rem',
+    marginBottom: '1rem',
+    justifyContent: 'center',
+    textAlign: 'center'
+  }
+
+  const onSubmit2 = (e) => {
+    e.preventDefault();
+    // update profile
+    dispatch(editProfile(
+      e.target[0].value,
+      e.target[1].value,
+      e.target[2].value)
+    ).then(() => {
+      window.location.reload();
+    });
+      
+  }
+
   return (
     <div className="User" id="user">
       <Modal
@@ -110,6 +163,37 @@ const UserPage = () => {
           <button className="modalButtonRed" onClick={() => deleteCurrentProfilePic()}>Delete current picture</button>
           <button className="modalButton" onClick={closeModal}>Cancel</button>
         </div>
+      </Modal>
+      <Modal
+        isOpen={modalIsOpen2}
+        onRequestClose={closeModal2}
+        style={modalStyles2}
+        contentLabel="Edit profile"
+      >
+        <div className="modalTitle">
+          <h3>Edit your profile</h3>
+        </div>
+        <button 
+          onClick={closeModal2}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            position: 'absolute',
+            top: '7%',
+            left: '90%',
+            fontSize: '1rem',
+            cursor: 'pointer'
+          }}
+        >X</button>
+        <form style={{ paddingLeft: '1rem', paddingRight: '2rem', display: 'grid' }} onSubmit={onSubmit2}>
+          <label style={{ textAlign: 'center', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>First name</label>
+          <input style={modalInputStyle} type='text' defaultValue={userData.firstName} />
+          <label style={{ textAlign: 'center', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Last name</label>
+          <input style={modalInputStyle} type='text' defaultValue={userData.lastName} />
+          <label style={{ textAlign: 'center', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Bio</label>
+          <textarea style={modalTextAreaStyle}>{userData.bio}</textarea>
+          <button className="btn" type='submit'>Save</button>
+        </form>
       </Modal>
       <div className="Profile">
         {operationSuccess && (
@@ -135,7 +219,7 @@ const UserPage = () => {
                 </div>
                 {ownProfile && (
                   <div className="editProfile">
-                    <button onClick={() => console.log('Editing profile')} style={{
+                    <button onClick={openModal2} style={{
                       backgroundColor: 'transparent',
                       border: 'none',
                       fontSize: '1rem',

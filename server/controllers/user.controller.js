@@ -106,3 +106,22 @@ exports.followUser = (req, res) => {
         return res.status(500).send(err);
     }
 };
+
+exports.editProfile = (req, res) => {
+    try {
+        User.findOne({
+            where: {
+                id: req.userId
+            }
+        }).then(async (user) => {
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
+            user.bio = req.body.bio;
+            await user.save().then(() => {
+                return res.status(200).send({message: "Profile updated"});
+            });
+        });
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+}

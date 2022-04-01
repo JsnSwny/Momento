@@ -22,4 +22,9 @@ module.exports = function(app) {
     controller.followUser
   );
 
+  app.post(
+    "/api/editProfile",
+    [authJWT.verifyToken],
+    controller.editProfile
+  );
 };

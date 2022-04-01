@@ -2,7 +2,8 @@ import api from "./api.axios";
 
 export const userService = {
     loadUserData,
-    followUser
+    followUser,
+    editProfile
 };
 
 function loadUserData(userId, username) { 
@@ -29,3 +30,11 @@ function followUser(id) {
         localStorage.setItem('user', JSON.stringify(userData))
     );
 };
+
+function editProfile(firstName, lastName, bio) {
+    return api.post(`/editProfile`, {
+        firstName,
+        lastName,
+        bio
+    });
+}
