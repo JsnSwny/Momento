@@ -11,10 +11,26 @@ exports.loadUserData = (req, res) => {
                 where: {
                     username: req.body.username
                 }
-            }).then(user => {
+            }).then(async (user) => {
                 if (!user || !user.active) {
                     return res.status(404).send({ message: "Page not found" });
                 }
+
+                // get followers / following counts
+                var followers = await Follower.count({
+                    where: {
+                        userId2: user.id
+                    }
+                });
+
+                var following = await Follower.count({
+                    where: {
+                        userId1: user.id
+                    }
+                });
+
+                console.log("followers: " + followers);
+                console.log("following: " + following);
 
                 // If user requesting somebody else's data
                 if (user.id !== req.userId) {
@@ -23,7 +39,10 @@ exports.loadUserData = (req, res) => {
                         username: user.username,
                         firstName: user.firstName,
                         lastName: user.lastName,
-                        profilePicture: user.profilePicture
+                        profilePicture: user.profilePicture,
+                        bio: user.bio,
+                        followers: followers,
+                        following: following,
                     });
                 } 
                 // If user requesting their own data
@@ -41,6 +60,9 @@ exports.loadUserData = (req, res) => {
                             lastName: user.lastName,
                             emailAddress: user.emailAddress,
                             profilePicture: user.profilePicture,
+                            bio: user.bio,
+                            followers: followers,
+                            following: following,
                             roles: user.roles,
                             projectList: userProjects
                         }

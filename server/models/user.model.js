@@ -25,6 +25,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       profilePicture: {
         type: Sequelize.STRING
+      },
+      bio: {
+        type: Sequelize.STRING
       }
     });
   

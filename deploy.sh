@@ -9,7 +9,7 @@ cd client
 sudo npm install
 
 # build frontend
-sudo npm build
+sudo npm run build
 
 # restart backend server
 pm2 restart /var/www/html/Momento/server/index.js

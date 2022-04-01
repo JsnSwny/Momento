@@ -150,13 +150,15 @@ const UserPage = () => {
                 )}
               </div>
               <ul className="userStats">
-               94 followers    29 following
+               {userData?.followers === null ? '' : userData.followers} followers    {userData?.following === null ? '' : userData.following} following
               </ul>
               <div className="userName-Bio">
                 <h2 className="name">{userData.firstName + " " + userData.lastName}</h2>
                 <br/>
                 <span className="userBio">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  {userData?.bio === null 
+                    ? ''
+                    : userData.bio}
                 </span>
               </div>
             </section>

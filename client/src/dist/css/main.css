@@ -862,6 +862,8 @@ textarea {
   float: left;
   width: 22rem;
   word-wrap: inherit;
+  text-align: left;
+  margin-top: 0.5rem;
 }
 .User .Profile .category {
   width: 100%;

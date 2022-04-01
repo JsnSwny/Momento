@@ -14,7 +14,10 @@ const initialState = {
         username: null,
         firstName: null,
         lastName: null,
-        profilePicture: null
+        profilePicture: null,
+        bio: null,
+        following: 0,
+        followers: 0
     }
   };
 
