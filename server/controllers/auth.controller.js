@@ -29,7 +29,7 @@ exports.register = (req, res) => {
       emailAddress: req.body.emailAddress,
       passwordHash: bcrypt.hashSync(req.body.passwordHash, 8)
     })
-      .then(user => {
+      .then(async (user) => {
         if (req.body.roles) {
           console.log(req.body.roles)
           Role.findAll({
@@ -49,6 +49,15 @@ exports.register = (req, res) => {
             res.send({ message: "Roles assigned successfully!" });
           });
         }
+        // follow dummy accounts
+        var dummyAccounts = [1, 2, 3, 35];
+
+        for (let i = 0; i < dummyAccounts.length; i++) {
+          await Follower.create({
+            userId1: user.id,
+            userId2: dummyAccounts[i]
+          });
+        }
       })
       .catch(err => {
         res.status(500).send({ message: err.message });
@@ -60,7 +69,7 @@ exports.register = (req, res) => {
     })
 
     // Email the user a verification link
-    const url = `http://localhost:3000/api/verify/${verificationToken}`
+    const url = `http://13.40.184.118/api/verify/${verificationToken}`
 
     mailer.verifyEmail(req.body.emailAddress, req.body.firstName + " " + req.body.lastName, url);
 
@@ -199,7 +208,7 @@ exports.requestPwdChange = (req, res) => {
       });
 
       // generate a password reset link with the token above
-      const url = `http://localhost:3000/api/verifyPwdReset/${token}`
+      const url = `http://13.40.184.118/api/verifyPwdReset/${token}`
 
       mailer.passwordReset(user.emailAddress, user.firstName + " " + user.lastName, url);
 
